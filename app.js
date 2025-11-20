@@ -15,10 +15,8 @@ const actionStyles = {
     'Other': { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200', label: 'อื่นๆ', icon: 'fa-ellipsis' }
 };
 
-// --- API Helper (เปลี่ยนจาก google.script.run เป็น fetch) ---
 async function callAPI(action, payload = null) {
     try {
-        // 1. GET Request
         if (!payload) {
             const response = await fetch(`${GAS_URL}?action=${action}`, {
                 method: 'GET',
@@ -27,15 +25,12 @@ async function callAPI(action, payload = null) {
             const data = await response.json();
             if (data.error) throw new Error(data.error);
             return data;
-        } 
-        // 2. POST Request
-        else {
-            // GAS doPost ต้องการข้อมูลเป็น String ผ่าน body
+        } else {
             const response = await fetch(GAS_URL, {
                 method: 'POST',
                 redirect: "follow",
-                body: JSON.stringify({ action: action, payload: payload }), // ห่อ payload
-                headers: { "Content-Type": "text/plain;charset=utf-8" } // text/plain เพื่อเลี่ยง preflight
+                body: JSON.stringify({ action: action, payload: payload }),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
             });
             const data = await response.json();
             if (!data.success && data.message) throw new Error(data.message);
@@ -45,8 +40,6 @@ async function callAPI(action, payload = null) {
         throw new Error(error.toString());
     }
 }
-
-// --- Logic เดิม (ปรับปรุงให้เรียก callAPI) ---
 
 window.onload = function() {
     const today = new Date();
@@ -79,12 +72,12 @@ function switchTab(tab) {
     const viewEntry = document.getElementById('view-entry');
     const viewReport = document.getElementById('view-report');
     if (tab === 'entry') {
-        btnEntry.className = "flex-1 py-3 px-4 rounded-2xl font-semibold text-sm transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-200 transform scale-100";
-        btnReport.className = "flex-1 py-3 px-4 rounded-2xl font-semibold text-sm transition-all duration-300 bg-white text-slate-500 hover:bg-slate-50 border border-slate-200";
+        btnEntry.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-200 transform scale-100";
+        btnReport.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-white text-slate-500 hover:bg-slate-50 border border-slate-200";
         viewEntry.classList.remove('hidden'); viewReport.classList.add('hidden');
     } else {
-        btnReport.className = "flex-1 py-3 px-4 rounded-2xl font-semibold text-sm transition-all duration-300 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-100";
-        btnEntry.className = "flex-1 py-3 px-4 rounded-2xl font-semibold text-sm transition-all duration-300 bg-white text-slate-500 hover:bg-slate-50 border border-slate-200";
+        btnReport.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-100";
+        btnEntry.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-white text-slate-500 hover:bg-slate-50 border border-slate-200";
         viewEntry.classList.add('hidden'); viewReport.classList.remove('hidden');
         loadReport();
     }
@@ -107,7 +100,7 @@ drugInput.addEventListener('input', function() {
         drugList.classList.remove('hidden');
         matches.forEach(item => {
             const li = document.createElement('li');
-            li.className = "p-3.5 hover:bg-blue-50 cursor-pointer border-b border-slate-100 last:border-0 text-sm text-slate-700 transition-colors flex items-center gap-2";
+            li.className = "p-4 hover:bg-blue-50 cursor-pointer border-b border-slate-100 last:border-0 text-lg text-slate-700 transition-colors flex items-center gap-2";
             li.innerHTML = `<i class="fa-solid fa-pills text-blue-300"></i> ${item.displayName}`;
             li.onclick = () => selectDrug(item);
             drugList.appendChild(li);
@@ -188,7 +181,6 @@ function submitDataToServer() {
 
     document.getElementById('overlay').classList.remove('hidden');
     
-    // API Call: Save Data
     callAPI('saveData', formData)
         .then(res => {
             document.getElementById('overlay').classList.add('hidden');
@@ -213,7 +205,7 @@ function submitDataToServer() {
 function loadReport() {
     currentPage = 1;
     const container = document.getElementById('reportList');
-    container.innerHTML = '<div class="flex flex-col items-center justify-center text-slate-400 py-12"><div class="custom-loader mb-4"></div>Loading Data...</div>';
+    container.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-slate-400 min-h-[60vh]"><div class="custom-loader mb-4"></div>Loading Data...</div>';
     
     callAPI('getReportData')
         .then(data => { reportData = data; renderReport(); })
@@ -238,7 +230,7 @@ function renderReport() {
 
     container.innerHTML = '';
     if (!reportData || reportData.length === 0) { 
-        container.innerHTML = '<div class="text-center text-slate-400 mt-10 font-light">No data found.</div>'; 
+        container.innerHTML = '<div class="col-span-full text-center text-slate-400 mt-10 font-light text-lg">No data found.</div>'; 
         paginationControls.classList.add('hidden');
         return; 
     }
@@ -264,7 +256,7 @@ function renderReport() {
     });
 
     if (filtered.length === 0) { 
-        container.innerHTML = '<div class="text-center text-slate-400 mt-10 font-light">No items match filter.</div>'; 
+        container.innerHTML = '<div class="col-span-full text-center text-slate-400 mt-10 font-light text-lg">No items match filter.</div>'; 
         paginationControls.classList.add('hidden');
         return; 
     }
@@ -283,7 +275,7 @@ function renderPage(page) {
     const totalPages = Math.ceil(filteredDataCache.length / itemsPerPage);
 
     pagedItems.forEach(item => {
-        let borderStatus = "border-l-green-500"; let textExp = "text-green-600"; let bgStatus = ""; let expBg = "bg-green-50 border-green-100";
+        let borderStatus = "border-l-green-500"; let textExp = "text-green-600"; let badgeExp = ""; let bgStatus = ""; let expBg = "bg-green-50 border-green-100";
         if (item.diffDays < 0) { borderStatus = "border-l-slate-400"; textExp = "text-slate-500"; badgeExp = "Expired"; bgStatus = "bg-slate-50"; expBg = "bg-slate-100 border-slate-200"; } 
         else if (item.diffDays <= 30) { borderStatus = "border-l-red-500"; textExp = "text-red-600"; badgeExp = "Urgent"; bgStatus = "bg-red-50/30"; expBg = "bg-red-50 border-red-100"; } 
         else if (item.diffDays <= 90) { borderStatus = "border-l-orange-400"; textExp = "text-orange-600"; badgeExp = "Warning"; bgStatus = "bg-orange-50/30"; expBg = "bg-orange-50 border-orange-100"; } 
@@ -293,19 +285,23 @@ function renderPage(page) {
 
         const style = actionStyles[item.action] || actionStyles['Other'];
         let actionLabel = `<i class="fa-solid ${style.icon} mr-1"></i> ${style.label}`;
-        if(item.action === 'Transfer' && item.subDetails) { actionLabel += ` <i class="fa-solid fa-arrow-right text-[10px] mx-1 text-slate-400"></i> ${item.subDetails}`; }
+        if(item.action === 'Transfer' && item.subDetails) { actionLabel += ` <i class="fa-solid fa-arrow-right text-sm mx-1 text-slate-400"></i> ${item.subDetails}`; }
 
         const itemStr = encodeURIComponent(JSON.stringify(item));
         
+        // INCREASED FONT SIZES HERE
         const card = `
           <div onclick="openManageModal('${itemStr}')" class="relative cursor-pointer bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-[4px] ${borderStatus} hover:shadow-lg hover:shadow-blue-100 hover:-translate-y-1 transition-all duration-300 group ${bgStatus} fade-in">
-            <div class="absolute top-2 right-2"><span class="px-2 py-1 text-[10px] font-bold rounded-lg ${style.bg} ${style.text} border ${style.border} shadow-sm flex items-center">${actionLabel}</span></div>
-            <div class="pr-24">
-                <h3 class="font-bold text-slate-800 text-sm truncate mb-0.5 group-hover:text-blue-600 transition-colors">${item.drugName}</h3>
-                <p class="text-[10px] text-slate-400 mb-2 font-medium pl-0.5">${item.strength || '-'}</p>
+            
+            <div class="absolute top-3 right-3"><span class="px-3 py-1.5 text-sm font-bold rounded-lg ${style.bg} ${style.text} border ${style.border} shadow-sm flex items-center">${actionLabel}</span></div>
+            
+            <div class="pr-28">
+                <h3 class="font-bold text-slate-800 text-xl truncate mb-1 group-hover:text-blue-600 transition-colors">${item.drugName}</h3>
+                <p class="text-base text-slate-400 mb-2 font-medium pl-0.5">${item.strength || '-'}</p>
+                
                 <div class="flex flex-wrap items-center gap-2">
-                    <div class="bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200 text-[11px] shadow-sm">Qty: <b class="text-slate-800">${item.qty}</b> <span class="text-slate-400 text-[9px]">${item.unit}</span></div>
-                    <div class="px-2 py-0.5 rounded-md border text-[11px] font-bold shadow-sm flex items-center gap-1 ${expBg} ${textExp}"><i class="fa-regular fa-calendar-xmark text-[9px] opacity-70"></i> ${dateStr} <span class="font-normal opacity-80 text-[9px]">(${item.diffDays}d)</span></div>
+                    <div class="bg-slate-50 px-3 py-1 rounded-md border border-slate-200 text-base shadow-sm">Qty: <b class="text-slate-800">${item.qty}</b> <span class="text-slate-400 text-sm">${item.unit}</span></div>
+                    <div class="px-3 py-1 rounded-md border text-base font-bold shadow-sm flex items-center gap-1 ${expBg} ${textExp}"><i class="fa-regular fa-calendar-xmark text-sm opacity-70"></i> ${dateStr} <span class="font-normal opacity-80 text-sm">(${item.diffDays}d)</span></div>
                 </div>
             </div>
           </div>`;
