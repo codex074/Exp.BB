@@ -1,6 +1,6 @@
 {
   "name": "OPD Pharmacy Expiry Manager",
-  "short_name": "OPD Expiry",
+  "short_name": "Exp.OPD",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f0f2f5",
