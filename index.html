@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OPD Pharmacy Expiry</title>
+  <link rel="shortcut icon" href="icons/icon.ico" type="image/x-icon">
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Kanit', sans-serif; background-color: #f0f2f5; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(241, 241, 241, 0.5); }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .action-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .action-card:hover { border-color: #60a5fa; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15); transform: translateY(-2px); }
+    .action-card-input:checked + .action-card {
+      background: linear-gradient(135deg, #2563eb, #06b6d4); color: white; border-color: transparent;
+      box-shadow: 0 8px 20px rgba(6, 182, 212, 0.4); transform: scale(1.05) translateY(-2px);
+    }
+    .action-card-input:checked + .action-card i, .action-card-input:checked + .action-card span { color: white !important; }
+    .modal-bg { background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
+    .big-qty-input { font-size: 2.5rem; font-weight: 700; text-align: center; color: #2563eb; background: transparent; }
+    .big-qty-input::placeholder { color: #e2e8f0; }
+    .back-to-top { position: fixed; bottom: 24px; right: 24px; z-index: 40; transition: all 0.3s; opacity: 0; visibility: hidden; transform: translateY(20px) scale(0.8); }
+    .back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+    
+    /* Custom Loader */
+    .custom-loader { width: 50px; height: 50px; display: grid; }
+    .custom-loader::before, .custom-loader::after {
+      content: ""; grid-area: 1/1; --c: radial-gradient(farthest-side,#2563eb 92%,#0000);
+      background: var(--c) 50% 0, var(--c) 50% 100%, var(--c) 100% 50%, var(--c) 0 50%;
+      background-size: 12px 12px; background-repeat: no-repeat; animation: s2 1s infinite;
+    }
+    .custom-loader::before { margin: 4px; filter: hue-rotate(45deg); background-size: 8px 8px; animation-timing-function: linear; }
+    @keyframes s2 { 100% { transform: rotate(.5turn) } }
+  </style>
+</head>
+<body class="bg-slate-50 relative h-full text-slate-800">
+  <div class="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-400/30 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse z-0"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-400/30 rounded-full mix-blend-multiply filter blur-[80px] z-0"></div>
+
+  <div class="relative z-10 w-full max-w-md mx-auto bg-white/80 backdrop-blur-xl h-full shadow-2xl border-x border-white/50 flex flex-col">
+    <!-- Header -->
+    <div class="bg-gradient-to-br from-blue-700 via-indigo-600 to-purple-700 p-6 rounded-b-[2.5rem] shadow-lg shadow-indigo-200/50 text-white shrink-0 z-30 flex justify-between items-center relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-xl"></div>
+      <div class="relative z-10">
+        <h1 class="text-2xl font-bold flex items-center gap-2 tracking-tight"><i class="fa-solid fa-prescription-bottle-medical text-blue-200"></i> OPD Pharmacy</h1>
+        <p class="text-blue-100 text-xs opacity-90 font-medium tracking-wide">Expiry Management System</p>
+      </div>
+      <a href="https://docs.google.com/spreadsheets/d/1l7gEdZJrgfTbXPF3wWyM1DjfALJIKLM8zokXEfZLw_k/edit?usp=sharing" target="_blank" class="relative z-10 w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center text-white border border-white/30 hover:scale-110 hover:rotate-12 transition-all duration-300 shadow-md cursor-pointer">
+        <i class="fa-solid fa-table-cells text-lg"></i>
+      </a>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex p-4 gap-3 shrink-0 mt-2">
+      <button onclick="switchTab('entry')" id="tab-entry" class="flex-1 py-3 px-4 rounded-2xl font-semibold text-sm transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-200 transform scale-100"><i class="fa-solid fa-plus mr-1"></i> Add Entry</button>
+      <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-3 px-4 rounded-2xl font-semibold text-sm transition-all duration-300 bg-white text-slate-500 border border-slate-200"><i class="fa-solid fa-list-ul mr-1"></i> Manage List</button>
+    </div>
+
+    <!-- Content -->
+    <div id="mainContainer" class="flex-1 px-5 pb-32 overflow-y-auto relative scroll-smooth">
+      <!-- Add Entry View -->
+      <div id="view-entry" class="fade-in space-y-5 pt-2">
+        <form id="expiryForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
+          <input type="hidden" id="generic" name="generic"><input type="hidden" id="unit" name="unit"><input type="hidden" id="strength" name="strength">
+          <div class="group"><label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Transaction Date</label><input type="date" id="entryDate" class="w-full p-3.5 rounded-2xl bg-white border border-slate-200 focus:border-blue-500 outline-none" required></div>
+          <div class="relative group"><label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Drug Name</label><div class="relative"><i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400 z-10"></i><input type="text" id="drugSearch" placeholder="Search Drug..." class="w-full pl-11 pr-10 p-3.5 rounded-2xl bg-white border border-slate-200 focus:border-blue-500 outline-none" autocomplete="off" required><button type="button" id="clearSearchBtn" onclick="clearDrugSearch()" class="absolute right-3 top-3.5 text-slate-400 hover:text-red-500 hidden z-20"><i class="fa-solid fa-xmark text-lg"></i></button></div><ul id="drugList" class="hidden absolute z-30 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto mt-2"></ul></div>
+          <div class="bg-gradient-to-b from-blue-50/80 to-white p-5 rounded-3xl border border-blue-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]"><label class="block text-xs font-bold text-blue-800 uppercase mb-2 text-center">Quantity</label><div class="flex items-center justify-center gap-4"><button type="button" onclick="adjustQty(-1)" class="w-12 h-12 rounded-full bg-white text-blue-600 shadow-sm border border-blue-100 text-xl font-bold"><i class="fa-solid fa-minus"></i></button><div class="flex-1 max-w-[140px] border-b-2 border-blue-200"><input type="number" id="qtyInput" class="big-qty-input w-full outline-none" placeholder="0" required></div><button type="button" onclick="adjustQty(1)" class="w-12 h-12 rounded-full bg-white text-blue-600 shadow-sm border border-blue-100 text-xl font-bold"><i class="fa-solid fa-plus"></i></button></div><div class="text-center mt-3"><span id="unitDisplay" class="bg-white text-blue-600 text-xs font-bold px-4 py-1.5 rounded-full border border-blue-100 shadow-sm">Unit</span></div></div>
+          <div class="group"><label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Expiry Date</label><input type="date" id="expiryDateInput" class="w-full p-3.5 rounded-2xl bg-red-50/50 border border-red-100 focus:border-red-400 outline-none text-red-700 font-medium" required></div>
+          <div><label class="block text-xs font-bold text-slate-400 uppercase mb-3">Action <span class="text-red-500">*</span></label>
+            <div class="grid grid-cols-3 gap-3">
+               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Sticker" class="action-card-input hidden" required onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-tags text-xl text-orange-500 mb-1"></i><span class="text-[11px] font-bold text-slate-600">ติด Sticker</span></div></label>
+               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Transfer" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-share-from-square text-xl text-blue-500 mb-1"></i><span class="text-[11px] font-bold text-slate-600">ส่งต่อ</span></div></label>
+               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Separate" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-box-open text-xl text-red-500 mb-1"></i><span class="text-[11px] font-bold text-slate-600">แยกเก็บ</span></div></label>
+               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ContactWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-phone-volume text-xl text-teal-500 mb-1"></i><span class="text-[11px] font-bold text-slate-600">ติดต่อคลัง</span></div></label>
+               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ReturnWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-truck-ramp-box text-xl text-green-500 mb-1"></i><span class="text-[11px] font-bold text-slate-600">คืนคลัง</span></div></label>
+               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Other" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-ellipsis text-xl text-gray-500 mb-1"></i><span class="text-[11px] font-bold text-slate-600">อื่นๆ</span></div></label>
+            </div>
+          </div>
+          <div id="dynamicArea" class="p-5 bg-slate-100/80 rounded-2xl border border-slate-200 hidden fade-in">
+            <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Additional Details</label>
+            <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                <select id="inputTransfer" class="dynamic-input hidden w-full p-3 rounded-lg bg-slate-50 border border-slate-100 outline-none"><option value="" disabled selected>-- เลือกปลายทาง --</option><option value="IPD MED">IPD MED</option><option value="IPD SURG">IPD SURG</option><option value="OPD SURG">OPD SURG</option><option value="ER">ER</option></select>
+                <div class="space-y-2"><textarea id="subNote" placeholder="Note (Optional)..." class="w-full p-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white outline-none" rows="2"></textarea></div>
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-blue-200/50 flex justify-center items-center gap-2 text-lg mt-4"><i class="fa-solid fa-save"></i> Save Data</button>
+        </form>
+      </div>
+
+      <!-- View Report -->
+      <div id="view-report" class="hidden fade-in pt-2 space-y-4">
+        <div class="grid grid-cols-2 gap-4 sticky top-0 bg-white/90 backdrop-blur p-2 -mx-2 z-20 rounded-b-2xl border-b border-slate-100">
+           <div><label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Timeframe</label>
+             <select id="filterTime" onchange="toggleCustomDate()" class="w-full text-sm p-3 pl-4 rounded-xl border border-slate-200 bg-slate-50"><option value="all">All Time</option><option value="30">Next 30 Days</option><option value="90">Next 3 Months</option><option value="180">Next 6 Months</option><option value="custom">Custom...</option></select>
+           </div>
+           <div><label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Action Type</label>
+             <select id="filterAction" onchange="renderReport()" class="w-full text-sm p-3 pl-4 rounded-xl border border-slate-200 bg-slate-50"><option value="all">All Types</option><option value="Sticker">ติด Sticker</option><option value="Transfer">ส่งต่อห้องยา</option><option value="Separate">แยกเก็บ</option><option value="ContactWH">ติดต่อคลัง</option><option value="ReturnWH">คืนคลัง</option></select>
+           </div>
+        </div>
+        <div id="customDateContainer" class="hidden bg-slate-50 p-3 rounded-xl border border-slate-200 flex gap-2 items-center fade-in">
+            <input type="number" id="customNumber" placeholder="Qty" oninput="renderReport()" class="flex-1 p-2.5 text-sm rounded-lg border border-slate-300 outline-none text-center">
+            <select id="customUnit" onchange="renderReport()" class="flex-1 p-2.5 text-sm rounded-lg border border-slate-300 outline-none bg-white"><option value="days">Days</option><option value="months">Months</option></select><span class="text-[10px] text-slate-400 font-medium">from now</span>
+        </div>
+        <div id="reportList" class="space-y-4 min-h-[300px]"><div class="flex flex-col items-center justify-center text-slate-400 py-12"><div class="custom-loader mb-4"></div>Loading Data...</div></div>
+        <div id="paginationControls" class="flex justify-between items-center pt-4 pb-20 hidden"><button onclick="prevPage()" id="btnPrev" class="px-4 py-2 rounded-xl bg-white border">Previous</button><span id="pageIndicator" class="text-xs font-bold text-slate-400">Page 1</span><button onclick="nextPage()" id="btnNext" class="px-4 py-2 rounded-xl bg-white border">Next</button></div>
+      </div>
+      <div class="h-10"></div>
+    </div>
+    <button id="backToTop" onclick="scrollToTop()" class="back-to-top w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-xl flex items-center justify-center"><i class="fa-solid fa-arrow-up text-xl"></i></button>
+
+    <!-- Modal -->
+    <div id="manageModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md h-[85vh] flex flex-col overflow-hidden transform transition-all scale-100">
+            <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-5 text-white flex justify-between items-center shrink-0">
+                <div><h3 class="font-bold text-lg"><i class="fa-solid fa-pen-to-square"></i> Manage Item</h3><p class="text-xs text-blue-100 opacity-80 truncate max-w-[220px] mt-1" id="manageDrugName">Drug Name</p></div><button onclick="closeManageModal()" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-6 scroll-smooth">
+                <input type="hidden" id="manageRowIndex"><input type="hidden" id="manageMaxQty">
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200 text-center"><label class="block text-xs font-bold text-slate-400 uppercase mb-3">Manage Quantity</label><div class="flex items-center justify-center gap-4 mb-4"><input type="number" id="manageQty" class="big-qty-input w-32 outline-none" placeholder="0"><span class="text-sm font-bold text-slate-400 self-center" id="manageUnit">Unit</span></div><div class="flex justify-center items-center gap-2"><div class="text-xs bg-white px-3 py-1.5 rounded-full border border-slate-200 text-slate-500">Remain: <span id="displayMaxQty" class="font-bold text-slate-900">0</span><button onclick="editStockQty()" class="text-blue-500 hover:text-blue-700 ml-2"><i class="fa-solid fa-pen"></i></button></div><button onclick="setAllQty()" class="text-xs bg-blue-100 text-blue-600 font-bold px-3 py-1.5 rounded-full border border-blue-200">All</button></div></div>
+                <div><label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">New Status</label><div class="grid grid-cols-3 gap-3">
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Sticker" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-orange-300"><i class="fa-solid fa-tags text-lg text-orange-500"></i><span class="text-[10px] font-bold text-slate-600">Sticker</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Transfer" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-blue-300"><i class="fa-solid fa-share-from-square text-lg text-blue-500"></i><span class="text-[10px] font-bold text-slate-600">ส่งต่อ</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Separate" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-red-300"><i class="fa-solid fa-box-open text-lg text-red-500"></i><span class="text-[10px] font-bold text-slate-600">แยกเก็บ</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ContactWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-teal-300"><i class="fa-solid fa-phone-volume text-lg text-teal-500"></i><span class="text-[10px] font-bold text-slate-600">แจ้งคลัง</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ReturnWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-green-300"><i class="fa-solid fa-truck-ramp-box text-lg text-green-500"></i><span class="text-[10px] font-bold text-slate-600">คืนคลัง</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Other" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-gray-300"><i class="fa-solid fa-ellipsis text-lg text-gray-500"></i><span class="text-[10px] font-bold text-slate-600">อื่นๆ</span></div></label>
+                </div></div>
+                <div id="modalDynamicArea" class="p-4 bg-slate-50 rounded-2xl border border-slate-200 hidden fade-in"><label class="block text-xs font-bold text-slate-500 mb-2">Details</label><div class="bg-white p-2 border border-slate-200 rounded-xl space-y-2"><select id="modalTransfer" class="dynamic-input hidden w-full p-2.5 rounded-lg outline-none"><option value="" disabled selected>-- เลือกปลายทาง --</option><option value="IPD MED">IPD MED</option><option value="IPD SURG">IPD SURG</option><option value="OPD SURG">OPD SURG</option><option value="ER">ER</option></select><textarea id="modalSubNote" placeholder="Note (Optional)..." class="w-full p-2.5 rounded-lg border border-slate-200 outline-none" rows="2"></textarea></div></div>
+            </div>
+            <div class="p-5 border-t border-slate-100 bg-white flex gap-3 shrink-0 pb-8"><button onclick="confirmDelete()" class="w-14 h-14 flex items-center justify-center rounded-2xl border border-red-100 text-red-500"><i class="fa-solid fa-trash-can text-xl"></i></button><button onclick="submitManagement()" class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-bold shadow-lg">Confirm Update</button></div>
+        </div>
+    </div>
+
+    <div id="overlay" class="fixed inset-0 bg-slate-900/60 z-[60] hidden flex items-center justify-center backdrop-blur-sm fade-in"><div class="bg-white p-8 rounded-[2rem] shadow-2xl flex flex-col items-center w-72"><div class="custom-loader mb-4"></div><h2 class="text-slate-800 font-bold text-lg">Processing...</h2><p class="text-slate-400 text-xs mt-1">Please wait a moment</p></div></div>
+  </div>
+
+  <script src="app.js"></script> 
+  <script>
+     if ('serviceWorker' in navigator) {
+       window.addEventListener('load', () => {
+         navigator.serviceWorker.register('sw.js');
+       });
+     }
+  </script>
+</body>
+</html>
