@@ -38,10 +38,10 @@
     @keyframes s2 { 100% { transform: rotate(.5turn) } }
     input[type="date"] { -webkit-appearance: none; min-height: 3rem; }
 
-    /* --- Custom Button Styles (Optimized Size) --- */
+    /* --- Custom Button Styles (Unified Soft Style) --- */
     .custom-btn {
-      width: 55px;  /* ปรับลดลงจาก 85px เพื่อแก้ปัญหาล้นจอ */
-      height: 64px; /* ความสูงเท่าเดิม h-16 */
+      width: 55px;  
+      height: 64px; 
       perspective: 1000px;
       display: flex;
       justify-content: center;
@@ -52,7 +52,7 @@
       border: none;
       background: transparent;
       padding: 0;
-      flex-shrink: 0; /* ห้ามปุ่มหดตัว */
+      flex-shrink: 0;
     }
 
     .custom-btn-front {
@@ -62,28 +62,22 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      border-radius: 14px; /* ปรับความโค้งให้สวยงาม */
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 14px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Reduced shadow for softer look */
       backface-visibility: hidden;
       transition: transform 0.3s ease;
     }
 
-    /* Style for MINUS button */
-    .btn-minus .custom-btn-front {
-      background: linear-gradient(135deg, #ffffff, #eff6ff);
-      border: 2px solid #e2e8f0;
-    }
-    .btn-minus i {
-      color: #2563eb;
-    }
-
-    /* Style for PLUS button */
+    /* Shared Soft Style for BOTH Plus and Minus */
+    .btn-minus .custom-btn-front,
     .btn-plus .custom-btn-front {
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
-      border: none;
+      background: #ffffff; /* White background */
+      border: 2px solid #f1f5f9; /* Very light slate border */
     }
+    
+    .btn-minus i,
     .btn-plus i {
-      color: white;
+      color: #94a3b8; /* Soft Slate-400 color for icons (not too prominent) */
     }
 
     /* Hover Animation */
