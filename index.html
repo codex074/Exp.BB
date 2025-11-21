@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Exp OPD</title>
-  <link rel="shortcut icon" href="icons/icon.ico" type="image/x-icon">
+  
   <!-- PWA Meta Tags -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
@@ -12,15 +12,15 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   
-  <!-- Changed Font to Sarabun -->
+  <!-- Font Sarabun -->
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    /* Update Font Family to Sarabun */
-    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Sarabun', sans-serif; background-color: #f0f2f5; }
+    /* Prevent body scroll entirely, handle scroll inside mainContainer */
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; font-family: 'Sarabun', sans-serif; background-color: #f0f2f5; touch-action: pan-y; }
     
     /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -59,15 +59,15 @@
     @keyframes s2 { 100% { transform: rotate(.5turn) } }
   </style>
 </head>
-<body class="bg-slate-50 relative h-full text-slate-800">
+<body class="bg-slate-50 relative h-full w-full text-slate-800 overflow-hidden">
   
-  <div class="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-400/30 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse z-0"></div>
-  <div class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-400/30 rounded-full mix-blend-multiply filter blur-[80px] z-0"></div>
+  <div class="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-400/30 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse z-0 pointer-events-none"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-400/30 rounded-full mix-blend-multiply filter blur-[80px] z-0 pointer-events-none"></div>
 
   <!-- Main Container -->
-  <div class="relative z-10 w-full md:max-w-5xl mx-auto bg-white/80 backdrop-blur-xl h-full md:h-[95vh] md:my-[2.5vh] md:rounded-[2.5rem] md:shadow-2xl md:border md:border-white/50 flex flex-col transition-all duration-300">
+  <div class="relative z-10 w-full md:max-w-5xl mx-auto bg-white/80 backdrop-blur-xl h-full md:h-[95vh] md:my-[2.5vh] md:rounded-[2.5rem] md:shadow-2xl md:border md:border-white/50 flex flex-col transition-all duration-300 overflow-hidden">
     
-    <!-- Header: Increased Font Size -->
+    <!-- Header -->
     <div class="bg-gradient-to-br from-blue-700 via-indigo-600 to-purple-700 p-6 md:rounded-t-[2.5rem] rounded-b-[2.5rem] shadow-lg shadow-indigo-200/50 text-white shrink-0 z-30 flex justify-between items-center relative overflow-hidden">
       <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-xl"></div>
       <div class="relative z-10">
@@ -79,14 +79,15 @@
       </a>
     </div>
 
-    <!-- Tab Navigation: Increased Font Size -->
+    <!-- Tab Navigation -->
     <div class="flex p-4 gap-3 shrink-0 mt-2 md:px-8">
       <button onclick="switchTab('entry')" id="tab-entry" class="flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-200 transform scale-100"><i class="fa-solid fa-plus mr-1"></i> Add Entry</button>
       <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-white text-slate-500 border border-slate-200"><i class="fa-solid fa-list-ul mr-1"></i> Manage List</button>
     </div>
 
     <!-- Content Area -->
-    <div id="mainContainer" class="flex-1 px-5 md:px-8 pb-32 overflow-y-auto relative scroll-smooth">
+    <!-- Added overflow-x-hidden to prevent horizontal scroll -->
+    <div id="mainContainer" class="flex-1 px-5 md:px-8 pb-32 overflow-y-auto overflow-x-hidden relative scroll-smooth">
       
       <!-- Tab 1: Add Entry -->
       <div id="view-entry" class="fade-in space-y-6 pt-2">
@@ -96,7 +97,6 @@
           <!-- Responsive Grid: Row 1 -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="group">
-                <!-- Labels increased to text-lg/xl, Inputs to text-xl -->
                 <label class="block text-lg font-bold text-slate-500 uppercase mb-2 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Transaction Date</label>
                 <input type="date" id="entryDate" name="entryDate" class="w-full p-4 rounded-2xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-xl text-slate-700 shadow-sm hover:border-blue-300" required>
               </div>
@@ -132,7 +132,6 @@
           <div>
             <label class="block text-lg font-bold text-slate-500 uppercase mb-3 tracking-wide ml-1">Management Action <span class="text-red-500">*</span></label>
             <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
-              <!-- Increased text size in action cards -->
               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Sticker" class="action-card-input hidden" required onchange="toggleSubDetails(this.value)"><div class="action-card p-4 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm group-hover:border-orange-300"><i class="fa-solid fa-tags text-2xl text-orange-500 mb-1"></i><span class="text-base font-bold text-slate-600">ติด Sticker</span></div></label>
               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Transfer" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-4 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm group-hover:border-blue-300"><i class="fa-solid fa-share-from-square text-2xl text-blue-500 mb-1"></i><span class="text-base font-bold text-slate-600">ส่งต่อ</span></div></label>
               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Separate" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-4 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm group-hover:border-red-300"><i class="fa-solid fa-box-open text-2xl text-red-500 mb-1"></i><span class="text-base font-bold text-slate-600">แยกเก็บ</span></div></label>
