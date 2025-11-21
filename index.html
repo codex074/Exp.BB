@@ -37,6 +37,65 @@
     .custom-loader::before { margin: 4px; filter: hue-rotate(45deg); background-size: 8px 8px; animation-timing-function: linear; }
     @keyframes s2 { 100% { transform: rotate(.5turn) } }
     input[type="date"] { -webkit-appearance: none; min-height: 3rem; }
+
+    /* --- Custom Button Styles (Optimized Size) --- */
+    .custom-btn {
+      width: 55px;  /* ปรับลดลงจาก 85px เพื่อแก้ปัญหาล้นจอ */
+      height: 64px; /* ความสูงเท่าเดิม h-16 */
+      perspective: 1000px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      transition: transform 0.4s ease;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      padding: 0;
+      flex-shrink: 0; /* ห้ามปุ่มหดตัว */
+    }
+
+    .custom-btn-front {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 14px; /* ปรับความโค้งให้สวยงาม */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      backface-visibility: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    /* Style for MINUS button */
+    .btn-minus .custom-btn-front {
+      background: linear-gradient(135deg, #ffffff, #eff6ff);
+      border: 2px solid #e2e8f0;
+    }
+    .btn-minus i {
+      color: #2563eb;
+    }
+
+    /* Style for PLUS button */
+    .btn-plus .custom-btn-front {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border: none;
+    }
+    .btn-plus i {
+      color: white;
+    }
+
+    /* Hover Animation */
+    .custom-btn:hover {
+      transform: scale(1.05);
+      transition: transform 0.4s ease-out;
+    }
+    
+    /* Click Animation */
+    .custom-btn:active {
+      transform: scale(0.95);
+    }
   </style>
 </head>
 <body class="bg-slate-50 relative h-full w-full text-slate-800 overflow-hidden">
@@ -70,15 +129,30 @@
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-              <div class="group"><label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-red-500 transition-colors">Expiry Date</label><input type="date" id="expiryDateInput" name="expiryDate" class="w-full h-12 px-4 rounded-xl bg-red-50/50 border border-red-100 focus:border-red-400 outline-none text-red-700 font-medium text-lg shadow-sm hover:border-red-300 transition-all" required></div>
+              <div class="group">
+                  <label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-red-500 transition-colors">Expiry Date</label>
+                  <input type="date" id="expiryDateInput" name="expiryDate" class="w-full h-16 px-4 rounded-2xl bg-red-50/50 border border-red-100 focus:border-red-400 outline-none text-red-700 font-bold text-xl shadow-sm hover:border-red-300 transition-all" required>
+              </div>
               
               <div class="group">
                  <label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Quantity</label>
-                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="adjustQty(-1)" class="w-12 h-12 rounded-xl bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 active:scale-95 transition-all text-lg font-bold flex items-center justify-center shadow-sm"><i class="fa-solid fa-minus"></i></button>
-                    <input type="number" id="qtyInput" name="qty" class="flex-1 h-12 text-center rounded-xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-bold text-xl text-slate-700 shadow-sm hover:border-blue-300" placeholder="0" required>
-                    <button type="button" onclick="adjustQty(1)" class="w-12 h-12 rounded-xl bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 active:scale-95 transition-all text-lg font-bold flex items-center justify-center shadow-sm"><i class="fa-solid fa-plus"></i></button>
-                    <span id="unitDisplay" class="h-12 px-4 rounded-xl bg-blue-600 text-white font-bold border border-blue-600 flex items-center justify-center shadow-sm text-sm tracking-wider min-w-[60px]">UNIT</span>
+                 <div class="flex items-center gap-2"> 
+                    
+                    <button type="button" onclick="adjustQty(-1)" class="custom-btn btn-minus">
+                        <div class="custom-btn-front">
+                            <i class="fa-solid fa-minus text-xl"></i>
+                        </div>
+                    </button>
+                    
+                    <input type="number" id="qtyInput" name="qty" class="flex-1 min-w-0 h-16 text-center rounded-2xl bg-white border-2 border-slate-200 focus:border-blue-500 outline-none transition-all font-bold text-3xl text-slate-700 shadow-sm hover:border-blue-300" placeholder="0" required>
+                    
+                    <button type="button" onclick="adjustQty(1)" class="custom-btn btn-plus">
+                        <div class="custom-btn-front">
+                            <i class="fa-solid fa-plus text-xl"></i>
+                        </div>
+                    </button>
+                    
+                    <span id="unitDisplay" class="h-16 px-2 rounded-2xl bg-blue-600 text-white font-bold border border-blue-600 flex items-center justify-center shadow-sm text-sm tracking-wider min-w-[50px] uppercase">UNIT</span>
                  </div>
               </div>
           </div>
