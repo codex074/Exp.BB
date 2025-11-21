@@ -38,7 +38,19 @@ async function callAPI(action, payload = null) {
 window.onload = function() {
     const today = new Date();
     document.getElementById('entryDate').value = today.toISOString().split('T')[0];
-    callAPI('getDrugList').then(data => { drugDatabase = data; }).catch(err => onFail(err));
+    
+    const searchInput = document.getElementById('drugSearch');
+    searchInput.placeholder = "🔄 Downloading database..."; 
+    searchInput.disabled = true; 
+
+    callAPI('getDrugList').then(data => { 
+        drugDatabase = data; 
+        searchInput.placeholder = "🔍 Search Drug...";
+        searchInput.disabled = false;
+    }).catch(err => {
+        onFail(err);
+        searchInput.placeholder = "❌ Error loading data";
+    });
     
     const mainContainer = document.getElementById('mainContainer');
     const backBtn = document.getElementById('backToTop');
@@ -84,11 +96,20 @@ function adjustManageQty(amount) {
 
 const drugInput = document.getElementById('drugSearch');
 const drugList = document.getElementById('drugList');
-drugInput.addEventListener('input', function() {
-    const val = this.value.toLowerCase();
+
+// --- แก้ไข: แสดง Dropdown เฉพาะเมื่อมีคำค้นหา (val ไม่ว่าง) ---
+function renderDrugDropdown(query) {
     drugList.innerHTML = '';
-    if (val) { document.getElementById('clearSearchBtn').classList.remove('hidden'); } else { document.getElementById('clearSearchBtn').classList.add('hidden'); drugList.classList.add('hidden'); return; }
+    const val = query ? query.toLowerCase().trim() : "";
+    
+    // ถ้าไม่มีคำค้นหา ให้ซ่อน Dropdown ทันที (ไม่แสดง 10 รายการแรกแล้ว)
+    if (!val) {
+        drugList.classList.add('hidden');
+        return;
+    }
+
     const matches = drugDatabase.filter(d => d.displayName.toLowerCase().includes(val)).slice(0, 10);
+
     if (matches.length > 0) {
         drugList.classList.remove('hidden');
         matches.forEach(item => {
@@ -98,8 +119,20 @@ drugInput.addEventListener('input', function() {
             li.onclick = () => selectDrug(item);
             drugList.appendChild(li);
         });
-    } else { drugList.classList.add('hidden'); }
+    } else { 
+        drugList.classList.add('hidden'); 
+    }
+}
+
+drugInput.addEventListener('input', function() {
+    const val = this.value;
+    if (val) { document.getElementById('clearSearchBtn').classList.remove('hidden'); } 
+    else { document.getElementById('clearSearchBtn').classList.add('hidden'); }
+    renderDrugDropdown(val);
 });
+
+// ลบ Event 'focus' ออก เพื่อไม่ให้เด้งตอนคลิก
+// drugInput.addEventListener('focus', ...); <--- ลบส่วนนี้ออก
 
 function selectDrug(item) {
     drugInput.value = item.displayName;
@@ -113,7 +146,7 @@ function selectDrug(item) {
 function clearDrugSearch() {
     const input = document.getElementById('drugSearch');
     input.value = ''; input.focus();
-    document.getElementById('drugList').classList.add('hidden');
+    renderDrugDropdown(""); // ส่งค่าว่างไปเพื่อซ่อน list
     document.getElementById('clearSearchBtn').classList.add('hidden');
     document.getElementById('generic').value = '';
     document.getElementById('unit').value = '';
@@ -150,7 +183,7 @@ function handleFormSubmit(e) {
     const action = document.querySelector('input[name="actionType"]:checked').value;
     const note = document.getElementById('subNote').value.trim();
     if (['Other', 'ContactWH', 'ReturnWH'].includes(action) && !note) { Swal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.', confirmButtonColor: '#f59e0b', borderRadius: '1rem' }); return; }
-    Swal.fire({ title: 'Save Data?', text: "Please check details", icon: 'question', showCancelButton: true, confirmButtonColor: '#3b82f6', cancelButtonColor: '#cbd5e1', confirmButtonText: 'Yes, Save' }).then((result) => { if (result.isConfirmed) { submitDataToServer(); } });
+    Swal.fire({ title: 'Save Entry?', text: "Please check details", icon: 'question', showCancelButton: true, confirmButtonColor: '#3b82f6', cancelButtonColor: '#cbd5e1', confirmButtonText: 'Yes, Save' }).then((result) => { if (result.isConfirmed) { submitDataToServer(); } });
 }
 
 function submitDataToServer() {
@@ -164,13 +197,8 @@ function submitDataToServer() {
         document.getElementById('overlay').classList.add('hidden'); 
         if(res.success) { 
             Swal.fire({ icon: 'success', title: 'Saved!', timer: 1500, showConfirmButton: false }); 
-            
-            // Reset Form
             document.getElementById('expiryForm').reset(); 
-            
-            // --- FIX: Set Date back to Today ---
             document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
-            
             document.getElementById('qtyInput').value = ""; 
             document.getElementById('dynamicArea').classList.add('hidden'); 
             document.querySelectorAll('.action-card').forEach(el => el.style = ""); 
