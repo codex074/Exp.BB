@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Exp OPD</title>
-  <link rel="shortcut icon" href="icons/icon.ico" type="image/x-icon">
+  <title>OPD Pharmacy Expiry</title>
   
   <!-- PWA Meta Tags -->
   <link rel="manifest" href="manifest.json">
@@ -58,6 +57,12 @@
     }
     .custom-loader::before { margin: 4px; filter: hue-rotate(45deg); background-size: 8px 8px; animation-timing-function: linear; }
     @keyframes s2 { 100% { transform: rotate(.5turn) } }
+
+    /* Force date input height consistency on iOS */
+    input[type="date"] {
+      -webkit-appearance: none;
+      min-height: 4rem; /* h-16 equivalent */
+    }
   </style>
 </head>
 <body class="bg-slate-50 relative h-full w-full text-slate-800 overflow-hidden">
@@ -87,7 +92,6 @@
     </div>
 
     <!-- Content Area -->
-    <!-- Added overflow-x-hidden to prevent horizontal scroll -->
     <div id="mainContainer" class="flex-1 px-5 md:px-8 pb-32 overflow-y-auto overflow-x-hidden relative scroll-smooth">
       
       <!-- Tab 1: Add Entry -->
@@ -99,13 +103,15 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="group">
                 <label class="block text-lg font-bold text-slate-500 uppercase mb-2 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Transaction Date</label>
-                <input type="date" id="entryDate" name="entryDate" class="w-full p-4 rounded-2xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-xl text-slate-700 shadow-sm hover:border-blue-300" required>
+                <!-- Added h-16 to ensure equal height with Drug Name -->
+                <input type="date" id="entryDate" name="entryDate" class="w-full h-16 px-4 rounded-2xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-xl text-slate-700 shadow-sm hover:border-blue-300" required>
               </div>
               <div class="relative group">
                 <label class="block text-lg font-bold text-slate-500 uppercase mb-2 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Drug Name</label>
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-5 top-5 text-slate-400 z-10 group-hover:text-blue-500 transition-colors text-lg"></i>
-                    <input type="text" id="drugSearch" name="drugName" placeholder="Search Drug..." class="w-full pl-12 pr-12 p-4 rounded-2xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-xl shadow-sm hover:border-blue-300" autocomplete="off" required>
+                    <!-- Added h-16 here as well -->
+                    <input type="text" id="drugSearch" name="drugName" placeholder="Search Drug..." class="w-full h-16 pl-12 pr-12 px-4 rounded-2xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-xl shadow-sm hover:border-blue-300" autocomplete="off" required>
                     <button type="button" id="clearSearchBtn" onclick="clearDrugSearch()" class="absolute right-3 top-3 text-slate-400 hover:text-red-500 hidden z-20 w-10 h-10 rounded-full hover:bg-slate-100 transition flex items-center justify-center"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
                 <ul id="drugList" class="hidden absolute z-30 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto mt-2 overflow-hidden text-lg"></ul>
