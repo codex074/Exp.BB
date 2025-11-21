@@ -103,14 +103,12 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="group">
                 <label class="block text-lg font-bold text-slate-500 uppercase mb-2 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Transaction Date</label>
-                <!-- Added h-16 to ensure equal height with Drug Name -->
                 <input type="date" id="entryDate" name="entryDate" class="w-full h-16 px-4 rounded-2xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-xl text-slate-700 shadow-sm hover:border-blue-300" required>
               </div>
               <div class="relative group">
                 <label class="block text-lg font-bold text-slate-500 uppercase mb-2 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Drug Name</label>
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-5 top-5 text-slate-400 z-10 group-hover:text-blue-500 transition-colors text-lg"></i>
-                    <!-- Added h-16 here as well -->
                     <input type="text" id="drugSearch" name="drugName" placeholder="Search Drug..." class="w-full h-16 pl-12 pr-12 px-4 rounded-2xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-xl shadow-sm hover:border-blue-300" autocomplete="off" required>
                     <button type="button" id="clearSearchBtn" onclick="clearDrugSearch()" class="absolute right-3 top-3 text-slate-400 hover:text-red-500 hidden z-20 w-10 h-10 rounded-full hover:bg-slate-100 transition flex items-center justify-center"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
@@ -130,9 +128,10 @@
                  <div class="text-center mt-4"><span id="unitDisplay" class="bg-white text-blue-600 text-lg font-bold px-5 py-2 rounded-full border border-blue-100 shadow-sm">Unit</span></div>
               </div>
 
-              <div class="group h-full flex flex-col justify-center">
+              <!-- UPDATED: Expiry Date Input to match Transaction Date size (h-16) -->
+              <div class="group">
                  <label class="block text-lg font-bold text-slate-500 uppercase mb-2 tracking-wide ml-1 group-hover:text-red-500 transition-colors">Expiry Date</label>
-                 <input type="date" id="expiryDateInput" name="expiryDate" class="w-full p-4 rounded-2xl bg-red-50/50 border border-red-100 focus:border-red-400 outline-none text-red-700 font-medium text-xl shadow-sm hover:border-red-300 transition-all h-[110px]" required>
+                 <input type="date" id="expiryDateInput" name="expiryDate" class="w-full h-16 px-4 rounded-2xl bg-red-50/50 border border-red-100 focus:border-red-400 outline-none text-red-700 font-medium text-xl shadow-sm hover:border-red-300 transition-all" required>
               </div>
           </div>
 
