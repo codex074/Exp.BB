@@ -3,84 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>OPD Pharmacy Expiry</title>
-  
-  <!-- PWA Meta Tags -->
+  <title>Exp OPD</title>
+  <link rel="shortcut icon" href="icons/icon.ico" type="image/x-icon">
+
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   
-  <!-- Font Sarabun -->
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    /* Prevent body scroll entirely, handle scroll inside mainContainer */
     html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; font-family: 'Sarabun', sans-serif; background-color: #f0f2f5; touch-action: pan-y; }
-    
-    /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: rgba(241, 241, 241, 0.5); }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    
     .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    
     .action-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .action-card:hover { border-color: #60a5fa; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15); transform: translateY(-2px); }
-    
-    .action-card-input:checked + .action-card {
-      background: linear-gradient(135deg, #2563eb, #06b6d4); color: white; border-color: transparent;
-      box-shadow: 0 8px 20px rgba(6, 182, 212, 0.4); transform: scale(1.05) translateY(-2px);
-    }
+    .action-card-input:checked + .action-card { background: linear-gradient(135deg, #2563eb, #06b6d4); color: white; border-color: transparent; box-shadow: 0 8px 20px rgba(6, 182, 212, 0.4); transform: scale(1.05) translateY(-2px); }
     .action-card-input:checked + .action-card i, .action-card-input:checked + .action-card span { color: white !important; }
-    
     .modal-bg { background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
-    
-    /* Remove arrows from number input */
-    input[type=number]::-webkit-inner-spin-button, 
-    input[type=number]::-webkit-outer-spin-button { 
-      -webkit-appearance: none; 
-      margin: 0; 
-    }
-    
-    /* Custom Big Qty Input for inside boxes */
-    .big-qty-input { font-size: 2.5rem; font-weight: 700; text-align: center; color: #2563eb; background: transparent; }
-    .big-qty-input::placeholder { color: #e2e8f0; }
-
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     .back-to-top { position: fixed; bottom: 24px; right: 24px; z-index: 40; transition: all 0.3s; opacity: 0; visibility: hidden; transform: translateY(20px) scale(0.8); }
     .back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-    
-    /* Custom Loader */
     .custom-loader { width: 50px; height: 50px; display: grid; }
-    .custom-loader::before, .custom-loader::after {
-      content: ""; grid-area: 1/1; --c: radial-gradient(farthest-side,#2563eb 92%,#0000);
-      background: var(--c) 50% 0, var(--c) 50% 100%, var(--c) 100% 50%, var(--c) 0 50%;
-      background-size: 12px 12px; background-repeat: no-repeat; animation: s2 1s infinite;
-    }
+    .custom-loader::before, .custom-loader::after { content: ""; grid-area: 1/1; --c: radial-gradient(farthest-side,#2563eb 92%,#0000); background: var(--c) 50% 0, var(--c) 50% 100%, var(--c) 100% 50%, var(--c) 0 50%; background-size: 12px 12px; background-repeat: no-repeat; animation: s2 1s infinite; }
     .custom-loader::before { margin: 4px; filter: hue-rotate(45deg); background-size: 8px 8px; animation-timing-function: linear; }
     @keyframes s2 { 100% { transform: rotate(.5turn) } }
-
-    /* Force date input height consistency on iOS */
-    input[type="date"] {
-      -webkit-appearance: none;
-      min-height: 3rem; /* Adjusted for h-12 */
-    }
+    input[type="date"] { -webkit-appearance: none; min-height: 3rem; }
   </style>
 </head>
 <body class="bg-slate-50 relative h-full w-full text-slate-800 overflow-hidden">
-  
   <div class="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-400/30 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse z-0 pointer-events-none"></div>
   <div class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-400/30 rounded-full mix-blend-multiply filter blur-[80px] z-0 pointer-events-none"></div>
 
-  <!-- Main Container -->
   <div class="relative z-10 w-full md:max-w-5xl mx-auto bg-white/80 backdrop-blur-xl h-full md:h-[95vh] md:my-[2.5vh] md:rounded-[2.5rem] md:shadow-2xl md:border md:border-white/50 flex flex-col transition-all duration-300 overflow-hidden">
-    
-    <!-- Header -->
     <div class="bg-gradient-to-br from-blue-700 via-indigo-600 to-purple-700 p-5 md:rounded-t-[2.5rem] rounded-b-[2.5rem] shadow-lg shadow-indigo-200/50 text-white shrink-0 z-30 flex justify-between items-center relative overflow-hidden">
       <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-xl"></div>
       <div class="relative z-10">
@@ -92,66 +55,34 @@
       </a>
     </div>
 
-    <!-- Tab Navigation -->
     <div class="flex p-3 gap-3 shrink-0 mt-1 md:px-8">
-      <button onclick="switchTab('entry')" id="tab-entry" class="flex-1 py-2.5 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-200 transform scale-100"><i class="fa-solid fa-plus mr-1"></i> Add Entry</button>
-      <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-2.5 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-white text-slate-500 border border-slate-200"><i class="fa-solid fa-list-ul mr-1"></i> Manage List</button>
+      <button onclick="switchTab('entry')" id="tab-entry" class="flex-1 py-2.5 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-200 transform scale-100"><i class="fa-solid fa-plus mr-1"></i> Add Item</button>
+      <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-2.5 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-white text-slate-500 border border-slate-200"><i class="fa-solid fa-list-ul mr-1"></i> Manage Item</button>
     </div>
 
-    <!-- Content Area -->
     <div id="mainContainer" class="flex-1 px-5 md:px-8 pb-32 overflow-y-auto overflow-x-hidden relative scroll-smooth">
-      
-      <!-- Tab 1: Add Entry -->
       <div id="view-entry" class="fade-in space-y-4 pt-2">
         <form id="expiryForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
           <input type="hidden" id="generic" name="generic"><input type="hidden" id="unit" name="unit"><input type="hidden" id="strength" name="strength">
-
-          <!-- Row 1: Date & Search -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="group">
-                <label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Transaction Date</label>
-                <input type="date" id="entryDate" name="entryDate" class="w-full h-12 px-4 rounded-xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-lg text-slate-700 shadow-sm hover:border-blue-300" required>
-              </div>
-              <div class="relative group">
-                <label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Drug Name</label>
-                <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 z-10 group-hover:text-blue-500 transition-colors text-lg"></i>
-                    <input type="text" id="drugSearch" name="drugName" placeholder="Search Drug..." class="w-full h-12 pl-11 pr-10 px-4 rounded-xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-lg shadow-sm hover:border-blue-300" autocomplete="off" required>
-                    <button type="button" id="clearSearchBtn" onclick="clearDrugSearch()" class="absolute right-3 top-2.5 text-slate-400 hover:text-red-500 hidden z-20 w-8 h-8 rounded-full hover:bg-slate-100 transition flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
-                </div>
-                <ul id="drugList" class="hidden absolute z-30 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto mt-1 overflow-hidden text-base"></ul>
-              </div>
+              <div class="group"><label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Transaction Date</label><input type="date" id="entryDate" name="entryDate" class="w-full h-12 px-4 rounded-xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-lg text-slate-700 shadow-sm hover:border-blue-300" required></div>
+              <div class="relative group"><label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Drug Name</label><div class="relative"><i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 z-10 group-hover:text-blue-500 transition-colors text-lg"></i><input type="text" id="drugSearch" name="drugName" placeholder="Search Drug..." class="w-full h-12 pl-11 pr-10 px-4 rounded-xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-lg shadow-sm hover:border-blue-300" autocomplete="off" required><button type="button" id="clearSearchBtn" onclick="clearDrugSearch()" class="absolute right-3 top-2.5 text-slate-400 hover:text-red-500 hidden z-20 w-8 h-8 rounded-full hover:bg-slate-100 transition flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button></div><ul id="drugList" class="hidden absolute z-30 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto mt-1 overflow-hidden text-base"></ul></div>
           </div>
-
-          <!-- Row 2: Expiry (Moved Before) & Quantity (Gradient Box) -->
+          
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+              <div class="group"><label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-red-500 transition-colors">Expiry Date</label><input type="date" id="expiryDateInput" name="expiryDate" class="w-full h-12 px-4 rounded-xl bg-red-50/50 border border-red-100 focus:border-red-400 outline-none text-red-700 font-medium text-lg shadow-sm hover:border-red-300 transition-all" required></div>
               
-              <!-- Expiry Date: Resized to match Transaction Date (h-12) -->
               <div class="group">
-                 <label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-red-500 transition-colors">Expiry Date</label>
-                 <input type="date" id="expiryDateInput" name="expiryDate" class="w-full h-12 px-4 rounded-xl bg-red-50/50 border border-red-100 focus:border-red-400 outline-none text-red-700 font-medium text-lg shadow-sm hover:border-red-300 transition-all" required>
-              </div>
-
-              <!-- Quantity Section: Gradient Box (Compact with Corner Unit) -->
-              <div class="bg-gradient-to-b from-blue-50/80 to-white p-3 rounded-2xl border border-blue-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] flex flex-col items-center justify-center relative h-[100px]">
-                 <!-- Unit moved to top-right corner -->
-                 <span id="unitDisplay" class="absolute top-2 right-2 text-[10px] font-bold text-blue-500 bg-white px-2 py-0.5 rounded-lg border border-blue-100 shadow-sm uppercase tracking-wide">UNIT</span>
-                 
-                 <label class="block text-sm font-bold text-blue-800 uppercase mb-1 tracking-wide text-center">Quantity</label>
-                 <div class="flex items-center justify-center gap-4">
-                    <button type="button" onclick="adjustQty(-1)" class="w-10 h-10 rounded-full bg-white text-blue-600 shadow-sm border border-blue-100 hover:bg-blue-600 hover:text-white transition-all text-lg font-bold flex items-center justify-center active:scale-95"><i class="fa-solid fa-minus"></i></button>
-                    
-                    <div class="flex-1 max-w-[100px] border-b-2 border-blue-200 hover:border-blue-400 transition-colors">
-                        <input type="number" id="qtyInput" name="qty" class="big-qty-input w-full outline-none" placeholder="0" required>
-                    </div>
-                    
-                    <button type="button" onclick="adjustQty(1)" class="w-10 h-10 rounded-full bg-white text-blue-600 shadow-sm border border-blue-100 hover:bg-blue-600 hover:text-white transition-all text-lg font-bold flex items-center justify-center active:scale-95"><i class="fa-solid fa-plus"></i></button>
+                 <label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Quantity</label>
+                 <div class="flex items-center gap-2">
+                    <button type="button" onclick="adjustQty(-1)" class="w-12 h-12 rounded-xl bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 active:scale-95 transition-all text-lg font-bold flex items-center justify-center shadow-sm"><i class="fa-solid fa-minus"></i></button>
+                    <input type="number" id="qtyInput" name="qty" class="flex-1 h-12 text-center rounded-xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-bold text-xl text-slate-700 shadow-sm hover:border-blue-300" placeholder="0" required>
+                    <button type="button" onclick="adjustQty(1)" class="w-12 h-12 rounded-xl bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 active:scale-95 transition-all text-lg font-bold flex items-center justify-center shadow-sm"><i class="fa-solid fa-plus"></i></button>
+                    <span id="unitDisplay" class="h-12 px-4 rounded-xl bg-blue-600 text-white font-bold border border-blue-600 flex items-center justify-center shadow-sm text-sm tracking-wider min-w-[60px]">UNIT</span>
                  </div>
               </div>
           </div>
-
-          <div>
-            <label class="block text-base font-bold text-slate-500 uppercase mb-2 tracking-wide ml-1">Management Action <span class="text-red-500">*</span></label>
+          <div><label class="block text-base font-bold text-slate-500 uppercase mb-2 tracking-wide ml-1">Management Action <span class="text-red-500">*</span></label>
             <div class="grid grid-cols-3 md:grid-cols-6 gap-2">
               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Sticker" class="action-card-input hidden" required onchange="toggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 shadow-sm group-hover:border-orange-300"><i class="fa-solid fa-tags text-xl text-orange-500 mb-0.5"></i><span class="text-sm font-bold text-slate-600">ติด Sticker</span></div></label>
               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Transfer" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 shadow-sm group-hover:border-blue-300"><i class="fa-solid fa-share-from-square text-xl text-blue-500 mb-0.5"></i><span class="text-sm font-bold text-slate-600">ส่งต่อ</span></div></label>
@@ -161,7 +92,6 @@
               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Other" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 shadow-sm group-hover:border-gray-300"><i class="fa-solid fa-ellipsis text-xl text-gray-500 mb-0.5"></i><span class="text-sm font-bold text-slate-600">อื่นๆ</span></div></label>
             </div>
           </div>
-
           <div id="dynamicArea" class="p-4 bg-slate-100/80 rounded-2xl border border-slate-200 hidden fade-in">
             <label class="block text-base font-bold text-slate-500 mb-2 uppercase" id="dynamicLabel">Additional Details</label>
             <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm space-y-2">
@@ -169,62 +99,23 @@
                 <div class="space-y-2"><textarea id="subNote" placeholder="Note (Optional)..." class="w-full p-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-400 outline-none transition-colors text-base" rows="2"></textarea></div>
             </div>
           </div>
-
           <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-blue-200/50 btn-hover flex justify-center items-center gap-2 text-lg mt-4"><i class="fa-solid fa-save"></i> Save Data</button>
         </form>
       </div>
 
-      <!-- Tab 2: View Report -->
       <div id="view-report" class="hidden fade-in pt-2 space-y-4">
         <div class="grid grid-cols-2 gap-4 sticky top-0 bg-white/90 backdrop-blur p-3 -mx-3 z-20 rounded-b-2xl border-b border-slate-100">
-           <div>
-               <label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Timeframe</label>
-               <div class="relative">
-                 <select id="filterTime" onchange="toggleCustomDate()" class="appearance-none w-full text-base p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 shadow-sm outline-none font-medium focus:border-blue-400 focus:bg-white transition-colors">
-                    <option value="all">All Time</option>
-                    <option value="30">Next 30 Days</option>
-                    <option value="90">Next 3 Months</option>
-                    <option value="180">Next 6 Months</option>
-                    <option value="custom">Custom...</option>
-                 </select>
-                 <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i>
-               </div>
-           </div>
-           <div>
-               <label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Action Type</label>
-               <div class="relative">
-                 <select id="filterAction" onchange="renderReport()" class="appearance-none w-full text-base p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 shadow-sm outline-none font-medium focus:border-blue-400 focus:bg-white transition-colors"><option value="all">All Types</option><option value="Sticker">ติด Sticker</option><option value="Transfer">ส่งต่อห้องยา</option><option value="Separate">แยกเก็บ</option><option value="ContactWH">ติดต่อคลัง</option><option value="ReturnWH">คืนคลัง</option></select>
-                 <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i>
-               </div>
-           </div>
+           <div><label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Timeframe</label><div class="relative"><select id="filterTime" onchange="toggleCustomDate()" class="appearance-none w-full text-base p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 shadow-sm outline-none font-medium focus:border-blue-400 focus:bg-white transition-colors"><option value="all">All Time</option><option value="30">Next 30 Days</option><option value="90">Next 3 Months</option><option value="180">Next 6 Months</option><option value="custom">Custom...</option></select><i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i></div></div>
+           <div><label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Action Type</label><div class="relative"><select id="filterAction" onchange="renderReport()" class="appearance-none w-full text-base p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 shadow-sm outline-none font-medium focus:border-blue-400 focus:bg-white transition-colors"><option value="all">All Types</option><option value="Sticker">ติด Sticker</option><option value="Transfer">ส่งต่อห้องยา</option><option value="Separate">แยกเก็บ</option><option value="ContactWH">ติดต่อคลัง</option><option value="ReturnWH">คืนคลัง</option></select><i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i></div></div>
         </div>
-
-        <div id="customDateContainer" class="hidden bg-slate-50 p-3 rounded-xl border border-slate-200 flex gap-2 items-center fade-in">
-            <input type="number" id="customNumber" placeholder="Qty" oninput="renderReport()" class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none text-center focus:border-blue-400">
-            <select id="customUnit" onchange="renderReport()" class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none bg-white focus:border-blue-400">
-                <option value="days">Days</option>
-                <option value="months">Months</option>
-            </select>
-            <span class="text-xs text-slate-400 whitespace-nowrap font-medium">from now</span>
-        </div>
-
-        <!-- Report List -->
-        <div id="reportList" class="grid grid-cols-1 md:grid-cols-2 gap-3 pb-24 min-h-[300px]">
-             <!-- Content via JS -->
-        </div>
-
-        <div id="paginationControls" class="flex justify-between items-center pt-4 pb-24 hidden">
-            <button onclick="prevPage()" id="btnPrev" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50">Previous</button>
-            <span id="pageIndicator" class="text-sm font-bold text-slate-400">Page 1</span>
-            <button onclick="nextPage()" id="btnNext" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50">Next</button>
-        </div>
+        <div id="customDateContainer" class="hidden bg-slate-50 p-3 rounded-xl border border-slate-200 flex gap-2 items-center fade-in"><input type="number" id="customNumber" placeholder="Qty" oninput="renderReport()" class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none text-center focus:border-blue-400"><select id="customUnit" onchange="renderReport()" class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none bg-white focus:border-blue-400"><option value="days">Days</option><option value="months">Months</option></select><span class="text-xs text-slate-400 whitespace-nowrap font-medium">from now</span></div>
+        <div id="reportList" class="grid grid-cols-1 md:grid-cols-2 gap-3 pb-24 min-h-[300px]"></div>
+        <div id="paginationControls" class="flex justify-between items-center pt-4 pb-24 hidden"><button onclick="prevPage()" id="btnPrev" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50">Previous</button><span id="pageIndicator" class="text-sm font-bold text-slate-400">Page 1</span><button onclick="nextPage()" id="btnNext" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50">Next</button></div>
       </div>
       <div class="h-10"></div>
     </div>
-    
     <button id="backToTop" onclick="scrollToTop()" class="back-to-top w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-400/30 flex items-center justify-center hover:scale-110 active:scale-90"><i class="fa-solid fa-arrow-up text-xl"></i></button>
 
-    <!-- Manage Modal -->
     <div id="manageModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md md:max-w-lg h-[85vh] flex flex-col overflow-hidden transform transition-all scale-100">
             <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-5 text-white flex justify-between items-center shrink-0 relative overflow-hidden">
@@ -236,28 +127,18 @@
             </div>
             <div class="p-5 overflow-y-auto flex-1 space-y-5 scroll-smooth">
                 <input type="hidden" id="manageRowIndex"><input type="hidden" id="manageMaxQty">
+                <input type="hidden" id="manageOriginalAction">
                 
-                <!-- Modal Quantity (Restored Box Style) -->
                 <div class="bg-slate-50 p-4 rounded-3xl border border-slate-200 text-center relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.03)]">
-                    <!-- Unit moved to top-right -->
-                    <span id="manageUnit" class="absolute top-3 right-3 text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-lg border border-slate-200 shadow-sm uppercase">UNIT</span>
-                    
-                    <label class="block text-base font-bold text-slate-400 uppercase mb-2 tracking-wide">Manage Quantity</label>
-                    <div class="flex items-center justify-center gap-6 mb-3">
-                        <button type="button" onclick="editStockQty()" class="w-12 h-12 rounded-full border-2 border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group active:scale-95">
-                            <i class="fa-solid fa-minus text-lg"></i>
-                        </button>
-                        
-                        <div class="flex-1 max-w-[100px] border-b-2 border-blue-200 hover:border-blue-400 transition-colors">
-                            <input type="number" id="manageQty" class="big-qty-input w-full outline-none" placeholder="0">
-                        </div>
-
-                        <button type="button" onclick="setAllQty()" class="w-12 h-12 rounded-full border-2 border-blue-100 text-blue-500 bg-blue-50 hover:bg-blue-100 transition-all duration-200 flex items-center justify-center font-bold text-xs active:scale-95">ALL</button>
+                    <div class="absolute top-3 right-3 bg-white text-slate-400 text-[10px] font-bold px-2 py-1 rounded-lg border border-slate-200 shadow-sm uppercase">TAB</div>
+                    <label class="block text-base font-bold text-slate-400 uppercase mb-3 tracking-wide">Manage Quantity</label>
+                    <div class="flex items-center justify-center gap-4 mb-4">
+                        <button type="button" onclick="adjustManageQty(-1)" class="w-12 h-12 rounded-full border-2 border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group active:scale-95"><i class="fa-solid fa-minus text-lg"></i></button>
+                        <div class="flex-1 max-w-[100px] border-b-2 border-blue-200 hover:border-blue-400 transition-colors"><input type="number" id="manageQty" class="big-qty-input w-full outline-none" placeholder="0"></div>
+                        <button type="button" onclick="adjustManageQty(1)" class="w-12 h-12 rounded-full border-2 border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group active:scale-95"><i class="fa-solid fa-plus text-lg"></i></button>
+                        <button type="button" onclick="setAllQty()" class="w-12 h-12 rounded-full border-2 border-blue-100 text-blue-500 bg-white hover:bg-blue-50 transition-all duration-200 flex items-center justify-center font-bold text-xs active:scale-95 shadow-sm">ALL</button>
                     </div>
-                    <div class="text-xs text-slate-400 bg-white px-3 py-1 rounded-full border border-slate-100 inline-flex items-center gap-2">
-                        Current: <span id="displayMaxQty" class="font-bold text-slate-700 text-sm">0</span> 
-                        <button onclick="editStockQty()" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen-to-square"></i></button>
-                    </div>
+                    <div class="text-xs text-slate-400 bg-white px-3 py-1 rounded-full border border-slate-100 inline-flex items-center gap-2">Current: <span id="displayMaxQty" class="font-bold text-slate-700 text-sm">0</span> <span id="manageUnit" class="text-[10px] font-bold text-blue-500 uppercase">UNIT</span><button onclick="editStockQty()" class="text-blue-500 hover:text-blue-700 ml-1"><i class="fa-solid fa-pen-to-square"></i></button></div>
                 </div>
 
                 <div>

@@ -19,20 +19,20 @@ function doGet(e) {
 }
 
 function doPost(e) {
-  // รับข้อมูลจาก fetch (JSON String)
   const data = JSON.parse(e.postData.contents);
   const action = data.action;
+  const payload = data.payload || {}; 
   let result = {};
 
   try {
     if (action === 'saveData') {
-      result = saveData(data.payload);
+      result = saveData(payload);
     } else if (action === 'deleteItem') {
-      result = deleteItem(data.rowIndex);
+      result = deleteItem(payload.rowIndex);
     } else if (action === 'manageItem') {
-      result = manageItem(data.rowIndex, data.manageQty, data.newAction, data.newDetails, data.newNotes);
+      result = manageItem(payload.rowIndex, payload.manageQty, payload.newAction, payload.newDetails, payload.newNotes);
     } else if (action === 'updateStockQuantity') {
-      result = updateStockQuantity(data.rowIndex, data.newQty);
+      result = updateStockQuantity(payload.rowIndex, payload.newQty);
     }
   } catch (err) {
     result = { success: false, message: err.toString() };
@@ -42,7 +42,7 @@ function doPost(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// --- Functions เดิม (คงไว้เหมือนเดิม) ---
+// --- Functions ---
 
 function getDrugList() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -57,9 +57,14 @@ function getDrugList() {
 }
 
 function logActionToSheet(ss, drugName, qty, action, details) {
-  let sheet = ss.getSheetByName('action');
-  if (!sheet) sheet = ss.insertSheet('action');
-  if (sheet.getLastRow() === 0) {
+  const logSheetName = 'action.log';
+  let sheet = ss.getSheetByName(logSheetName);
+  if (!sheet) {
+    sheet = ss.insertSheet(logSheetName);
+    const header = ['Timestamp', 'Drug Name', 'Quantity Managed', 'Action Type', 'Details'];
+    sheet.appendRow(header);
+    sheet.getRange(1, 1, 1, header.length).setFontWeight("bold").setBackground("#f3f4f6");
+  } else if (sheet.getLastRow() === 0) {
     const header = ['Timestamp', 'Drug Name', 'Quantity Managed', 'Action Type', 'Details'];
     sheet.appendRow(header);
   }
@@ -105,17 +110,19 @@ function getReportData() {
 function deleteItem(rowIndex) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName('data');
-  const rowData = sheet.getRange(rowIndex, 1, 1, 10).getDisplayValues()[0];
+  const idx = parseInt(rowIndex);
+  const rowData = sheet.getRange(idx, 1, 1, 10).getDisplayValues()[0];
   logActionToSheet(ss, rowData[1], rowData[4], "Deleted", "User deleted entire row");
-  sheet.deleteRow(rowIndex);
+  sheet.deleteRow(idx);
   return { success: true, message: "Deleted successfully" };
 }
 
 function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName('data');
-  const range = sheet.getRange(rowIndex, 1, 1, 10);
-  const originalData = range.getValues()[0];
+  const idx = parseInt(rowIndex);
+  const range = sheet.getRange(idx, 1, 1, 10);
+  const originalData = range.getValues()[0]; // Get raw values to preserve Date object
   const currentQty = parseInt(originalData[4]) || 0;
   const reqQty = parseInt(manageQty);
   const drugName = originalData[1];
@@ -127,19 +134,29 @@ function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
   logActionToSheet(ss, drugName, reqQty, newAction, detailLog);
 
   if (reqQty === currentQty) {
-      sheet.getRange(rowIndex, 8).setValue(newAction);
-      sheet.getRange(rowIndex, 9).setValue(newDetails);
-      sheet.getRange(rowIndex, 10).setValue(newNotes);
+      // Update existing row
+      sheet.getRange(idx, 8).setValue(newAction);
+      sheet.getRange(idx, 9).setValue(newDetails);
+      sheet.getRange(idx, 10).setValue(newNotes);
       return { success: true, message: "Updated all items successfully" };
   } else {
+      // Split row
       const remainQty = currentQty - reqQty;
-      sheet.getRange(rowIndex, 5).setValue("'" + remainQty);
+      sheet.getRange(idx, 5).setValue("'" + remainQty);
+      
       const newRow = [...originalData];
       newRow[0] = new Date();
       newRow[4] = "'" + reqQty;
       newRow[7] = newAction;
       newRow[8] = newDetails;
       newRow[9] = newNotes;
+
+      // *** FIX: Ensure Expiry Date (Index 6) is preserved correctly ***
+      if (originalData[6] instanceof Date) {
+        // Format date to string 'yyyy-MM-dd' to prevent timezone shifts
+        newRow[6] = Utilities.formatDate(originalData[6], ss.getSpreadsheetTimeZone(), "yyyy-MM-dd");
+      }
+
       sheet.appendRow(newRow);
       return { success: true, message: `Split ${reqQty} items successfully` };
   }
@@ -148,9 +165,10 @@ function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
 function updateStockQuantity(rowIndex, newQty) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName('data');
-  const oldQty = sheet.getRange(rowIndex, 5).getValue();
-  const drugName = sheet.getRange(rowIndex, 2).getValue();
+  const idx = parseInt(rowIndex);
+  const oldQty = sheet.getRange(idx, 5).getValue();
+  const drugName = sheet.getRange(idx, 2).getValue();
   logActionToSheet(ss, drugName, newQty, "Stock Correction", `Adjusted from ${oldQty} to ${newQty}`);
-  sheet.getRange(rowIndex, 5).setValue("'" + newQty);
+  sheet.getRange(idx, 5).setValue("'" + newQty);
   return { success: true, message: "Stock adjusted successfully" };
 }
