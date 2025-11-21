@@ -5,6 +5,7 @@ let reportData = [];
 let currentPage = 1;
 const itemsPerPage = 10;
 let filteredDataCache = [];
+let isReportLoaded = false;
 
 const actionStyles = {
     'Sticker': { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', label: 'Sticker', icon: 'fa-tags' },
@@ -39,18 +40,8 @@ window.onload = function() {
     const today = new Date();
     document.getElementById('entryDate').value = today.toISOString().split('T')[0];
     
-    const searchInput = document.getElementById('drugSearch');
-    searchInput.placeholder = "🔄 Downloading database..."; 
-    searchInput.disabled = true; 
-
-    callAPI('getDrugList').then(data => { 
-        drugDatabase = data; 
-        searchInput.placeholder = "🔍 Search Drug...";
-        searchInput.disabled = false;
-    }).catch(err => {
-        onFail(err);
-        searchInput.placeholder = "❌ Error loading data";
-    });
+    // --- เรียกใช้ฟังก์ชันโหลดข้อมูลทันทีที่เปิดเว็บ ---
+    refreshData();
     
     const mainContainer = document.getElementById('mainContainer');
     const backBtn = document.getElementById('backToTop');
@@ -58,6 +49,60 @@ window.onload = function() {
         if (mainContainer.scrollTop > 300) { backBtn.classList.add('show'); } else { backBtn.classList.remove('show'); }
     });
 };
+
+// --- ฟังก์ชันโหลดรายชื่อยา (ใช้ทั้งตอนเริ่มและตอนกดปุ่ม) ---
+function refreshData() {
+    const btn = document.getElementById('btnRefresh');
+    const icon = document.getElementById('iconRefresh');
+    const searchInput = document.getElementById('drugSearch');
+
+    // เริ่มสถานะ Loading
+    icon.classList.add('fa-spin');
+    searchInput.placeholder = "Downloading database...";
+    searchInput.disabled = true; // ล็อกไว้ก่อนกันพิมพ์ตอนยังไม่มา
+    
+    callAPI('getDrugList').then(data => { 
+        drugDatabase = data; 
+        
+        // โหลดเสร็จแล้ว
+        icon.classList.remove('fa-spin');
+        searchInput.disabled = false;
+        searchInput.value = "";
+        searchInput.classList.remove('bg-slate-50');
+        searchInput.classList.add('bg-white');
+        searchInput.placeholder = "🔍 Search Drug...";
+        
+        // แจ้งเตือนเล็กๆ ว่าพร้อมใช้งาน (เฉพาะถ้ากดปุ่มรีเฟรชเอง แต่ถ้า Auto load ตอนแรกอาจจะไม่ต้องแจ้งก็ได้)
+        // const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, timerProgressBar: true });
+        // Toast.fire({ icon: 'success', title: 'Database Ready' });
+
+    }).catch(err => {
+        onFail(err);
+        icon.classList.remove('fa-spin');
+        searchInput.placeholder = "❌ Error. Try again.";
+    });
+}
+
+function forceRefreshReport() {
+    const btn = document.getElementById('btnReportRefresh');
+    const icon = btn.querySelector('i');
+    
+    icon.classList.add('fa-spin');
+    btn.disabled = true;
+    btn.classList.add('opacity-75');
+
+    loadReport().then(() => {
+        icon.classList.remove('fa-spin');
+        btn.disabled = false;
+        btn.classList.remove('opacity-75');
+        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        Toast.fire({ icon: 'success', title: 'List Updated' });
+    }).catch(() => {
+        icon.classList.remove('fa-spin');
+        btn.disabled = false;
+        btn.classList.remove('opacity-75');
+    });
+}
 
 function onFail(err) {
     document.getElementById('overlay').classList.add('hidden');
@@ -71,6 +116,7 @@ function switchTab(tab) {
     const btnReport = document.getElementById('tab-report');
     const viewEntry = document.getElementById('view-entry');
     const viewReport = document.getElementById('view-report');
+    
     if (tab === 'entry') {
         btnEntry.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-200 transform scale-100";
         btnReport.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-white text-slate-500 hover:bg-slate-50 border border-slate-200";
@@ -79,7 +125,10 @@ function switchTab(tab) {
         btnReport.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-100";
         btnEntry.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-white text-slate-500 hover:bg-slate-50 border border-slate-200";
         viewEntry.classList.add('hidden'); viewReport.classList.remove('hidden');
-        loadReport();
+        
+        if (!isReportLoaded) {
+            loadReport();
+        }
     }
     scrollToTop();
 }
@@ -97,12 +146,10 @@ function adjustManageQty(amount) {
 const drugInput = document.getElementById('drugSearch');
 const drugList = document.getElementById('drugList');
 
-// --- แก้ไข: แสดง Dropdown เฉพาะเมื่อมีคำค้นหา (val ไม่ว่าง) ---
 function renderDrugDropdown(query) {
     drugList.innerHTML = '';
     const val = query ? query.toLowerCase().trim() : "";
     
-    // ถ้าไม่มีคำค้นหา ให้ซ่อน Dropdown ทันที (ไม่แสดง 10 รายการแรกแล้ว)
     if (!val) {
         drugList.classList.add('hidden');
         return;
@@ -131,9 +178,6 @@ drugInput.addEventListener('input', function() {
     renderDrugDropdown(val);
 });
 
-// ลบ Event 'focus' ออก เพื่อไม่ให้เด้งตอนคลิก
-// drugInput.addEventListener('focus', ...); <--- ลบส่วนนี้ออก
-
 function selectDrug(item) {
     drugInput.value = item.displayName;
     document.getElementById('generic').value = item.generic;
@@ -146,7 +190,7 @@ function selectDrug(item) {
 function clearDrugSearch() {
     const input = document.getElementById('drugSearch');
     input.value = ''; input.focus();
-    renderDrugDropdown(""); // ส่งค่าว่างไปเพื่อซ่อน list
+    renderDrugDropdown(""); 
     document.getElementById('clearSearchBtn').classList.add('hidden');
     document.getElementById('generic').value = '';
     document.getElementById('unit').value = '';
@@ -203,7 +247,10 @@ function submitDataToServer() {
             document.getElementById('dynamicArea').classList.add('hidden'); 
             document.querySelectorAll('.action-card').forEach(el => el.style = ""); 
             clearDrugSearch(); 
-            scrollToTop(); 
+            scrollToTop();
+            
+            // รีเซ็ต report เมื่อมีการบันทึกใหม่
+            isReportLoaded = false; 
         } else { 
             Swal.fire('Error', res.message, 'error'); 
         } 
@@ -213,7 +260,12 @@ function submitDataToServer() {
 function loadReport() {
     currentPage = 1;
     document.getElementById('reportList').innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-slate-400 min-h-[60vh]"><div class="custom-loader mb-4"></div>Loading Data...</div>';
-    callAPI('getReportData').then(data => { reportData = data; renderReport(); }).catch(err => onFail(err));
+    
+    return callAPI('getReportData').then(data => { 
+        reportData = data; 
+        isReportLoaded = true; 
+        renderReport(); 
+    }).catch(err => onFail(err));
 }
 
 function renderReport() {
@@ -306,7 +358,7 @@ function editStockQty() {
            document.getElementById('overlay').classList.remove('hidden');
            callAPI('updateStockQuantity', { rowIndex: rowIndex, newQty: result.value }).then(res => {
                document.getElementById('overlay').classList.add('hidden');
-               if(res.success) { Swal.fire({ icon: 'success', title: 'Stock Updated', timer: 1000, showConfirmButton: false }); loadReport(); }
+               if(res.success) { Swal.fire({ icon: 'success', title: 'Stock Updated', timer: 1000, showConfirmButton: false }); loadReport().then(() => isReportLoaded=true); }
                else { Swal.fire('Error', res.message, 'error'); }
            }).catch(err => onFail(err));
        }
@@ -321,7 +373,6 @@ function submitManagement() {
     if(!manageQty || parseInt(manageQty) <= 0) { Swal.fire('Warning', 'Invalid Quantity', 'warning'); return; }
     if(parseInt(manageQty) > parseInt(document.getElementById('manageMaxQty').value)) { Swal.fire('Warning', 'Exceed Stock', 'warning'); return; }
     
-    // Logic: If no action selected, use original action. If action selected, validate note.
     let actionToSubmit = originalAction;
     if (actionEl) {
         actionToSubmit = actionEl.value;
@@ -349,7 +400,10 @@ function processManagement(manageQty, action) {
     callAPI('manageItem', { rowIndex: rowIndex, manageQty: manageQty, newAction: action, newDetails: subVal, newNotes: noteVal })
         .then(res => {
             document.getElementById('overlay').classList.add('hidden');
-            if (res.success) { Swal.fire({ icon: 'success', title: 'Success', text: res.message, timer: 1500, showConfirmButton: false }); loadReport(); }
+            if (res.success) { 
+                Swal.fire({ icon: 'success', title: 'Success', text: res.message, timer: 1500, showConfirmButton: false }); 
+                loadReport().then(() => isReportLoaded=true); 
+            }
             else { Swal.fire('Error', res.message, 'error'); }
         })
         .catch(err => onFail(err));
@@ -363,7 +417,10 @@ function confirmDelete() {
             document.getElementById('overlay').classList.remove('hidden');
             callAPI('deleteItem', { rowIndex: rowIndex }).then(res => {
                 document.getElementById('overlay').classList.add('hidden');
-                if(res.success) { Swal.fire({ icon: 'success', title: 'Deleted', timer: 1000, showConfirmButton: false }); loadReport(); }
+                if(res.success) { 
+                    Swal.fire({ icon: 'success', title: 'Deleted', timer: 1000, showConfirmButton: false }); 
+                    loadReport().then(() => isReportLoaded=true); 
+                }
                 else { Swal.fire('Error', res.message, 'error'); }
             }).catch(err => onFail(err));
         }
