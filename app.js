@@ -400,7 +400,6 @@ function processManagement(manageQty, action) {
         .catch(err => onFail(err));
 }
 
-// --- Update: Confirm Delete with PIN ---
 function confirmDelete() {
     const rowIndex = document.getElementById('manageRowIndex').value;
     
@@ -409,7 +408,7 @@ function confirmDelete() {
         html: `
             <p class="text-slate-500 text-sm mb-3">This action cannot be undone.</p>
             <div class="mb-3">
-                <input type="password" id="deletePin" class="w-full p-3 rounded-xl border border-slate-200 outline-none text-center text-lg tracking-widest font-bold focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all" placeholder="Enter PIN (1234)" maxlength="4">
+                <input type="password" id="deletePin" class="w-full p-3 rounded-xl border border-slate-200 outline-none text-center text-lg tracking-widest font-bold focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all" placeholder="Enter PIN" maxlength="4">
             </div>
             <textarea id="deleteNote" class="w-full p-3 rounded-xl border border-slate-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none transition-all text-base text-slate-600" rows="2" placeholder="Reason for deletion (Optional)..."></textarea>
         `,
