@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>OPD Pharmacy</title>
+  <title>Exp OPD</title>
   <link rel="shortcut icon" href="icons/icon.ico" type="image/x-icon">
 
+  <!-- PWA Meta Tags -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   
+  <!-- Font Sarabun -->
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -114,12 +116,14 @@
     </div>
 
     <div id="mainContainer" class="flex-1 px-5 md:px-8 pb-32 overflow-y-auto overflow-x-hidden relative scroll-smooth">
+      <!-- TAB 1: ADD ITEM -->
       <div id="view-entry" class="fade-in space-y-4 pt-2">
         <form id="expiryForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
           <input type="hidden" id="generic" name="generic"><input type="hidden" id="unit" name="unit"><input type="hidden" id="strength" name="strength">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="group"><label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Transaction Date</label><input type="date" id="entryDate" name="entryDate" class="w-full h-12 px-4 rounded-xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-lg text-slate-700 shadow-sm hover:border-blue-300" required></div>
               
+              <!-- Drug Search with Manual Refresh -->
               <div class="relative group">
                   <label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Drug Name</label>
                   <div class="flex gap-2">
@@ -136,6 +140,7 @@
               </div>
           </div>
           
+          <!-- Quantity & Expiry Section -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
               <div class="group">
                   <label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-red-500 transition-colors">Expiry Date</label>
@@ -178,6 +183,7 @@
         </form>
       </div>
 
+      <!-- TAB 2: MANAGE ITEM -->
       <div id="view-report" class="hidden fade-in pt-2 space-y-4">
         <div class="sticky top-0 bg-white/90 backdrop-blur p-3 -mx-3 z-20 rounded-b-2xl border-b border-slate-100">
            <div class="grid grid-cols-2 gap-4 mb-3">
@@ -185,13 +191,14 @@
                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Action Type</label><div class="relative"><select id="filterAction" onchange="renderReport()" class="appearance-none w-full text-base p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 shadow-sm outline-none font-medium focus:border-blue-400 focus:bg-white transition-colors"><option value="all">All Types</option><option value="Sticker">ติด Sticker</option><option value="Transfer">ส่งต่อห้องยา</option><option value="Separate">แยกเก็บ</option><option value="ContactWH">ติดต่อคลัง</option><option value="ReturnWH">คืนคลัง</option></select><i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i></div></div>
            </div>
            
+           <!-- Refresh List Button -->
            <button onclick="forceRefreshReport()" id="btnReportRefresh" class="w-full py-2 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 font-bold text-sm hover:bg-blue-100 transition-colors flex items-center justify-center gap-2">
                <i class="fa-solid fa-arrows-rotate"></i> Refresh List
            </button>
         </div>
 
         <div id="customDateContainer" class="hidden bg-slate-50 p-3 rounded-xl border border-slate-200 flex gap-2 items-center fade-in"><input type="number" id="customNumber" placeholder="Qty" oninput="renderReport()" class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none text-center focus:border-blue-400"><select id="customUnit" onchange="renderReport()" class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none bg-white focus:border-blue-400"><option value="days">Days</option><option value="months">Months</option></select><span class="text-xs text-slate-400 whitespace-nowrap font-medium">from now</span></div>
-        <div id="reportList" class="grid grid-cols-1 md:grid-cols-2 gap-3 pb-24 min-h-[300px]"></div>
+        <div id="reportList" class="grid grid-cols-1 md:grid-cols-2 gap-3 pb-24 min-h-[300px]"><!-- Content via JS --></div>
         <div id="paginationControls" class="flex justify-between items-center pt-4 pb-24 hidden"><button onclick="prevPage()" id="btnPrev" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50">Previous</button><span id="pageIndicator" class="text-sm font-bold text-slate-400">Page 1</span><button onclick="nextPage()" id="btnNext" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50">Next</button></div>
       </div>
       <div class="h-10"></div>
@@ -205,7 +212,8 @@
                   <h3 class="font-medium text-blue-200 text-sm flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Manage Item</h3>
                   <p class="text-xl font-bold text-white mt-1 leading-tight drop-shadow-sm" id="manageDrugName">Drug Name</p>
                 </div>
-                <button onclick="closeManageModal()" class="relative z-10 w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 hover:rotate-90 transition-all"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <!-- แก้ไข: เปลี่ยนปุ่มปิดเป็นสีแดง -->
+                <button onclick="closeManageModal()" class="relative z-10 w-9 h-9 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-all shadow-md"><i class="fa-solid fa-xmark text-lg text-white"></i></button>
             </div>
             <div class="p-5 overflow-y-auto flex-1 space-y-5 scroll-smooth">
                 <input type="hidden" id="manageRowIndex"><input type="hidden" id="manageMaxQty">
@@ -216,7 +224,7 @@
                     <label class="block text-base font-bold text-slate-400 uppercase mb-3 tracking-wide">Manage Quantity</label>
                     <div class="flex items-center justify-center gap-4 mb-4">
                         <button type="button" onclick="adjustManageQty(-1)" class="w-12 h-12 rounded-full border-2 border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group active:scale-95"><i class="fa-solid fa-minus text-lg"></i></button>
-                        <div class="flex-1 max-w-[100px] border-b-2 border-blue-200 hover:border-blue-400 transition-colors"><input type="number" id="manageQty" class="big-qty-input w-full outline-none" placeholder="0"></div>
+                        <div class="flex-1 max-w-[100px] border-b-2 border-blue-200 hover:border-blue-400 transition-colors"><input type="number" id="manageQty" class="w-full outline-none text-center text-3xl font-bold text-blue-600 bg-transparent" placeholder="0"></div>
                         <button type="button" onclick="adjustManageQty(1)" class="w-12 h-12 rounded-full border-2 border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group active:scale-95"><i class="fa-solid fa-plus text-lg"></i></button>
                         <button type="button" onclick="setAllQty()" class="w-12 h-12 rounded-full border-2 border-blue-100 text-blue-500 bg-white hover:bg-blue-50 transition-all duration-200 flex items-center justify-center font-bold text-xs active:scale-95 shadow-sm">ALL</button>
                     </div>
