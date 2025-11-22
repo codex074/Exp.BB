@@ -5,7 +5,7 @@ let reportData = [];
 let currentPage = 1;
 const itemsPerPage = 10;
 let filteredDataCache = [];
-let isReportLoaded = false;
+let isReportLoaded = false; 
 
 const actionStyles = {
     'Sticker': { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', label: 'Sticker', icon: 'fa-tags' },
@@ -40,7 +40,6 @@ window.onload = function() {
     const today = new Date();
     document.getElementById('entryDate').value = today.toISOString().split('T')[0];
     
-    // --- เรียกใช้ฟังก์ชันโหลดข้อมูลทันทีที่เปิดเว็บ ---
     refreshData();
     
     const mainContainer = document.getElementById('mainContainer');
@@ -49,60 +48,6 @@ window.onload = function() {
         if (mainContainer.scrollTop > 300) { backBtn.classList.add('show'); } else { backBtn.classList.remove('show'); }
     });
 };
-
-// --- ฟังก์ชันโหลดรายชื่อยา (ใช้ทั้งตอนเริ่มและตอนกดปุ่ม) ---
-function refreshData() {
-    const btn = document.getElementById('btnRefresh');
-    const icon = document.getElementById('iconRefresh');
-    const searchInput = document.getElementById('drugSearch');
-
-    // เริ่มสถานะ Loading
-    icon.classList.add('fa-spin');
-    searchInput.placeholder = "Downloading database...";
-    searchInput.disabled = true; // ล็อกไว้ก่อนกันพิมพ์ตอนยังไม่มา
-    
-    callAPI('getDrugList').then(data => { 
-        drugDatabase = data; 
-        
-        // โหลดเสร็จแล้ว
-        icon.classList.remove('fa-spin');
-        searchInput.disabled = false;
-        searchInput.value = "";
-        searchInput.classList.remove('bg-slate-50');
-        searchInput.classList.add('bg-white');
-        searchInput.placeholder = "🔍 Search Drug...";
-        
-        // แจ้งเตือนเล็กๆ ว่าพร้อมใช้งาน (เฉพาะถ้ากดปุ่มรีเฟรชเอง แต่ถ้า Auto load ตอนแรกอาจจะไม่ต้องแจ้งก็ได้)
-        // const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, timerProgressBar: true });
-        // Toast.fire({ icon: 'success', title: 'Database Ready' });
-
-    }).catch(err => {
-        onFail(err);
-        icon.classList.remove('fa-spin');
-        searchInput.placeholder = "❌ Error. Try again.";
-    });
-}
-
-function forceRefreshReport() {
-    const btn = document.getElementById('btnReportRefresh');
-    const icon = btn.querySelector('i');
-    
-    icon.classList.add('fa-spin');
-    btn.disabled = true;
-    btn.classList.add('opacity-75');
-
-    loadReport().then(() => {
-        icon.classList.remove('fa-spin');
-        btn.disabled = false;
-        btn.classList.remove('opacity-75');
-        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-        Toast.fire({ icon: 'success', title: 'List Updated' });
-    }).catch(() => {
-        icon.classList.remove('fa-spin');
-        btn.disabled = false;
-        btn.classList.remove('opacity-75');
-    });
-}
 
 function onFail(err) {
     document.getElementById('overlay').classList.add('hidden');
@@ -145,6 +90,32 @@ function adjustManageQty(amount) {
 
 const drugInput = document.getElementById('drugSearch');
 const drugList = document.getElementById('drugList');
+
+function refreshData() {
+    const btn = document.getElementById('btnRefresh');
+    const icon = document.getElementById('iconRefresh');
+    const searchInput = document.getElementById('drugSearch');
+
+    icon.classList.add('fa-spin');
+    searchInput.placeholder = "Downloading database...";
+    searchInput.disabled = true; 
+    
+    callAPI('getDrugList').then(data => { 
+        drugDatabase = data; 
+        
+        icon.classList.remove('fa-spin');
+        searchInput.disabled = false;
+        searchInput.value = "";
+        searchInput.classList.remove('bg-slate-50');
+        searchInput.classList.add('bg-white');
+        searchInput.placeholder = "🔍 Search Drug...";
+        
+    }).catch(err => {
+        onFail(err);
+        icon.classList.remove('fa-spin');
+        searchInput.placeholder = "❌ Error. Try again.";
+    });
+}
 
 function renderDrugDropdown(query) {
     drugList.innerHTML = '';
@@ -249,12 +220,32 @@ function submitDataToServer() {
             clearDrugSearch(); 
             scrollToTop();
             
-            // รีเซ็ต report เมื่อมีการบันทึกใหม่
             isReportLoaded = false; 
         } else { 
             Swal.fire('Error', res.message, 'error'); 
         } 
     }).catch(err => onFail(err));
+}
+
+function forceRefreshReport() {
+    const btn = document.getElementById('btnReportRefresh');
+    const icon = btn.querySelector('i');
+    
+    icon.classList.add('fa-spin');
+    btn.disabled = true;
+    btn.classList.add('opacity-75');
+
+    loadReport().then(() => {
+        icon.classList.remove('fa-spin');
+        btn.disabled = false;
+        btn.classList.remove('opacity-75');
+        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        Toast.fire({ icon: 'success', title: 'List Updated' });
+    }).catch(() => {
+        icon.classList.remove('fa-spin');
+        btn.disabled = false;
+        btn.classList.remove('opacity-75');
+    });
 }
 
 function loadReport() {
@@ -409,16 +400,55 @@ function processManagement(manageQty, action) {
         .catch(err => onFail(err));
 }
 
+// --- Update: Confirm Delete with PIN ---
 function confirmDelete() {
     const rowIndex = document.getElementById('manageRowIndex').value;
-    Swal.fire({ title: 'Delete Item?', text: "Cannot be undone", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Delete' }).then((result) => {
+    
+    Swal.fire({
+        title: 'Delete Item?',
+        html: `
+            <p class="text-slate-500 text-sm mb-3">This action cannot be undone.</p>
+            <div class="mb-3">
+                <input type="password" id="deletePin" class="w-full p-3 rounded-xl border border-slate-200 outline-none text-center text-lg tracking-widest font-bold focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all" placeholder="Enter PIN (1234)" maxlength="4">
+            </div>
+            <textarea id="deleteNote" class="w-full p-3 rounded-xl border border-slate-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none transition-all text-base text-slate-600" rows="2" placeholder="Reason for deletion (Optional)..."></textarea>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Verify & Delete',
+        cancelButtonText: 'Cancel',
+        didOpen: () => {
+            const pinInput = document.getElementById('deletePin');
+            if(pinInput) pinInput.focus();
+        },
+        preConfirm: () => {
+            const pin = document.getElementById('deletePin').value;
+            const note = document.getElementById('deleteNote').value;
+            
+            if (!pin) {
+                Swal.showValidationMessage('Please enter PIN');
+                return false;
+            }
+            
+            if (pin !== '1234') {
+                Swal.showValidationMessage('Incorrect PIN Code');
+                return false;
+            }
+            
+            return note;
+        }
+    }).then((result) => {
         if (result.isConfirmed) {
+            const userNote = result.value || ""; 
+            
             closeManageModal();
             document.getElementById('overlay').classList.remove('hidden');
-            callAPI('deleteItem', { rowIndex: rowIndex }).then(res => {
+            
+            callAPI('deleteItem', { rowIndex: rowIndex, note: userNote }).then(res => {
                 document.getElementById('overlay').classList.add('hidden');
                 if(res.success) { 
-                    Swal.fire({ icon: 'success', title: 'Deleted', timer: 1000, showConfirmButton: false }); 
+                    Swal.fire({ icon: 'success', title: 'Deleted', text: 'Item removed successfully', timer: 1500, showConfirmButton: false }); 
                     loadReport().then(() => isReportLoaded=true); 
                 }
                 else { Swal.fire('Error', res.message, 'error'); }
