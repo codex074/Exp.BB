@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Exp OPD</title>
+  <title>OPD Pharmacy</title>
   <link rel="shortcut icon" href="icons/icon.ico" type="image/x-icon">
 
   <!-- PWA Meta Tags -->
@@ -42,18 +42,52 @@
     .animation-delay-2000 { animation-delay: 2s; }
     .animation-delay-4000 { animation-delay: 4s; }
 
-    .action-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .action-card:hover { border-color: #60a5fa; box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15); transform: translateY(-3px); }
-    
-    /* Active State Gradient Border Effect */
-    .action-card-input:checked + .action-card { 
-        background: linear-gradient(135deg, #2563eb, #4f46e5); 
-        color: white; 
-        border-color: transparent; 
-        box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); 
-        transform: scale(1.02) translateY(-2px); 
+    /* --- ACTION BUTTON STYLE (Updated: Allow original colors) --- */
+    .action-card {
+        /* Layout */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        border-radius: 1rem; 
+        height: 100%;
+        
+        /* Default Style */
+        background-color: #eff6ff; 
+        /* color: #2563eb;  <-- REMOVED: Let icons have their own colors */
+        color: #334155; /* Default text color slate-700 */
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
-    .action-card-input:checked + .action-card i, .action-card-input:checked + .action-card span { color: white !important; }
+
+    /* Hover Effect */
+    .action-card:hover {
+        background-color: #2563eb;
+        box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.3); 
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    /* Checked State */
+    .action-card-input:checked + .action-card {
+        background-color: #2563eb;
+        box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.3);
+        color: #fff;
+        transform: scale(1.02);
+    }
+
+    /* Force icons to be white ONLY on Hover or Checked state */
+    .action-card:hover i, 
+    .action-card:hover span,
+    .action-card-input:checked + .action-card i,
+    .action-card-input:checked + .action-card span {
+        color: white !important;
+        transition: color 0.3s ease;
+    }
     
     .modal-bg { background-color: rgba(15, 23, 42, 0.3); backdrop-filter: blur(8px); }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -112,7 +146,7 @@
     .custom-btn:hover { transform: scale(1.05); transition: transform 0.4s ease-out; }
     .custom-btn:active { transform: scale(0.95); }
 
-    /* --- NEW DELETE BUTTON STYLE (Matches Uiverse.io image) --- */
+    /* --- NEW DELETE BUTTON STYLE --- */
     .bin-button {
       display: flex;
       flex-direction: column;
@@ -145,18 +179,17 @@
       transform: scale(0.9);
     }
 
-    /* --- NEW SAVE/UPDATE BUTTON STYLE (From Uiverse.io by Allyhere) --- */
-    /* Adjusted colors to match Blue/Purple Theme */
+    /* --- NEW SAVE/UPDATE BUTTON STYLE --- */
     .btn-donate {
       --clr-font-main: hsla(0 0% 20% / 100);
       --btn-bg-1: hsla(217 100% 56% / 1);   /* Blue */
       --btn-bg-2: hsla(260 100% 60% / 1);   /* Purple */
       --btn-bg-color: hsla(360 100% 100% / 1);
-      --radii: 1rem; /* Adjusted radius to match app style */
+      --radii: 1rem; 
       cursor: pointer;
       padding: 0.9em 1.4em;
       min-width: 120px;
-      min-height: 55px; /* Match delete button height */
+      min-height: 55px; 
       font-size: var(--size, 1rem);
       font-weight: 700;
       transition: 0.8s;
@@ -282,13 +315,14 @@
           </div>
 
           <div><label class="block text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider ml-1">Management Action <span class="text-red-500">*</span></label>
+            <!-- Updated Action Cards Layout: Added color classes back -->
             <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Sticker" class="action-card-input hidden" required onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-tags text-2xl text-orange-500"></i><span class="text-sm font-bold text-slate-600">ติด Sticker</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Transfer" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-share-from-square text-2xl text-blue-500"></i><span class="text-sm font-bold text-slate-600">ส่งต่อ</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Separate" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span class="text-sm font-bold text-slate-600">แยกเก็บ</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ContactWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span class="text-sm font-bold text-slate-600">ติดต่อคลัง</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ReturnWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span class="text-sm font-bold text-slate-600">คืนคลัง</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Other" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span class="text-sm font-bold text-slate-600">อื่นๆ</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Sticker" class="action-card-input hidden" required onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-tags text-2xl text-orange-500"></i><span class="text-sm font-bold text-slate-600">ติด Sticker</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Transfer" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-share-from-square text-2xl text-blue-500"></i><span class="text-sm font-bold text-slate-600">ส่งต่อ</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Separate" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span class="text-sm font-bold text-slate-600">แยกเก็บ</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ContactWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span class="text-sm font-bold text-slate-600">ติดต่อคลัง</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ReturnWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span class="text-sm font-bold text-slate-600">คืนคลัง</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Other" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span class="text-sm font-bold text-slate-600">อื่นๆ</span></div></label>
             </div>
           </div>
           <div id="dynamicArea" class="p-5 bg-slate-50/80 backdrop-blur-sm rounded-3xl border border-slate-200 hidden fade-in">
@@ -358,13 +392,14 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider ml-1">New Status</label>
+                    <!-- Updated Action Cards Layout: Added color classes back -->
                     <div class="grid grid-cols-3 gap-3">
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Sticker" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-tags text-2xl text-orange-500"></i><span class="text-xs font-bold text-slate-600">Sticker</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Transfer" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-share-from-square text-2xl text-blue-500"></i><span class="text-xs font-bold text-slate-600">ส่งต่อ</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Separate" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span class="text-xs font-bold text-slate-600">แยกเก็บ</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ContactWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span class="text-xs font-bold text-slate-600">แจ้งคลัง</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ReturnWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span class="text-xs font-bold text-slate-600">คืนคลัง</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Other" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span class="text-xs font-bold text-slate-600">อื่นๆ</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Sticker" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-tags text-2xl text-orange-500"></i><span class="text-xs font-bold text-slate-600">Sticker</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Transfer" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-share-from-square text-2xl text-blue-500"></i><span class="text-xs font-bold text-slate-600">ส่งต่อ</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Separate" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span class="text-xs font-bold text-slate-600">แยกเก็บ</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ContactWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span class="text-xs font-bold text-slate-600">แจ้งคลัง</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ReturnWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span class="text-xs font-bold text-slate-600">คืนคลัง</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Other" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span class="text-xs font-bold text-slate-600">อื่นๆ</span></div></label>
                     </div>
                 </div>
 
