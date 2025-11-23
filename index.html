@@ -20,24 +20,52 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; font-family: 'Sarabun', sans-serif; background-color: #f0f2f5; touch-action: pan-y; }
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; font-family: 'Sarabun', sans-serif; background-color: #f8fafc; touch-action: pan-y; }
+    
+    /* Modern Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(241, 241, 241, 0.5); }
+    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .fade-in { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Animation for Background Blobs */
+    @keyframes float {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .animate-blob { animation: float 7s infinite; }
+    .animation-delay-2000 { animation-delay: 2s; }
+    .animation-delay-4000 { animation-delay: 4s; }
+
     .action-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .action-card:hover { border-color: #60a5fa; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15); transform: translateY(-2px); }
-    .action-card-input:checked + .action-card { background: linear-gradient(135deg, #2563eb, #06b6d4); color: white; border-color: transparent; box-shadow: 0 8px 20px rgba(6, 182, 212, 0.4); transform: scale(1.05) translateY(-2px); }
+    .action-card:hover { border-color: #60a5fa; box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15); transform: translateY(-3px); }
+    
+    /* Active State Gradient Border Effect */
+    .action-card-input:checked + .action-card { 
+        background: linear-gradient(135deg, #2563eb, #4f46e5); 
+        color: white; 
+        border-color: transparent; 
+        box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); 
+        transform: scale(1.02) translateY(-2px); 
+    }
     .action-card-input:checked + .action-card i, .action-card-input:checked + .action-card span { color: white !important; }
-    .modal-bg { background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
+    
+    .modal-bg { background-color: rgba(15, 23, 42, 0.3); backdrop-filter: blur(8px); }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    
     .back-to-top { position: fixed; bottom: 24px; right: 24px; z-index: 40; transition: all 0.3s; opacity: 0; visibility: hidden; transform: translateY(20px) scale(0.8); }
     .back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+    
     .custom-loader { width: 50px; height: 50px; display: grid; }
     .custom-loader::before, .custom-loader::after { content: ""; grid-area: 1/1; --c: radial-gradient(farthest-side,#2563eb 92%,#0000); background: var(--c) 50% 0, var(--c) 50% 100%, var(--c) 100% 50%, var(--c) 0 50%; background-size: 12px 12px; background-repeat: no-repeat; animation: s2 1s infinite; }
     .custom-loader::before { margin: 4px; filter: hue-rotate(45deg); background-size: 8px 8px; animation-timing-function: linear; }
     @keyframes s2 { 100% { transform: rotate(.5turn) } }
+    
     input[type="date"] { -webkit-appearance: none; min-height: 3rem; }
 
     /* --- Custom Button Styles (Soft & Unified) --- */
@@ -70,7 +98,6 @@
       transition: transform 0.3s ease;
     }
 
-    /* Shared Soft Style for BOTH Plus and Minus */
     .btn-minus .custom-btn-front,
     .btn-plus .custom-btn-front {
       background: #ffffff; 
@@ -79,181 +106,297 @@
     
     .btn-minus i,
     .btn-plus i {
-      color: #94a3b8; /* Soft Slate color */
+      color: #94a3b8; 
     }
 
-    /* Hover Animation */
-    .custom-btn:hover {
-      transform: scale(1.05);
-      transition: transform 0.4s ease-out;
+    .custom-btn:hover { transform: scale(1.05); transition: transform 0.4s ease-out; }
+    .custom-btn:active { transform: scale(0.95); }
+
+    /* --- NEW DELETE BUTTON STYLE (Matches Uiverse.io image) --- */
+    .bin-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 55px;
+      height: 55px;
+      border-radius: 15px;
+      background-color: rgb(255, 95, 95);
+      cursor: pointer;
+      border: 3px solid rgb(255, 201, 201);
+      transition-duration: 0.3s;
+      box-shadow: 0 4px 6px rgba(255, 95, 95, 0.3);
     }
-    
-    /* Click Animation */
-    .custom-btn:active {
-      transform: scale(0.95);
+    .bin-bottom {
+      width: 15px;
+    }
+    .bin-top {
+      width: 17px;
+      transform-origin: right;
+      transition-duration: 0.3s;
+    }
+    .bin-button:hover .bin-top {
+      transform: rotate(45deg);
+    }
+    .bin-button:hover {
+      background-color: rgb(255, 0, 0);
+    }
+    .bin-button:active {
+      transform: scale(0.9);
+    }
+
+    /* --- NEW SAVE/UPDATE BUTTON STYLE (From Uiverse.io by Allyhere) --- */
+    /* Adjusted colors to match Blue/Purple Theme */
+    .btn-donate {
+      --clr-font-main: hsla(0 0% 20% / 100);
+      --btn-bg-1: hsla(217 100% 56% / 1);   /* Blue */
+      --btn-bg-2: hsla(260 100% 60% / 1);   /* Purple */
+      --btn-bg-color: hsla(360 100% 100% / 1);
+      --radii: 1rem; /* Adjusted radius to match app style */
+      cursor: pointer;
+      padding: 0.9em 1.4em;
+      min-width: 120px;
+      min-height: 55px; /* Match delete button height */
+      font-size: var(--size, 1rem);
+      font-weight: 700;
+      transition: 0.8s;
+      background-size: 280% auto;
+      background-image: linear-gradient(
+        325deg,
+        var(--btn-bg-2) 0%,
+        var(--btn-bg-1) 55%,
+        var(--btn-bg-2) 90%
+      );
+      border: none;
+      border-radius: var(--radii);
+      color: var(--btn-bg-color);
+      box-shadow:
+        0px 0px 20px rgba(71, 184, 255, 0.3),
+        0px 5px 5px -1px rgba(58, 125, 233, 0.25),
+        inset 4px 4px 8px rgba(175, 230, 255, 0.2),
+        inset -4px -4px 8px rgba(19, 95, 216, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-donate:hover {
+      background-position: right top;
+    }
+
+    .btn-donate:is(:focus, :focus-visible, :active) {
+      outline: none;
+      box-shadow:
+        0 0 0 3px var(--btn-bg-color),
+        0 0 0 6px var(--btn-bg-2);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn-donate {
+        transition: linear;
+      }
     }
   </style>
 </head>
-<body class="bg-slate-50 relative h-full w-full text-slate-800 overflow-hidden">
-  <div class="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-400/30 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse z-0 pointer-events-none"></div>
-  <div class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-400/30 rounded-full mix-blend-multiply filter blur-[80px] z-0 pointer-events-none"></div>
+<body class="bg-slate-50 relative h-full w-full text-slate-800 overflow-hidden selection:bg-blue-100 selection:text-blue-600">
+  
+  <!-- Animated Background Elements -->
+  <div class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob z-0 pointer-events-none"></div>
+  <div class="fixed top-[10%] right-[-10%] w-[400px] h-[400px] bg-blue-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-2000 z-0 pointer-events-none"></div>
+  <div class="fixed bottom-[-10%] left-[20%] w-[450px] h-[450px] bg-indigo-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-4000 z-0 pointer-events-none"></div>
 
-  <div class="relative z-10 w-full md:max-w-5xl mx-auto bg-white/80 backdrop-blur-xl h-full md:h-[95vh] md:my-[2.5vh] md:rounded-[2.5rem] md:shadow-2xl md:border md:border-white/50 flex flex-col transition-all duration-300 overflow-hidden">
-    <div class="bg-gradient-to-br from-blue-700 via-indigo-600 to-purple-700 p-5 md:rounded-t-[2.5rem] rounded-b-[2.5rem] shadow-lg shadow-indigo-200/50 text-white shrink-0 z-30 flex justify-between items-center relative overflow-hidden">
-      <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-xl"></div>
+  <!-- Main Glass Container -->
+  <div class="relative z-10 w-full md:max-w-5xl mx-auto bg-white/70 backdrop-blur-2xl h-full md:h-[95vh] md:my-[2.5vh] md:rounded-[2.5rem] md:shadow-2xl md:border md:border-white/60 flex flex-col transition-all duration-300 overflow-hidden ring-1 ring-white/50">
+    
+    <!-- Header -->
+    <div class="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-6 md:rounded-t-[2.5rem] rounded-b-[2.5rem] shadow-lg shadow-indigo-500/20 text-white shrink-0 z-30 flex justify-between items-center relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+      <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-10 -mb-10 blur-xl"></div>
       <div class="relative z-10">
-        <h1 class="text-2xl font-bold flex items-center gap-2 tracking-tight"><i class="fa-solid fa-prescription-bottle-medical text-blue-200"></i> OPD Pharmacy</h1>
-        <p class="text-blue-100 text-base opacity-90 font-medium tracking-wide">Expiry Management System</p>
+        <h1 class="text-2xl font-extrabold flex items-center gap-3 tracking-tight"><i class="fa-solid fa-prescription-bottle-medical text-blue-200"></i> OPD Pharmacy</h1>
+        <p class="text-blue-100 text-sm opacity-80 font-medium tracking-wide mt-0.5">Expiry Management System</p>
       </div>
-      <a href="https://docs.google.com/spreadsheets/d/1l7gEdZJrgfTbXPF3wWyM1DjfALJIKLM8zokXEfZLw_k/edit?usp=sharing" target="_blank" class="relative z-10 w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center text-white border border-white/30 hover:scale-110 hover:rotate-12 transition-all duration-300 shadow-md cursor-pointer">
-        <i class="fa-solid fa-table-cells text-lg"></i>
+      <!-- Google Sheets Link Button -->
+      <a href="https://docs.google.com/spreadsheets/d/1l7gEdZJrgfTbXPF3wWyM1DjfALJIKLM8zokXEfZLw_k/edit?usp=sharing" target="_blank" class="relative z-10 w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-lg cursor-pointer group hover:scale-110 transition-all duration-300 border-2 border-[#1D6F42]">
+        <!-- Google Sheets SVG Logo -->
+        <svg class="w-6 h-6" viewBox="0 0 87.3 113.2" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#1D6F42" d="M5.9 0h53.2l28.2 28.2v79.1c0 3.2-2.6 5.9-5.9 5.9H5.9c-3.2 0-5.9-2.6-5.9-5.9V5.9C0 2.6 2.6 0 5.9 0z"/>
+            <path fill="#47C67F" d="M59.1 0v28.2h28.2L59.1 0z"/>
+            <path fill="#FFF" d="M19.1 23.5h36.4v9.1H19.1zM19.1 41.7h49.1v9.1H19.1zM19.1 59.8h49.1v9.1H19.1zM19.1 78h49.1v9.1H19.1z"/>
+        </svg>
       </a>
     </div>
 
-    <div class="flex p-3 gap-3 shrink-0 mt-1 md:px-8">
-      <button onclick="switchTab('entry')" id="tab-entry" class="flex-1 py-2.5 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-200 transform scale-100"><i class="fa-solid fa-plus mr-1"></i> Add Item</button>
-      <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-2.5 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-white text-slate-500 border border-slate-200"><i class="fa-solid fa-list-ul mr-1"></i> Manage Item</button>
+    <!-- Tabs -->
+    <div class="flex p-4 gap-3 shrink-0 md:px-8">
+      <button onclick="switchTab('entry')" id="tab-entry" class="flex-1 py-3 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-500/30 transform scale-100"><i class="fa-solid fa-plus mr-2"></i> Add Item</button>
+      <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-3 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-white/50 hover:bg-white text-slate-500 border border-slate-200/60 backdrop-blur-sm"><i class="fa-solid fa-list-ul mr-2"></i> Manage Item</button>
     </div>
 
     <div id="mainContainer" class="flex-1 px-5 md:px-8 pb-32 overflow-y-auto overflow-x-hidden relative scroll-smooth">
       <!-- TAB 1: ADD ITEM -->
-      <div id="view-entry" class="fade-in space-y-4 pt-2">
-        <form id="expiryForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+      <div id="view-entry" class="fade-in space-y-5 pt-2">
+        <form id="expiryForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
           <input type="hidden" id="generic" name="generic"><input type="hidden" id="unit" name="unit"><input type="hidden" id="strength" name="strength">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="group"><label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Transaction Date</label><input type="date" id="entryDate" name="entryDate" class="w-full h-12 px-4 rounded-xl bg-white border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-lg text-slate-700 shadow-sm hover:border-blue-300" required></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="group"><label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Transaction Date</label><input type="date" id="entryDate" name="entryDate" class="w-full h-12 px-4 rounded-2xl bg-white/80 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-lg text-slate-700 shadow-sm" required></div>
               
-              <!-- Drug Search with Manual Refresh -->
+              <!-- Drug Search -->
               <div class="relative group">
-                  <label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Drug Name</label>
+                  <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Drug Name</label>
                   <div class="flex gap-2">
                       <div class="relative flex-1">
-                          <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 z-10 group-hover:text-blue-500 transition-colors text-lg"></i>
-                          <input type="text" id="drugSearch" name="drugName" placeholder="Tap Refresh button first..." class="w-full h-12 pl-11 pr-10 px-4 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 outline-none transition-all font-medium text-lg shadow-sm hover:border-blue-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed" autocomplete="off" required disabled>
+                          <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 z-10 group-focus-within:text-blue-500 transition-colors text-lg"></i>
+                          <input type="text" id="drugSearch" name="drugName" placeholder="Tap Refresh button first..." class="w-full h-12 pl-11 pr-10 px-4 rounded-2xl bg-white/80 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-lg shadow-sm disabled:bg-slate-50 disabled:text-slate-400" autocomplete="off" required disabled>
                           <button type="button" id="clearSearchBtn" onclick="clearDrugSearch()" class="absolute right-3 top-2.5 text-slate-400 hover:text-red-500 hidden z-20 w-8 h-8 rounded-full hover:bg-slate-100 transition flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
                       </div>
-                      <button type="button" onclick="refreshData()" id="btnRefresh" class="w-12 h-12 rounded-xl bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 shadow-sm flex items-center justify-center transition-all active:scale-95" title="Load Data">
+                      <button type="button" onclick="refreshData()" id="btnRefresh" class="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 shadow-sm flex items-center justify-center transition-all active:scale-95" title="Load Data">
                           <i class="fa-solid fa-arrows-rotate text-xl" id="iconRefresh"></i>
                       </button>
                   </div>
-                  <ul id="drugList" class="hidden absolute z-30 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto mt-1 overflow-hidden text-base"></ul>
+                  <ul id="drugList" class="hidden absolute z-30 w-full bg-white/90 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-xl max-h-60 overflow-y-auto mt-2 overflow-hidden text-base divide-y divide-slate-50"></ul>
               </div>
           </div>
           
           <!-- Quantity & Expiry Section -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
               <div class="group">
-                  <label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-red-500 transition-colors">Expiry Date</label>
-                  <input type="date" id="expiryDateInput" name="expiryDate" class="w-full h-16 px-4 rounded-2xl bg-red-50/50 border border-red-100 focus:border-red-400 outline-none text-red-700 font-bold text-xl shadow-sm hover:border-red-300 transition-all" required>
+                  <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Expiry Date</label>
+                  <input type="date" id="expiryDateInput" name="expiryDate" class="w-full h-16 px-4 rounded-2xl bg-red-50/50 border border-red-100 focus:border-red-400 focus:ring-4 focus:ring-red-400/10 outline-none text-red-600 font-bold text-xl shadow-sm transition-all" required>
               </div>
               
               <div class="group">
-                 <label class="block text-base font-bold text-slate-500 uppercase mb-1.5 tracking-wide ml-1 group-hover:text-blue-600 transition-colors">Quantity</label>
-                 <div class="flex items-center gap-2"> 
+                 <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Quantity</label>
+                 <div class="flex items-center gap-3"> 
                     <button type="button" onclick="adjustQty(-1)" class="custom-btn btn-minus">
                         <div class="custom-btn-front"><i class="fa-solid fa-minus text-xl"></i></div>
                     </button>
-                    <input type="number" id="qtyInput" name="qty" class="flex-1 min-w-0 h-16 text-center rounded-2xl bg-white border-2 border-slate-200 focus:border-blue-500 outline-none transition-all font-bold text-3xl text-slate-700 shadow-sm hover:border-blue-300" placeholder="0" required>
+                    <input type="number" id="qtyInput" name="qty" class="flex-1 min-w-0 h-16 text-center rounded-2xl bg-white border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-3xl text-slate-700 shadow-sm" placeholder="0" required>
                     <button type="button" onclick="adjustQty(1)" class="custom-btn btn-plus">
                         <div class="custom-btn-front"><i class="fa-solid fa-plus text-xl"></i></div>
                     </button>
-                    <span id="unitDisplay" class="h-16 px-2 rounded-2xl bg-blue-600 text-white font-bold border border-blue-600 flex items-center justify-center shadow-sm text-sm tracking-wider min-w-[50px] uppercase">UNIT</span>
+                    <span id="unitDisplay" class="h-16 px-2 rounded-2xl bg-slate-100 text-slate-500 font-bold border border-slate-200 flex items-center justify-center shadow-sm text-sm tracking-wider min-w-[50px] uppercase">UNIT</span>
                  </div>
               </div>
           </div>
 
-          <div><label class="block text-base font-bold text-slate-500 uppercase mb-2 tracking-wide ml-1">Management Action <span class="text-red-500">*</span></label>
-            <div class="grid grid-cols-3 md:grid-cols-6 gap-2">
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Sticker" class="action-card-input hidden" required onchange="toggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 shadow-sm group-hover:border-orange-300"><i class="fa-solid fa-tags text-xl text-orange-500 mb-0.5"></i><span class="text-sm font-bold text-slate-600">ติด Sticker</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Transfer" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 shadow-sm group-hover:border-blue-300"><i class="fa-solid fa-share-from-square text-xl text-blue-500 mb-0.5"></i><span class="text-sm font-bold text-slate-600">ส่งต่อ</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Separate" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 shadow-sm group-hover:border-red-300"><i class="fa-solid fa-box-open text-xl text-red-500 mb-0.5"></i><span class="text-sm font-bold text-slate-600">แยกเก็บ</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ContactWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 shadow-sm group-hover:border-teal-300"><i class="fa-solid fa-phone-volume text-xl text-teal-500 mb-0.5"></i><span class="text-sm font-bold text-slate-600">ติดต่อคลัง</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ReturnWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 shadow-sm group-hover:border-green-300"><i class="fa-solid fa-truck-ramp-box text-xl text-green-500 mb-0.5"></i><span class="text-sm font-bold text-slate-600">คืนคลัง</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Other" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 shadow-sm group-hover:border-gray-300"><i class="fa-solid fa-ellipsis text-xl text-gray-500 mb-0.5"></i><span class="text-sm font-bold text-slate-600">อื่นๆ</span></div></label>
+          <div><label class="block text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider ml-1">Management Action <span class="text-red-500">*</span></label>
+            <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Sticker" class="action-card-input hidden" required onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-tags text-2xl text-orange-500"></i><span class="text-sm font-bold text-slate-600">ติด Sticker</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Transfer" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-share-from-square text-2xl text-blue-500"></i><span class="text-sm font-bold text-slate-600">ส่งต่อ</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Separate" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span class="text-sm font-bold text-slate-600">แยกเก็บ</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ContactWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span class="text-sm font-bold text-slate-600">ติดต่อคลัง</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ReturnWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span class="text-sm font-bold text-slate-600">คืนคลัง</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Other" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span class="text-sm font-bold text-slate-600">อื่นๆ</span></div></label>
             </div>
           </div>
-          <div id="dynamicArea" class="p-4 bg-slate-100/80 rounded-2xl border border-slate-200 hidden fade-in">
-            <label class="block text-base font-bold text-slate-500 mb-2 uppercase" id="dynamicLabel">Additional Details</label>
-            <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm space-y-2">
-                <select id="inputTransfer" class="dynamic-input hidden w-full p-3 rounded-lg bg-slate-50 border border-slate-100 outline-none focus:border-blue-400 text-base"><option value="" disabled selected>-- เลือกปลายทาง --</option><option value="IPD MED">IPD MED</option><option value="IPD SURG">IPD SURG</option><option value="OPD SURG">OPD SURG</option><option value="ER">ER</option></select>
-                <div class="space-y-2"><textarea id="subNote" placeholder="Note (Optional)..." class="w-full p-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-400 outline-none transition-colors text-base" rows="2"></textarea></div>
+          <div id="dynamicArea" class="p-5 bg-slate-50/80 backdrop-blur-sm rounded-3xl border border-slate-200 hidden fade-in">
+            <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider" id="dynamicLabel">Additional Details</label>
+            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <select id="inputTransfer" class="dynamic-input hidden w-full p-3 rounded-xl bg-slate-50 border border-slate-100 outline-none focus:border-blue-400 focus:bg-white text-base"><option value="" disabled selected>-- เลือกปลายทาง --</option><option value="IPD MED">IPD MED</option><option value="IPD SURG">IPD SURG</option><option value="OPD SURG">OPD SURG</option><option value="ER">ER</option></select>
+                <div class="space-y-2"><textarea id="subNote" placeholder="Note (Optional)..." class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-base" rows="2"></textarea></div>
             </div>
           </div>
-          <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-blue-200/50 btn-hover flex justify-center items-center gap-2 text-lg mt-4"><i class="fa-solid fa-save"></i> Save Data</button>
+          <!-- New Styled Save Button -->
+          <button type="submit" class="btn-donate w-full mt-6 text-lg group">
+              <i class="fa-solid fa-save group-hover:scale-110 transition-transform"></i> Save Data
+          </button>
         </form>
       </div>
 
       <!-- TAB 2: MANAGE ITEM -->
       <div id="view-report" class="hidden fade-in pt-2 space-y-4">
-        <div class="sticky top-0 bg-white/90 backdrop-blur p-3 -mx-3 z-20 rounded-b-2xl border-b border-slate-100">
+        <div class="sticky top-0 bg-white/80 backdrop-blur-md p-4 -mx-4 z-20 rounded-b-3xl border-b border-slate-100/50 shadow-sm">
            <div class="grid grid-cols-2 gap-4 mb-3">
-               <div><label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Timeframe</label><div class="relative"><select id="filterTime" onchange="toggleCustomDate()" class="appearance-none w-full text-base p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 shadow-sm outline-none font-medium focus:border-blue-400 focus:bg-white transition-colors"><option value="all">All Time</option><option value="30">Next 30 Days</option><option value="90">Next 3 Months</option><option value="180">Next 6 Months</option><option value="custom">Custom...</option></select><i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i></div></div>
-               <div><label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Action Type</label><div class="relative"><select id="filterAction" onchange="renderReport()" class="appearance-none w-full text-base p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 shadow-sm outline-none font-medium focus:border-blue-400 focus:bg-white transition-colors"><option value="all">All Types</option><option value="Sticker">ติด Sticker</option><option value="Transfer">ส่งต่อห้องยา</option><option value="Separate">แยกเก็บ</option><option value="ContactWH">ติดต่อคลัง</option><option value="ReturnWH">คืนคลัง</option></select><i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i></div></div>
+               <div><label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Timeframe</label><div class="relative"><select id="filterTime" onchange="toggleCustomDate()" class="appearance-none w-full text-sm font-semibold p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 shadow-sm outline-none focus:border-blue-400 focus:bg-white transition-colors"><option value="all">All Time</option><option value="30">Next 30 Days</option><option value="90">Next 3 Months</option><option value="180">Next 6 Months</option><option value="custom">Custom...</option></select><i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i></div></div>
+               <div><label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Action Type</label><div class="relative"><select id="filterAction" onchange="renderReport()" class="appearance-none w-full text-sm font-semibold p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 shadow-sm outline-none focus:border-blue-400 focus:bg-white transition-colors"><option value="all">All Types</option><option value="Sticker">ติด Sticker</option><option value="Transfer">ส่งต่อห้องยา</option><option value="Separate">แยกเก็บ</option><option value="ContactWH">ติดต่อคลัง</option><option value="ReturnWH">คืนคลัง</option></select><i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i></div></div>
            </div>
-           
-           <!-- Refresh List Button -->
-           <button onclick="forceRefreshReport()" id="btnReportRefresh" class="w-full py-2 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 font-bold text-sm hover:bg-blue-100 transition-colors flex items-center justify-center gap-2">
+           <button onclick="forceRefreshReport()" id="btnReportRefresh" class="w-full py-2.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 font-bold text-sm hover:bg-blue-100 hover:text-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm">
                <i class="fa-solid fa-arrows-rotate"></i> Refresh List
            </button>
         </div>
 
         <div id="customDateContainer" class="hidden bg-slate-50 p-3 rounded-xl border border-slate-200 flex gap-2 items-center fade-in"><input type="number" id="customNumber" placeholder="Qty" oninput="renderReport()" class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none text-center focus:border-blue-400"><select id="customUnit" onchange="renderReport()" class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none bg-white focus:border-blue-400"><option value="days">Days</option><option value="months">Months</option></select><span class="text-xs text-slate-400 whitespace-nowrap font-medium">from now</span></div>
-        <div id="reportList" class="grid grid-cols-1 md:grid-cols-2 gap-3 pb-24 min-h-[300px]"><!-- Content via JS --></div>
-        <div id="paginationControls" class="flex justify-between items-center pt-4 pb-24 hidden"><button onclick="prevPage()" id="btnPrev" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50">Previous</button><span id="pageIndicator" class="text-sm font-bold text-slate-400">Page 1</span><button onclick="nextPage()" id="btnNext" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50">Next</button></div>
+        <div id="reportList" class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-24 min-h-[300px]"><!-- Content via JS --></div>
+        <div id="paginationControls" class="flex justify-between items-center pt-4 pb-24 hidden"><button onclick="prevPage()" id="btnPrev" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50 shadow-sm">Previous</button><span id="pageIndicator" class="text-sm font-bold text-slate-400">Page 1</span><button onclick="nextPage()" id="btnNext" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50 shadow-sm">Next</button></div>
       </div>
       <div class="h-10"></div>
     </div>
-    <button id="backToTop" onclick="scrollToTop()" class="back-to-top w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-400/30 flex items-center justify-center hover:scale-110 active:scale-90"><i class="fa-solid fa-arrow-up text-xl"></i></button>
+    
+    <button id="backToTop" onclick="scrollToTop()" class="back-to-top w-14 h-14 rounded-full bg-white/90 backdrop-blur border border-slate-200 text-blue-600 shadow-lg shadow-blue-200 flex items-center justify-center hover:scale-110 active:scale-90 hover:bg-blue-50"><i class="fa-solid fa-arrow-up text-xl"></i></button>
 
+    <!-- Manage Modal -->
     <div id="manageModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg p-4">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md md:max-w-lg h-[85vh] flex flex-col overflow-hidden transform transition-all scale-100">
-            <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-5 text-white flex justify-between items-center shrink-0 relative overflow-hidden">
-                <div class="relative z-10">
-                  <h3 class="font-medium text-blue-200 text-sm flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Manage Item</h3>
-                  <p class="text-xl font-bold text-white mt-1 leading-tight drop-shadow-sm" id="manageDrugName">Drug Name</p>
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md md:max-w-lg h-[85vh] flex flex-col overflow-hidden transform transition-all scale-100 ring-1 ring-black/5">
+            <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 text-white flex justify-between items-center shrink-0 relative overflow-hidden">
+                <div class="relative z-10 pr-4">
+                  <h3 class="font-medium text-blue-200 text-xs uppercase tracking-wider mb-1 flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Manage Item</h3>
+                  <p class="text-xl font-bold text-white leading-tight drop-shadow-sm" id="manageDrugName">Drug Name</p>
                 </div>
-                <button onclick="closeManageModal()" class="relative z-10 w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-all shadow-md p-0 leading-none focus:outline-none active:scale-90"><i class="fa-solid fa-xmark text-xl text-white"></i></button>
+                <!-- Updated Close Button: Perfectly Circular & Centered -->
+                <button onclick="closeManageModal()" class="relative z-10 w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-all shadow-lg p-0 leading-none focus:outline-none active:scale-90 shrink-0 group">
+                    <i class="fa-solid fa-xmark text-xl text-white group-hover:rotate-90 transition-transform duration-300"></i>
+                </button>
             </div>
-            <div class="p-5 overflow-y-auto flex-1 space-y-5 scroll-smooth">
+            <div class="p-6 overflow-y-auto flex-1 space-y-6 scroll-smooth bg-slate-50/50">
                 <input type="hidden" id="manageRowIndex"><input type="hidden" id="manageMaxQty">
                 <input type="hidden" id="manageOriginalAction">
                 
-                <div class="bg-slate-50 p-4 rounded-3xl border border-slate-200 text-center relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.03)]">
-                    <div id="modalUnitTop" class="absolute top-3 right-3 bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md uppercase tracking-wide">UNIT</div>
+                <div class="bg-white p-5 rounded-3xl border border-slate-100 text-center relative shadow-sm">
+                    <div id="modalUnitTop" class="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-md uppercase tracking-widest">UNIT</div>
                     
-                    <label class="block text-base font-bold text-slate-400 uppercase mb-3 tracking-wide">Manage Quantity</label>
-                    <div class="flex items-center justify-center gap-4 mb-4">
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-4 tracking-wider">Manage Quantity</label>
+                    <div class="flex items-center justify-center gap-4 mb-6">
                         <button type="button" onclick="adjustManageQty(-1)" class="w-12 h-12 rounded-full border-2 border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group active:scale-95"><i class="fa-solid fa-minus text-lg"></i></button>
-                        <div class="flex-1 max-w-[100px] border-b-2 border-blue-200 hover:border-blue-400 transition-colors"><input type="number" id="manageQty" class="w-full outline-none text-center text-3xl font-bold text-blue-600 bg-transparent" placeholder="0"></div>
+                        <div class="flex-1 max-w-[100px] border-b-2 border-blue-200 hover:border-blue-400 transition-colors"><input type="number" id="manageQty" class="w-full outline-none text-center text-3xl font-bold text-blue-600 bg-transparent font-mono" placeholder="0"></div>
                         <button type="button" onclick="adjustManageQty(1)" class="w-12 h-12 rounded-full border-2 border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group active:scale-95"><i class="fa-solid fa-plus text-lg"></i></button>
-                        <button type="button" onclick="setAllQty()" class="w-12 h-12 rounded-full border-2 border-blue-100 text-blue-500 bg-white hover:bg-blue-50 transition-all duration-200 flex items-center justify-center font-bold text-xs active:scale-95 shadow-sm">ALL</button>
+                        <button type="button" onclick="setAllQty()" class="w-12 h-12 rounded-full border-2 border-blue-100 text-blue-500 bg-white hover:bg-blue-50 transition-all duration-200 flex items-center justify-center font-bold text-[10px] active:scale-95 shadow-sm hover:shadow-md">ALL</button>
                     </div>
-                    <div class="text-xs text-slate-400 bg-white px-3 py-1 rounded-full border border-slate-100 inline-flex items-center gap-2">Current: <span id="displayMaxQty" class="font-bold text-slate-700 text-sm">0</span> <span id="manageUnit" class="text-[10px] font-bold text-blue-500 uppercase">UNIT</span><button onclick="editStockQty()" class="text-blue-500 hover:text-blue-700 ml-1"><i class="fa-solid fa-pen-to-square"></i></button></div>
+                    <div class="text-xs text-slate-500 bg-slate-50 px-4 py-2 rounded-full border border-slate-100 inline-flex items-center gap-2 shadow-inner">Current Stock: <span id="displayMaxQty" class="font-bold text-slate-800 text-base">0</span> <span id="manageUnit" class="text-[10px] font-bold text-blue-500 uppercase">UNIT</span><button onclick="editStockQty()" class="text-blue-400 hover:text-blue-600 ml-2 transition-colors"><i class="fa-solid fa-pen-to-square"></i></button></div>
                 </div>
 
                 <div>
-                    <label class="block text-base font-bold text-slate-400 uppercase mb-2 ml-1">New Status</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider ml-1">New Status</label>
                     <div class="grid grid-cols-3 gap-3">
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Sticker" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-orange-300"><i class="fa-solid fa-tags text-lg text-orange-500"></i><span class="text-sm font-bold text-slate-600">Sticker</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Transfer" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-blue-300"><i class="fa-solid fa-share-from-square text-lg text-blue-500"></i><span class="text-sm font-bold text-slate-600">ส่งต่อ</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Separate" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-red-300"><i class="fa-solid fa-box-open text-lg text-red-500"></i><span class="text-sm font-bold text-slate-600">แยกเก็บ</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ContactWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-teal-300"><i class="fa-solid fa-phone-volume text-lg text-teal-500"></i><span class="text-sm font-bold text-slate-600">แจ้งคลัง</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ReturnWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-green-300"><i class="fa-solid fa-truck-ramp-box text-lg text-green-500"></i><span class="text-sm font-bold text-slate-600">คืนคลัง</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Other" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-2.5 rounded-xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-1 group-hover:border-gray-300"><i class="fa-solid fa-ellipsis text-lg text-gray-500"></i><span class="text-sm font-bold text-slate-600">อื่นๆ</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Sticker" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-tags text-2xl text-orange-500"></i><span class="text-xs font-bold text-slate-600">Sticker</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Transfer" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-share-from-square text-2xl text-blue-500"></i><span class="text-xs font-bold text-slate-600">ส่งต่อ</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Separate" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span class="text-xs font-bold text-slate-600">แยกเก็บ</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ContactWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span class="text-xs font-bold text-slate-600">แจ้งคลัง</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ReturnWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span class="text-xs font-bold text-slate-600">คืนคลัง</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Other" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card p-3 rounded-2xl border border-slate-200 bg-white text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span class="text-xs font-bold text-slate-600">อื่นๆ</span></div></label>
                     </div>
                 </div>
 
-                <div id="modalDynamicArea" class="p-4 bg-slate-50 rounded-2xl border border-slate-200 hidden fade-in">
-                    <label class="block text-base font-bold text-slate-500 mb-2" id="modalDynamicLabel">Details</label>
-                    <div class="bg-white p-2.5 border border-slate-200 rounded-xl space-y-2">
-                      <select id="modalTransfer" class="dynamic-input hidden w-full p-3 rounded-lg bg-slate-50 outline-none text-base"><option value="" disabled selected>-- เลือกปลายทาง --</option><option value="IPD MED">IPD MED</option><option value="IPD SURG">IPD SURG</option><option value="OPD SURG">OPD SURG</option><option value="ER">ER</option></select>
-                      <textarea id="modalSubNote" placeholder="Note (Optional)..." class="w-full p-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white outline-none transition-colors text-base" rows="2"></textarea>
+                <div id="modalDynamicArea" class="p-5 bg-white rounded-3xl border border-slate-200 hidden fade-in shadow-sm">
+                    <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider" id="modalDynamicLabel">Details</label>
+                    <div class="space-y-3">
+                      <select id="modalTransfer" class="dynamic-input hidden w-full p-3 rounded-xl bg-slate-50 border border-slate-100 outline-none text-sm focus:border-blue-400 focus:bg-white transition-colors"><option value="" disabled selected>-- เลือกปลายทาง --</option><option value="IPD MED">IPD MED</option><option value="IPD SURG">IPD SURG</option><option value="OPD SURG">OPD SURG</option><option value="ER">ER</option></select>
+                      <textarea id="modalSubNote" placeholder="Note (Optional)..." class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none transition-colors text-sm focus:ring-2 focus:ring-blue-100" rows="2"></textarea>
                     </div>
                 </div>
             </div>
-            <div class="p-5 border-t border-slate-100 bg-white flex gap-4 shrink-0 pb-8">
-                <button onclick="confirmDelete()" class="w-14 h-14 flex items-center justify-center rounded-2xl border border-red-100 text-red-500 hover:bg-red-50 hover:scale-105 transition-transform"><i class="fa-solid fa-trash-can text-xl"></i></button>
-                <button onclick="submitManagement()" class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-bold shadow-lg hover:shadow-blue-200 btn-hover text-lg">Confirm Update</button>
+            <div class="p-6 border-t border-slate-100 bg-white flex gap-4 shrink-0 pb-8 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+                <!-- UPDATED: New Bin Button with custom SVG and styling -->
+                <button onclick="confirmDelete()" class="bin-button">
+                    <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+                        <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+                    </svg>
+                    <svg class="bin-bottom" viewBox="0 0 33 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <mask id="path-1-inside-1_8_19" fill="white">
+                            <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
+                        </mask>
+                        <path d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z" fill="white" mask="url(#path-1-inside-1_8_19)"></path>
+                        <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+                        <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+                    </svg>
+                </button>
+                
+                <!-- New Styled Save Button -->
+                <button onclick="submitManagement()" class="btn-donate flex-1 group">
+                    Confirm Update <i class="fa-solid fa-floppy-disk group-hover:scale-125 transition-transform ml-2"></i>
+                </button>
             </div>
         </div>
     </div>

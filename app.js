@@ -324,12 +324,10 @@ function openManageModal(itemEncoded) {
     document.getElementById('displayMaxQty').textContent = item.qty;
     document.getElementById('manageUnit').textContent = item.unit || 'Unit';
     
-    // เพิ่มส่วนนี้: อัปเดตป้าย Unit ด้านบนให้ตรงกับข้อมูลจริง
     if(document.getElementById('modalUnitTop')) {
         document.getElementById('modalUnitTop').textContent = item.unit || 'UNIT';
     }
     
-    // Store Original Action
     document.getElementById('manageOriginalAction').value = item.action;
 
     document.getElementById('manageQty').value = ''; 
@@ -342,13 +340,38 @@ function openManageModal(itemEncoded) {
 function closeManageModal() { document.getElementById('manageModal').classList.add('hidden'); }
 function setAllQty() { document.getElementById('manageQty').value = document.getElementById('manageMaxQty').value; }
 
+// --- UPDATED: Styled Edit Stock Modal ---
 function editStockQty() {
    const currentQty = document.getElementById('displayMaxQty').textContent;
    const rowIndex = document.getElementById('manageRowIndex').value;
+   
    Swal.fire({
-       title: 'Adjust Stock', text: `Current: ${currentQty}`, input: 'number', inputLabel: 'Enter Actual Quantity', inputValue: currentQty,
-       showCancelButton: true, confirmButtonText: 'Update',
-       preConfirm: (newQty) => { if (!newQty || newQty < 0) Swal.showValidationMessage('Invalid quantity'); return newQty; }
+       title: '<span class="text-slate-800">Adjust Stock</span>',
+       html: `
+         <div class="mb-4">
+            <p class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Current Amount</p>
+            <p class="text-slate-600 text-xl font-semibold">${currentQty} <span class="text-xs text-slate-400">UNIT</span></p>
+         </div>
+       `,
+       input: 'number',
+       inputPlaceholder: 'New Qty',
+       inputValue: currentQty,
+       showCancelButton: true,
+       confirmButtonText: 'Update Stock',
+       cancelButtonText: 'Cancel',
+       buttonsStyling: false,
+       customClass: {
+           popup: 'rounded-[2.5rem] p-8 border border-slate-100 shadow-2xl',
+           title: 'text-2xl font-bold mb-2',
+           input: 'w-1/2 mx-auto text-center text-4xl font-bold text-blue-600 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none py-4 transition-all mb-6',
+           confirmButton: 'btn-donate min-w-[140px] justify-center shadow-lg',
+           cancelButton: 'px-6 py-3 rounded-2xl border-2 border-slate-200 text-slate-500 font-bold hover:bg-slate-50 hover:text-slate-700 transition-all',
+           actions: 'flex gap-4 justify-center w-full items-center'
+       },
+       preConfirm: (newQty) => { 
+           if (!newQty || newQty < 0) Swal.showValidationMessage('Invalid quantity'); 
+           return newQty; 
+       }
    }).then((result) => {
        if (result.isConfirmed) {
            document.getElementById('overlay').classList.remove('hidden');
