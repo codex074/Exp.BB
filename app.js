@@ -322,7 +322,12 @@ function openManageModal(itemEncoded) {
     document.getElementById('manageDrugName').textContent = item.drugName;
     document.getElementById('manageMaxQty').value = item.qty;
     document.getElementById('displayMaxQty').textContent = item.qty;
-    document.getElementById('manageUnit').textContent = item.unit || 'Unit'; 
+    document.getElementById('manageUnit').textContent = item.unit || 'Unit';
+    
+    // เพิ่มส่วนนี้: อัปเดตป้าย Unit ด้านบนให้ตรงกับข้อมูลจริง
+    if(document.getElementById('modalUnitTop')) {
+        document.getElementById('modalUnitTop').textContent = item.unit || 'UNIT';
+    }
     
     // Store Original Action
     document.getElementById('manageOriginalAction').value = item.action;
