@@ -7,6 +7,42 @@ const itemsPerPage = 10;
 let filteredDataCache = [];
 let isReportLoaded = false; 
 
+// --- SweetAlert2 Theme Configuration ---
+const swalTheme = {
+    popup: 'rounded-[2.5rem] p-8 border border-slate-100 shadow-2xl bg-white/95 backdrop-blur-xl',
+    title: 'text-slate-800 text-2xl font-bold mb-1',
+    htmlContainer: 'text-slate-500 text-base',
+    confirmButton: 'btn-donate min-w-[130px] justify-center shadow-lg border-0 text-white',
+    cancelButton: 'px-6 py-3 rounded-2xl border-2 border-slate-200 text-slate-500 font-bold hover:bg-slate-50 hover:text-slate-700 transition-all bg-white',
+    actions: 'flex gap-4 justify-center w-full items-center mt-4',
+    input: 'w-full p-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-base text-slate-600'
+};
+
+// Mixin for Standard Alerts
+const MySwal = Swal.mixin({
+    customClass: swalTheme,
+    buttonsStyling: false,
+    confirmButtonText: 'OK'
+});
+
+// Mixin for Toasts (Top-right notification)
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 2000,
+    timerProgressBar: true,
+    customClass: {
+        popup: 'rounded-2xl shadow-lg border border-slate-100 bg-white flex items-center p-3 gap-2',
+        title: 'text-slate-700 font-bold text-sm',
+        icon: 'text-xs'
+    },
+    didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+});
+
 const actionStyles = {
     'Sticker': { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', label: 'Sticker', icon: 'fa-tags' },
     'Transfer': { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200', label: 'ส่งต่อ', icon: 'fa-share-from-square' },
@@ -51,7 +87,12 @@ window.onload = function() {
 
 function onFail(err) {
     document.getElementById('overlay').classList.add('hidden');
-    Swal.fire({ title: 'Error', text: err.message || 'Connection Failed', icon: 'error', confirmButtonColor: '#3b82f6', borderRadius: '1rem' });
+    MySwal.fire({ 
+        title: 'Connection Failed', 
+        text: err.message || 'Something went wrong', 
+        icon: 'error',
+        confirmButtonColor: '#ef4444' 
+    });
 }
 
 function scrollToTop() { document.getElementById('mainContainer').scrollTo({ top: 0, behavior: 'smooth' }); }
@@ -106,7 +147,7 @@ function refreshData() {
         icon.classList.remove('fa-spin');
         searchInput.disabled = false;
         searchInput.value = "";
-        searchInput.classList.remove('bg-slate-50');
+        searchInput.classList.remove('bg-white/80');
         searchInput.classList.add('bg-white');
         searchInput.placeholder = "🔍 Search Drug...";
         
@@ -197,8 +238,17 @@ function handleFormSubmit(e) {
     e.preventDefault();
     const action = document.querySelector('input[name="actionType"]:checked').value;
     const note = document.getElementById('subNote').value.trim();
-    if (['Other', 'ContactWH', 'ReturnWH'].includes(action) && !note) { Swal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.', confirmButtonColor: '#f59e0b', borderRadius: '1rem' }); return; }
-    Swal.fire({ title: 'Save Entry?', text: "Please check details", icon: 'question', showCancelButton: true, confirmButtonColor: '#3b82f6', cancelButtonColor: '#cbd5e1', confirmButtonText: 'Yes, Save' }).then((result) => { if (result.isConfirmed) { submitDataToServer(); } });
+    if (['Other', 'ContactWH', 'ReturnWH'].includes(action) && !note) { 
+        MySwal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.' }); 
+        return; 
+    }
+    MySwal.fire({ 
+        title: 'Save Entry?', 
+        text: "Please check details", 
+        icon: 'question', 
+        showCancelButton: true, 
+        confirmButtonText: 'Yes, Save' 
+    }).then((result) => { if (result.isConfirmed) { submitDataToServer(); } });
 }
 
 function submitDataToServer() {
@@ -211,7 +261,7 @@ function submitDataToServer() {
     callAPI('saveData', formData).then(res => { 
         document.getElementById('overlay').classList.add('hidden'); 
         if(res.success) { 
-            Swal.fire({ icon: 'success', title: 'Saved!', timer: 1500, showConfirmButton: false }); 
+            MySwal.fire({ icon: 'success', title: 'Saved!', timer: 1500, showConfirmButton: false }); 
             document.getElementById('expiryForm').reset(); 
             document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('qtyInput').value = ""; 
@@ -219,10 +269,9 @@ function submitDataToServer() {
             document.querySelectorAll('.action-card').forEach(el => el.style = ""); 
             clearDrugSearch(); 
             scrollToTop();
-            
             isReportLoaded = false; 
         } else { 
-            Swal.fire('Error', res.message, 'error'); 
+            MySwal.fire('Error', res.message, 'error'); 
         } 
     }).catch(err => onFail(err));
 }
@@ -239,7 +288,6 @@ function forceRefreshReport() {
         icon.classList.remove('fa-spin');
         btn.disabled = false;
         btn.classList.remove('opacity-75');
-        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
         Toast.fire({ icon: 'success', title: 'List Updated' });
     }).catch(() => {
         icon.classList.remove('fa-spin');
@@ -340,12 +388,11 @@ function openManageModal(itemEncoded) {
 function closeManageModal() { document.getElementById('manageModal').classList.add('hidden'); }
 function setAllQty() { document.getElementById('manageQty').value = document.getElementById('manageMaxQty').value; }
 
-// --- UPDATED: Styled Edit Stock Modal ---
 function editStockQty() {
    const currentQty = document.getElementById('displayMaxQty').textContent;
    const rowIndex = document.getElementById('manageRowIndex').value;
    
-   Swal.fire({
+   MySwal.fire({
        title: '<span class="text-slate-800">Adjust Stock</span>',
        html: `
          <div class="mb-4">
@@ -359,14 +406,10 @@ function editStockQty() {
        showCancelButton: true,
        confirmButtonText: 'Update Stock',
        cancelButtonText: 'Cancel',
-       buttonsStyling: false,
+       // Override specific parts of the theme for this modal
        customClass: {
-           popup: 'rounded-[2.5rem] p-8 border border-slate-100 shadow-2xl',
-           title: 'text-2xl font-bold mb-2',
-           input: 'w-1/2 mx-auto text-center text-4xl font-bold text-blue-600 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none py-4 transition-all mb-6',
-           confirmButton: 'btn-donate min-w-[140px] justify-center shadow-lg',
-           cancelButton: 'px-6 py-3 rounded-2xl border-2 border-slate-200 text-slate-500 font-bold hover:bg-slate-50 hover:text-slate-700 transition-all',
-           actions: 'flex gap-4 justify-center w-full items-center'
+           ...swalTheme,
+           input: 'w-1/2 mx-auto text-center text-4xl font-bold text-blue-600 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none py-4 transition-all mb-6'
        },
        preConfirm: (newQty) => { 
            if (!newQty || newQty < 0) Swal.showValidationMessage('Invalid quantity'); 
@@ -377,8 +420,8 @@ function editStockQty() {
            document.getElementById('overlay').classList.remove('hidden');
            callAPI('updateStockQuantity', { rowIndex: rowIndex, newQty: result.value }).then(res => {
                document.getElementById('overlay').classList.add('hidden');
-               if(res.success) { Swal.fire({ icon: 'success', title: 'Stock Updated', timer: 1000, showConfirmButton: false }); loadReport().then(() => isReportLoaded=true); }
-               else { Swal.fire('Error', res.message, 'error'); }
+               if(res.success) { MySwal.fire({ icon: 'success', title: 'Stock Updated', timer: 1000, showConfirmButton: false }); loadReport().then(() => isReportLoaded=true); }
+               else { MySwal.fire('Error', res.message, 'error'); }
            }).catch(err => onFail(err));
        }
    });
@@ -389,20 +432,20 @@ function submitManagement() {
     const actionEl = document.querySelector('input[name="manageAction"]:checked');
     const originalAction = document.getElementById('manageOriginalAction').value;
 
-    if(!manageQty || parseInt(manageQty) <= 0) { Swal.fire('Warning', 'Invalid Quantity', 'warning'); return; }
-    if(parseInt(manageQty) > parseInt(document.getElementById('manageMaxQty').value)) { Swal.fire('Warning', 'Exceed Stock', 'warning'); return; }
+    if(!manageQty || parseInt(manageQty) <= 0) { MySwal.fire('Warning', 'Invalid Quantity', 'warning'); return; }
+    if(parseInt(manageQty) > parseInt(document.getElementById('manageMaxQty').value)) { MySwal.fire('Warning', 'Exceed Stock', 'warning'); return; }
     
     let actionToSubmit = originalAction;
     if (actionEl) {
         actionToSubmit = actionEl.value;
         const note = document.getElementById('modalSubNote').value.trim();
         if (['Other', 'ContactWH', 'ReturnWH'].includes(actionToSubmit) && !note) {
-            Swal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.', confirmButtonColor: '#f59e0b' });
+            MySwal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.' });
             return;
         }
     }
 
-    Swal.fire({
+    MySwal.fire({
         title: 'Confirm Update?', text: `Updating ${manageQty} items`, icon: 'warning',
         showCancelButton: true, confirmButtonText: 'Yes, Confirm',
     }).then((result) => { if (result.isConfirmed) { processManagement(manageQty, actionToSubmit); } });
@@ -420,10 +463,10 @@ function processManagement(manageQty, action) {
         .then(res => {
             document.getElementById('overlay').classList.add('hidden');
             if (res.success) { 
-                Swal.fire({ icon: 'success', title: 'Success', text: res.message, timer: 1500, showConfirmButton: false }); 
+                MySwal.fire({ icon: 'success', title: 'Success', text: res.message, timer: 1500, showConfirmButton: false }); 
                 loadReport().then(() => isReportLoaded=true); 
             }
-            else { Swal.fire('Error', res.message, 'error'); }
+            else { MySwal.fire('Error', res.message, 'error'); }
         })
         .catch(err => onFail(err));
 }
@@ -431,7 +474,7 @@ function processManagement(manageQty, action) {
 function confirmDelete() {
     const rowIndex = document.getElementById('manageRowIndex').value;
     
-    Swal.fire({
+    MySwal.fire({
         title: 'Delete Item?',
         html: `
             <p class="text-slate-500 text-sm mb-3">This action cannot be undone.</p>
@@ -475,10 +518,10 @@ function confirmDelete() {
             callAPI('deleteItem', { rowIndex: rowIndex, note: userNote }).then(res => {
                 document.getElementById('overlay').classList.add('hidden');
                 if(res.success) { 
-                    Swal.fire({ icon: 'success', title: 'Deleted', text: 'Item removed successfully', timer: 1500, showConfirmButton: false }); 
+                    MySwal.fire({ icon: 'success', title: 'Deleted', text: 'Item removed successfully', timer: 1500, showConfirmButton: false }); 
                     loadReport().then(() => isReportLoaded=true); 
                 }
-                else { Swal.fire('Error', res.message, 'error'); }
+                else { MySwal.fire('Error', res.message, 'error'); }
             }).catch(err => onFail(err));
         }
     });
