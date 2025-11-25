@@ -7,7 +7,7 @@ const itemsPerPage = 10;
 let filteredDataCache = [];
 let isReportLoaded = false; 
 
-// --- SweetAlert2 Theme Configuration ---
+// --- SweetAlert2 Theme Configuration (For Modals) ---
 const swalTheme = {
     popup: 'rounded-[2.5rem] p-8 border border-slate-100 shadow-2xl bg-white/95 backdrop-blur-xl',
     title: 'text-slate-800 text-2xl font-bold mb-1',
@@ -24,24 +24,20 @@ const MySwal = Swal.mixin({
     confirmButtonText: 'OK'
 });
 
+// --- Toast Configuration (Updated: Reverted to Standard Small Size) ---
 const Toast = Swal.mixin({
     toast: true,
     position: 'top-end',
     showConfirmButton: false,
     timer: 2000,
     timerProgressBar: true,
-    customClass: {
-        popup: 'rounded-2xl shadow-lg border border-slate-100 bg-white flex items-center p-3 gap-2',
-        title: 'text-slate-700 font-bold text-sm',
-        icon: 'text-xs'
-    },
     didOpen: (toast) => {
         toast.addEventListener('mouseenter', Swal.stopTimer);
         toast.addEventListener('mouseleave', Swal.resumeTimer);
     }
 });
 
-// Action Styles Configuration (รวมปุ่ม Destroy แล้ว)
+// Action Styles Configuration
 const actionStyles = {
     'Sticker': { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', label: 'Sticker', icon: 'fa-tags' },
     'Transfer': { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200', label: 'ส่งต่อ', icon: 'fa-share-from-square' },
@@ -217,7 +213,6 @@ function toggleSubDetails(action) {
     container.classList.remove('hidden'); 
     if (action === 'Transfer') { inputTransfer.classList.remove('hidden'); inputTransfer.required = true; } else { inputTransfer.classList.add('hidden'); inputTransfer.required = false; }
     
-    // บังคับ Note สำหรับ Destroy
     if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action)) { 
         subNote.required = true; 
         subNote.placeholder = "Note (Required)..."; 
@@ -236,7 +231,6 @@ function modalToggleSubDetails(action) {
     container.classList.remove('hidden');
     if (action === 'Transfer') { inputTransfer.classList.remove('hidden'); inputTransfer.required = true; } else { inputTransfer.classList.add('hidden'); inputTransfer.required = false; }
     
-    // บังคับ Note สำหรับ Destroy
     if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action)) { 
         subNote.required = true; 
         subNote.placeholder = "Note (Required)..."; 
@@ -259,7 +253,6 @@ function handleFormSubmit(e) {
     const action = document.querySelector('input[name="actionType"]:checked').value;
     const note = document.getElementById('subNote').value.trim();
     
-    // Validate Note สำหรับ Destroy
     if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action) && !note) { 
         MySwal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.' }); 
         return; 
@@ -352,10 +345,7 @@ function renderReport() {
     if (filtered.length === 0) { container.innerHTML = '<div class="col-span-full text-center text-slate-400 mt-10 font-light text-lg">No items match filter.</div>'; paginationControls.classList.add('hidden'); return; }
     
     filteredDataCache = filtered;
-    
-    // *** FIX: Reset Page on Filter Change ***
     currentPage = 1;
-    
     renderPage(currentPage);
 }
 
@@ -379,8 +369,6 @@ function renderPage(page) {
         if(item.action === 'Transfer' && item.subDetails) { actionLabel += ` <i class="fa-solid fa-arrow-right text-sm mx-1 text-slate-400"></i> ${item.subDetails}`; }
         
         const itemStr = encodeURIComponent(JSON.stringify(item));
-        
-        // --- Note Display Logic ---
         const noteText = item.notes && item.notes.trim() !== "" ? item.notes : "-";
 
         const card = `<div onclick="openManageModal('${itemStr}')" class="relative cursor-pointer bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-[4px] ${borderStatus} hover:shadow-lg hover:shadow-blue-100 hover:-translate-y-1 transition-all duration-300 group fade-in">
@@ -422,7 +410,6 @@ function openManageModal(itemEncoded) {
     const noteBox = document.getElementById('displayCurrentNoteBox');
     const noteText = document.getElementById('displayCurrentNote');
     
-    // Helper to get property safely
     const getVal = (obj, key) => obj[key] || obj[key.toLowerCase()] || obj[key.charAt(0).toUpperCase() + key.slice(1)] || "";
     
     const rawSub = getVal(item, 'subDetails');
@@ -441,7 +428,6 @@ function openManageModal(itemEncoded) {
         noteText.textContent = "";
         noteBox.classList.add('hidden');    
     }
-    // ----------------------------------------
 
     document.getElementById('manageQty').value = ''; 
     document.querySelectorAll('input[name="manageAction"]').forEach(el => el.checked = false);
@@ -471,7 +457,6 @@ function editStockQty() {
        showCancelButton: true,
        confirmButtonText: 'Update Stock',
        cancelButtonText: 'Cancel',
-       // Override specific parts of the theme for this modal
        customClass: {
            ...swalTheme,
            input: 'w-1/2 mx-auto text-center text-4xl font-bold text-blue-600 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none py-4 transition-all mb-6'
@@ -505,7 +490,6 @@ function submitManagement() {
         actionToSubmit = actionEl.value;
         const note = document.getElementById('modalSubNote').value.trim();
         
-        // Validate Note สำหรับ Destroy
         if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(actionToSubmit) && !note) {
             MySwal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.' });
             return;

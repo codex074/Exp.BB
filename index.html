@@ -3,19 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>OPD Pharmacy</title>
+  <title>Exp OPD</title>
   
+  <!-- Icon Links -->
   <link rel="shortcut icon" href="icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
+  <!-- PWA Meta Tags -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
+  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <!-- Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
@@ -66,12 +70,14 @@
 </head>
 <body class="bg-slate-50 relative h-full w-full text-slate-800 overflow-hidden selection:bg-blue-100 selection:text-blue-600">
   
+  <!-- Blobs -->
   <div class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob z-0 pointer-events-none"></div>
   <div class="fixed top-[10%] right-[-10%] w-[400px] h-[400px] bg-blue-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-2000 z-0 pointer-events-none"></div>
   <div class="fixed bottom-[-10%] left-[20%] w-[450px] h-[450px] bg-indigo-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-4000 z-0 pointer-events-none"></div>
 
   <div class="relative z-10 w-full md:max-w-5xl mx-auto bg-white/70 backdrop-blur-2xl h-full md:h-[95vh] md:my-[2.5vh] md:rounded-[2.5rem] md:shadow-2xl md:border md:border-white/60 flex flex-col transition-all duration-300 overflow-hidden ring-1 ring-white/50">
     
+    <!-- Header -->
     <div class="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-6 md:rounded-t-[2.5rem] rounded-b-[2.5rem] shadow-lg shadow-indigo-500/20 text-white shrink-0 z-30 flex justify-between items-center relative overflow-hidden">
       <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
       <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-10 -mb-10 blur-xl"></div>
@@ -84,12 +90,14 @@
       </a>
     </div>
 
+    <!-- Tabs -->
     <div class="flex p-4 gap-3 shrink-0 md:px-8">
       <button onclick="switchTab('entry')" id="tab-entry" class="flex-1 py-3 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-500/30 transform scale-100"><i class="fa-solid fa-plus mr-2"></i> Add Item</button>
       <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-3 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-white/50 hover:bg-white text-slate-500 border border-slate-200/60 backdrop-blur-sm"><i class="fa-solid fa-list-ul mr-2"></i> Manage Item</button>
     </div>
 
     <div id="mainContainer" class="flex-1 px-5 md:px-8 pb-32 overflow-y-auto overflow-x-hidden relative scroll-smooth">
+      <!-- TAB 1: ADD ITEM -->
       <div id="view-entry" class="fade-in space-y-5 pt-2">
         <form id="expiryForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
           <input type="hidden" id="generic" name="generic"><input type="hidden" id="unit" name="unit"><input type="hidden" id="strength" name="strength">
@@ -129,7 +137,7 @@
               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Separate" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span class="text-sm font-bold text-slate-600">แยกเก็บ</span></div></label>
               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ContactWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span class="text-sm font-bold text-slate-600">ติดต่อคลัง</span></div></label>
               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ReturnWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span class="text-sm font-bold text-slate-600">คืนคลัง</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Destroy" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-fire text-2xl text-slate-700"></i><span class="text-sm font-bold text-slate-600">ทำลาย</span></div></label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Destroy" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-fire text-2xl text-red-600"></i><span class="text-sm font-bold text-slate-600">ทำลาย</span></div></label>
               <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Other" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span class="text-sm font-bold text-slate-600">อื่นๆ</span></div></label>
             </div>
           </div>
@@ -153,6 +161,7 @@
         </form>
       </div>
 
+      <!-- TAB 2: MANAGE ITEM -->
       <div id="view-report" class="hidden fade-in pt-2 space-y-4">
         <div class="sticky top-0 bg-white/80 backdrop-blur-md p-4 -mx-4 z-20 rounded-b-3xl border-b border-slate-100/50 shadow-sm">
            <div class="grid grid-cols-2 gap-4 mb-3">
@@ -170,6 +179,7 @@
     
     <button id="backToTop" onclick="scrollToTop()" class="back-to-top w-14 h-14 rounded-full bg-white/90 backdrop-blur border border-slate-200 text-blue-600 shadow-lg shadow-blue-200 flex items-center justify-center hover:scale-110 active:scale-90 hover:bg-blue-50"><i class="fa-solid fa-arrow-up text-xl"></i></button>
 
+    <!-- Manage Modal -->
     <div id="manageModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg p-4">
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md md:max-w-lg h-[85vh] flex flex-col overflow-hidden transform transition-all scale-100 ring-1 ring-black/5">
             <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 text-white flex justify-between items-center shrink-0 relative overflow-hidden">
@@ -194,6 +204,7 @@
                     <div class="text-xs text-slate-500 bg-slate-50 px-4 py-2 rounded-full border border-slate-100 inline-flex items-center gap-2 shadow-inner">Current Stock: <span id="displayMaxQty" class="font-bold text-slate-800 text-base">0</span> <span id="manageUnit" class="text-[10px] font-bold text-blue-500 uppercase">UNIT</span><button onclick="editStockQty()" class="text-blue-400 hover:text-blue-600 ml-2 transition-colors"><i class="fa-solid fa-pen-to-square"></i></button></div>
                 </div>
 
+                <!-- Note Display Box -->
                 <div id="displayCurrentNoteBox" class="hidden bg-amber-50 p-4 rounded-2xl border border-amber-100 relative shadow-sm">
                     <label class="block text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1 flex items-center gap-1"><i class="fa-solid fa-note-sticky"></i> Note / รายละเอียดเดิม</label>
                     <p id="displayCurrentNote" class="text-slate-700 text-sm leading-relaxed font-medium break-words"></p>
@@ -207,7 +218,7 @@
                       <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Separate" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span class="text-xs font-bold text-slate-600">แยกเก็บ</span></div></label>
                       <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ContactWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span class="text-xs font-bold text-slate-600">แจ้งคลัง</span></div></label>
                       <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ReturnWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span class="text-xs font-bold text-slate-600">คืนคลัง</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Destroy" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-fire text-2xl text-slate-700"></i><span class="text-xs font-bold text-slate-600">ทำลาย</span></div></label>
+                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Destroy" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-fire text-2xl text-red-600"></i><span class="text-xs font-bold text-slate-600">ทำลาย</span></div></label>
                       <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Other" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span class="text-xs font-bold text-slate-600">อื่นๆ</span></div></label>
                     </div>
                 </div>
