@@ -1,11 +1,13 @@
-const CACHE_NAME = 'opd-expiry-v1';
+const CACHE_NAME = 'opd-expiry-v4'; // เปลี่ยนเป็น v4 เพื่อให้เครื่องรู้ว่ามีการอัปเดต
 const ASSETS = [
   './index.html',
   './app.js',
   './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/sweetalert2@11',
-  'https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap',
+  'https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
@@ -16,7 +18,6 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // ให้โหลดข้อมูลจาก Google Script เสมอ (ไม่ cache API)
   if (e.request.url.includes('script.google.com')) {
     return fetch(e.request);
   }

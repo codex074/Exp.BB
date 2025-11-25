@@ -18,14 +18,12 @@ const swalTheme = {
     input: 'w-full p-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-base text-slate-600'
 };
 
-// Mixin for Standard Alerts
 const MySwal = Swal.mixin({
     customClass: swalTheme,
     buttonsStyling: false,
     confirmButtonText: 'OK'
 });
 
-// Mixin for Toasts (Top-right notification)
 const Toast = Swal.mixin({
     toast: true,
     position: 'top-end',
@@ -43,12 +41,14 @@ const Toast = Swal.mixin({
     }
 });
 
+// Action Styles Configuration (รวมปุ่ม Destroy แล้ว)
 const actionStyles = {
     'Sticker': { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', label: 'Sticker', icon: 'fa-tags' },
     'Transfer': { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200', label: 'ส่งต่อ', icon: 'fa-share-from-square' },
     'Separate': { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200', label: 'แยกเก็บ', icon: 'fa-box-open' },
     'ContactWH': { bg: 'bg-teal-50', text: 'text-teal-600', border: 'border-teal-200', label: 'ติดต่อคลัง', icon: 'fa-phone-volume' },
     'ReturnWH': { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200', label: 'คืนคลัง', icon: 'fa-truck-ramp-box' },
+    'Destroy': { bg: 'bg-slate-700', text: 'text-white', border: 'border-slate-600', label: 'ทำลาย', icon: 'fa-fire' },
     'Other': { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200', label: 'อื่นๆ', icon: 'fa-ellipsis' }
 };
 
@@ -216,7 +216,17 @@ function toggleSubDetails(action) {
     const subNote = document.getElementById('subNote');
     container.classList.remove('hidden'); 
     if (action === 'Transfer') { inputTransfer.classList.remove('hidden'); inputTransfer.required = true; } else { inputTransfer.classList.add('hidden'); inputTransfer.required = false; }
-    if (['Other', 'ContactWH', 'ReturnWH'].includes(action)) { subNote.required = true; subNote.placeholder = "Note (Required)..."; subNote.classList.add('border-blue-300', 'ring-1', 'ring-blue-200'); } else { subNote.required = false; subNote.placeholder = "Note (Optional)..."; subNote.classList.remove('border-blue-300', 'ring-1', 'ring-blue-200'); }
+    
+    // บังคับ Note สำหรับ Destroy
+    if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action)) { 
+        subNote.required = true; 
+        subNote.placeholder = "Note (Required)..."; 
+        subNote.classList.add('border-blue-300', 'ring-1', 'ring-blue-200'); 
+    } else { 
+        subNote.required = false; 
+        subNote.placeholder = "Note (Optional)..."; 
+        subNote.classList.remove('border-blue-300', 'ring-1', 'ring-blue-200'); 
+    }
 }
 
 function modalToggleSubDetails(action) {
@@ -225,7 +235,17 @@ function modalToggleSubDetails(action) {
     const subNote = document.getElementById('modalSubNote');
     container.classList.remove('hidden');
     if (action === 'Transfer') { inputTransfer.classList.remove('hidden'); inputTransfer.required = true; } else { inputTransfer.classList.add('hidden'); inputTransfer.required = false; }
-    if (['Other', 'ContactWH', 'ReturnWH'].includes(action)) { subNote.required = true; subNote.placeholder = "Note (Required)..."; subNote.classList.add('border-blue-300', 'ring-1', 'ring-blue-200'); } else { subNote.required = false; subNote.placeholder = "Note (Optional)..."; subNote.classList.remove('border-blue-300', 'ring-1', 'ring-blue-200'); }
+    
+    // บังคับ Note สำหรับ Destroy
+    if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action)) { 
+        subNote.required = true; 
+        subNote.placeholder = "Note (Required)..."; 
+        subNote.classList.add('border-blue-300', 'ring-1', 'ring-blue-200'); 
+    } else { 
+        subNote.required = false; 
+        subNote.placeholder = "Note (Optional)..."; 
+        subNote.classList.remove('border-blue-300', 'ring-1', 'ring-blue-200'); 
+    }
 }
 
 function toggleCustomDate() {
@@ -238,7 +258,9 @@ function handleFormSubmit(e) {
     e.preventDefault();
     const action = document.querySelector('input[name="actionType"]:checked').value;
     const note = document.getElementById('subNote').value.trim();
-    if (['Other', 'ContactWH', 'ReturnWH'].includes(action) && !note) { 
+    
+    // Validate Note สำหรับ Destroy
+    if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action) && !note) { 
         MySwal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.' }); 
         return; 
     }
@@ -328,7 +350,12 @@ function renderReport() {
         return matchTime && matchAction;
     });
     if (filtered.length === 0) { container.innerHTML = '<div class="col-span-full text-center text-slate-400 mt-10 font-light text-lg">No items match filter.</div>'; paginationControls.classList.add('hidden'); return; }
+    
     filteredDataCache = filtered;
+    
+    // *** FIX: Reset Page on Filter Change ***
+    currentPage = 1;
+    
     renderPage(currentPage);
 }
 
@@ -339,20 +366,33 @@ function renderPage(page) {
     const end = start + itemsPerPage;
     const pagedItems = filteredDataCache.slice(start, end);
     const totalPages = Math.ceil(filteredDataCache.length / itemsPerPage);
+    
     pagedItems.forEach(item => {
         let borderStatus = "border-l-green-500", textExp = "text-green-600", expBg = "bg-green-50 border-green-100";
         if (item.diffDays < 0) { borderStatus = "border-l-slate-400"; textExp = "text-slate-500"; expBg = "bg-slate-100 border-slate-200"; } 
         else if (item.diffDays <= 30) { borderStatus = "border-l-red-500"; textExp = "text-red-600"; expBg = "bg-red-50 border-red-100"; } 
         else if (item.diffDays <= 90) { borderStatus = "border-l-orange-400"; textExp = "text-orange-600"; expBg = "bg-orange-50 border-orange-100"; } 
+        
         let dateStr = item.expiryDate; try { dateStr = item.expObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }); } catch(e){}
         const style = actionStyles[item.action] || actionStyles['Other'];
         let actionLabel = `<i class="fa-solid ${style.icon} mr-1"></i> ${style.label}`;
         if(item.action === 'Transfer' && item.subDetails) { actionLabel += ` <i class="fa-solid fa-arrow-right text-sm mx-1 text-slate-400"></i> ${item.subDetails}`; }
+        
         const itemStr = encodeURIComponent(JSON.stringify(item));
+        
+        // --- Note Display Logic ---
+        const noteText = item.notes && item.notes.trim() !== "" ? item.notes : "-";
+
         const card = `<div onclick="openManageModal('${itemStr}')" class="relative cursor-pointer bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-[4px] ${borderStatus} hover:shadow-lg hover:shadow-blue-100 hover:-translate-y-1 transition-all duration-300 group fade-in">
             <div class="absolute top-3 right-3"><span class="px-3 py-1.5 text-sm font-bold rounded-lg ${style.bg} ${style.text} border ${style.border} shadow-sm flex items-center">${actionLabel}</span></div>
             <div class="pr-28"><h3 class="font-bold text-slate-800 text-xl truncate mb-1 group-hover:text-blue-600 transition-colors">${item.drugName}</h3><p class="text-base text-slate-400 mb-2 font-medium pl-0.5">${item.strength || '-'}</p>
-            <div class="flex flex-wrap items-center gap-2"><div class="bg-slate-50 px-3 py-1 rounded-md border border-slate-200 text-base shadow-sm">Qty: <b class="text-slate-800">${item.qty}</b> <span class="text-slate-400 text-sm">${item.unit}</span></div><div class="px-3 py-1 rounded-md border text-base font-bold shadow-sm flex items-center gap-1 ${expBg} ${textExp}"><i class="fa-regular fa-calendar-xmark text-sm opacity-70"></i> ${dateStr} <span class="font-normal opacity-80 text-sm">(${item.diffDays}d)</span></div></div></div></div>`;
+            <div class="flex flex-wrap items-center gap-2 mb-3"><div class="bg-slate-50 px-3 py-1 rounded-md border border-slate-200 text-base shadow-sm">Qty: <b class="text-slate-800">${item.qty}</b> <span class="text-slate-400 text-sm">${item.unit}</span></div><div class="px-3 py-1 rounded-md border text-base font-bold shadow-sm flex items-center gap-1 ${expBg} ${textExp}"><i class="fa-regular fa-calendar-xmark text-sm opacity-70"></i> ${dateStr} <span class="font-normal opacity-80 text-sm">(${item.diffDays}d)</span></div></div>
+            
+            <!-- Note Section in Card -->
+            <div class="pt-2 border-t border-slate-100 text-xs text-slate-500 truncate flex items-center">
+               <i class="fa-solid fa-note-sticky text-amber-400 mr-1.5 text-sm"></i> Note: <span class="ml-1 font-medium text-slate-600">${noteText}</span>
+            </div>
+            </div></div>`;
         container.innerHTML += card;
     });
     document.getElementById('paginationControls').classList.remove('hidden');
@@ -377,6 +417,31 @@ function openManageModal(itemEncoded) {
     }
     
     document.getElementById('manageOriginalAction').value = item.action;
+
+    // --- Note Logic (Case Insensitive Check) ---
+    const noteBox = document.getElementById('displayCurrentNoteBox');
+    const noteText = document.getElementById('displayCurrentNote');
+    
+    // Helper to get property safely
+    const getVal = (obj, key) => obj[key] || obj[key.toLowerCase()] || obj[key.charAt(0).toUpperCase() + key.slice(1)] || "";
+    
+    const rawSub = getVal(item, 'subDetails');
+    const rawNote = getVal(item, 'notes'); 
+
+    let detailsToShow = [];
+    if (rawSub && rawSub.trim() !== "") { detailsToShow.push(`[${rawSub}]`); }
+    if (rawNote && rawNote.trim() !== "") { detailsToShow.push(rawNote); }
+    
+    const finalNote = detailsToShow.join(" ");
+
+    if (finalNote) {
+        noteText.textContent = finalNote;
+        noteBox.classList.remove('hidden'); 
+    } else {
+        noteText.textContent = "";
+        noteBox.classList.add('hidden');    
+    }
+    // ----------------------------------------
 
     document.getElementById('manageQty').value = ''; 
     document.querySelectorAll('input[name="manageAction"]').forEach(el => el.checked = false);
@@ -439,7 +504,9 @@ function submitManagement() {
     if (actionEl) {
         actionToSubmit = actionEl.value;
         const note = document.getElementById('modalSubNote').value.trim();
-        if (['Other', 'ContactWH', 'ReturnWH'].includes(actionToSubmit) && !note) {
+        
+        // Validate Note สำหรับ Destroy
+        if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(actionToSubmit) && !note) {
             MySwal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.' });
             return;
         }

@@ -3,7 +3,6 @@ const SPREADSHEET_ID = '1l7gEdZJrgfTbXPF3wWyM1DjfALJIKLM8zokXEfZLw_k';
 function doGet(e) {
   const action = e.parameter.action;
   let result = {};
-  
   try {
     if (action === 'getDrugList') {
       result = getDrugList();
@@ -23,7 +22,6 @@ function doPost(e) {
   const action = data.action;
   const payload = data.payload || {}; 
   let result = {};
-
   try {
     if (action === 'saveData') {
       result = saveData(payload);
@@ -99,11 +97,19 @@ function getReportData() {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
   
+  // Fetch columns A to J (10 columns)
   const data = sheet.getRange(2, 1, lastRow - 1, 10).getDisplayValues();
+
   return data.map((row, i) => ({
     rowIndex: i + 2, 
-    drugName: row[1], strength: row[3], qty: parseInt(row[4]) || 0, unit: row[5],
-    expiryDate: row[6], action: row[7], subDetails: row[8]
+    drugName: row[1], 
+    strength: row[3], 
+    qty: parseInt(row[4]) || 0, 
+    unit: row[5],
+    expiryDate: row[6], 
+    action: row[7], 
+    subDetails: row[8],
+    notes: row[9] // <--- Column J (Notes) is now included
   })).filter(item => item.drugName && item.drugName !== "");
 }
 
@@ -122,7 +128,8 @@ function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
   const sheet = ss.getSheetByName('data');
   const idx = parseInt(rowIndex);
   const range = sheet.getRange(idx, 1, 1, 10);
-  const originalData = range.getValues()[0]; // Get raw values to preserve Date object
+  const originalData = range.getValues()[0];
+  
   const currentQty = parseInt(originalData[4]) || 0;
   const reqQty = parseInt(manageQty);
   const drugName = originalData[1];
@@ -134,13 +141,11 @@ function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
   logActionToSheet(ss, drugName, reqQty, newAction, detailLog);
 
   if (reqQty === currentQty) {
-      // Update existing row
       sheet.getRange(idx, 8).setValue(newAction);
       sheet.getRange(idx, 9).setValue(newDetails);
       sheet.getRange(idx, 10).setValue(newNotes);
       return { success: true, message: "Updated all items successfully" };
   } else {
-      // Split row
       const remainQty = currentQty - reqQty;
       sheet.getRange(idx, 5).setValue("'" + remainQty);
       
@@ -151,9 +156,7 @@ function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
       newRow[8] = newDetails;
       newRow[9] = newNotes;
 
-      // *** FIX: Ensure Expiry Date (Index 6) is preserved correctly ***
       if (originalData[6] instanceof Date) {
-        // Format date to string 'yyyy-MM-dd' to prevent timezone shifts
         newRow[6] = Utilities.formatDate(originalData[6], ss.getSpreadsheetTimeZone(), "yyyy-MM-dd");
       }
 
