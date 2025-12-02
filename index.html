@@ -1,270 +1,1300 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Exp OPD</title>
-  
-  <!-- Icon Links -->
+
   <link rel="shortcut icon" href="icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-  <!-- PWA Meta Tags -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  
-  <!-- Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Libraries -->
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
+
   <style>
     /* Base Styles */
-    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; font-family: 'Sarabun', sans-serif; background-color: #f8fafc; touch-action: pan-y; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    
-    .fade-in { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-    
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Sarabun', sans-serif;
+      background-color: #f8fafc;
+      touch-action: pan-y;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     /* Background Animation */
-    @keyframes float { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
-    .animate-blob { animation: float 7s infinite; }
-    .animation-delay-2000 { animation-delay: 2s; }
-    .animation-delay-4000 { animation-delay: 4s; }
+    @keyframes float {
+      0% {
+        transform: translate(0px, 0px) scale(1);
+      }
+
+      33% {
+        transform: translate(30px, -50px) scale(1.1);
+      }
+
+      66% {
+        transform: translate(-20px, 20px) scale(0.9);
+      }
+
+      100% {
+        transform: translate(0px, 0px) scale(1);
+      }
+    }
+
+    .animate-blob {
+      animation: float 7s infinite;
+    }
+
+    .animation-delay-2000 {
+      animation-delay: 2s;
+    }
+
+    .animation-delay-4000 {
+      animation-delay: 4s;
+    }
 
     /* Action Cards */
-    .action-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-radius: 1rem; height: 100%; background-color: #eff6ff; color: #334155; border: none; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .action-card:hover { background-color: #2563eb; box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.3); color: #fff; transform: translateY(-2px); }
-    .action-card-input:checked + .action-card { background-color: #2563eb; box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.3); color: #fff; transform: scale(1.02); }
-    .action-card:hover i, .action-card:hover span, .action-card-input:checked + .action-card i, .action-card-input:checked + .action-card span { color: white !important; transition: color 0.3s ease; }
-    
-    .modal-bg { background-color: rgba(15, 23, 42, 0.3); backdrop-filter: blur(8px); }
-    .back-to-top { position: fixed; bottom: 24px; right: 24px; z-index: 40; transition: all 0.3s; opacity: 0; visibility: hidden; transform: translateY(20px) scale(0.8); }
-    .back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-    .custom-loader { width: 50px; height: 50px; display: grid; }
-    .custom-loader::before, .custom-loader::after { content: ""; grid-area: 1/1; --c: radial-gradient(farthest-side,#2563eb 92%,#0000); background: var(--c) 50% 0, var(--c) 50% 100%, var(--c) 100% 50%, var(--c) 0 50%; background-size: 12px 12px; background-repeat: no-repeat; animation: s2 1s infinite; }
-    .custom-loader::before { margin: 4px; filter: hue-rotate(45deg); background-size: 8px 8px; animation-timing-function: linear; }
-    @keyframes s2 { 100% { transform: rotate(.5turn) } }
-    
+    .action-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      border-radius: 1rem;
+      height: 100%;
+      background-color: #eff6ff;
+      color: #334155;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-card:hover {
+      background-color: #2563eb;
+      box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.3);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    .action-card-input:checked+.action-card {
+      background-color: #2563eb;
+      box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.3);
+      color: #fff;
+      transform: scale(1.02);
+    }
+
+    .action-card:hover i,
+    .action-card:hover span,
+    .action-card-input:checked+.action-card i,
+    .action-card-input:checked+.action-card span {
+      color: white !important;
+      transition: color 0.3s ease;
+    }
+
+    .modal-bg {
+      background-color: rgba(15, 23, 42, 0.3);
+      backdrop-filter: blur(8px);
+    }
+
+    .back-to-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 40;
+      transition: all 0.3s;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px) scale(0.8);
+    }
+
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    .custom-loader {
+      width: 50px;
+      height: 50px;
+      display: grid;
+    }
+
+    .custom-loader::before,
+    .custom-loader::after {
+      content: "";
+      grid-area: 1/1;
+      --c: radial-gradient(farthest-side, #2563eb 92%, #0000);
+      background: var(--c) 50% 0, var(--c) 50% 100%, var(--c) 100% 50%, var(--c) 0 50%;
+      background-size: 12px 12px;
+      background-repeat: no-repeat;
+      animation: s2 1s infinite;
+    }
+
+    .custom-loader::before {
+      margin: 4px;
+      filter: hue-rotate(45deg);
+      background-size: 8px 8px;
+      animation-timing-function: linear;
+    }
+
+    @keyframes s2 {
+      100% {
+        transform: rotate(.5turn)
+      }
+    }
+
     /* Button Styles */
-    .custom-btn { width: 55px; height: 64px; perspective: 1000px; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 0.4s ease; cursor: pointer; border: none; background: transparent; padding: 0; flex-shrink: 0; }
-    .custom-btn-front { width: 100%; height: 100%; position: absolute; display: flex; justify-content: center; align-items: center; border-radius: 14px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); backface-visibility: hidden; transition: transform 0.3s ease; }
-    .btn-minus .custom-btn-front, .btn-plus .custom-btn-front { background: #ffffff; border: 2px solid #f1f5f9; }
-    .btn-minus i, .btn-plus i { color: #94a3b8; }
-    .custom-btn:hover { transform: scale(1.05); } .custom-btn:active { transform: scale(0.95); }
+    .custom-btn {
+      width: 55px;
+      height: 64px;
+      perspective: 1000px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      transition: transform 0.4s ease;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      padding: 0;
+      flex-shrink: 0;
+    }
 
-    .bin-button { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 55px; height: 55px; border-radius: 15px; background-color: rgb(255, 95, 95); cursor: pointer; border: 3px solid rgb(255, 201, 201); transition-duration: 0.3s; box-shadow: 0 4px 6px rgba(255, 95, 95, 0.3); }
-    .bin-bottom { width: 15px; } .bin-top { width: 17px; transform-origin: right; transition-duration: 0.3s; }
-    .bin-button:hover .bin-top { transform: rotate(45deg); } .bin-button:hover { background-color: rgb(255, 0, 0); } .bin-button:active { transform: scale(0.9); }
+    .custom-btn-front {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 14px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      backface-visibility: hidden;
+      transition: transform 0.3s ease;
+    }
 
-    .btn-donate { --clr-font-main: hsla(0 0% 20% / 100); --btn-bg-1: hsla(217 100% 56% / 1); --btn-bg-2: hsla(260 100% 60% / 1); --btn-bg-color: hsla(360 100% 100% / 1); --radii: 1rem; cursor: pointer; padding: 0.9em 1.4em; min-width: 120px; min-height: 55px; font-size: var(--size, 1rem); font-weight: 700; transition: 0.8s; background-size: 280% auto; background-image: linear-gradient(325deg, var(--btn-bg-2) 0%, var(--btn-bg-1) 55%, var(--btn-bg-2) 90%); border: none; border-radius: var(--radii); color: var(--btn-bg-color); box-shadow: 0px 0px 20px rgba(71, 184, 255, 0.3); display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-    .btn-donate:hover { background-position: right top; }
+    .btn-minus .custom-btn-front,
+    .btn-plus .custom-btn-front {
+      background: #ffffff;
+      border: 2px solid #f1f5f9;
+    }
+
+    .btn-minus i,
+    .btn-plus i {
+      color: #94a3b8;
+    }
+
+    .custom-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .custom-btn:active {
+      transform: scale(0.95);
+    }
+
+    .bin-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 55px;
+      height: 55px;
+      border-radius: 15px;
+      background-color: rgb(255, 95, 95);
+      cursor: pointer;
+      border: 3px solid rgb(255, 201, 201);
+      transition-duration: 0.3s;
+      box-shadow: 0 4px 6px rgba(255, 95, 95, 0.3);
+    }
+
+    .bin-bottom {
+      width: 15px;
+    }
+
+    .bin-top {
+      width: 17px;
+      transform-origin: right;
+      transition-duration: 0.3s;
+    }
+
+    .bin-button:hover .bin-top {
+      transform: rotate(45deg);
+    }
+
+    .bin-button:hover {
+      background-color: rgb(255, 0, 0);
+    }
+
+    .bin-button:active {
+      transform: scale(0.9);
+    }
+
+    .btn-donate {
+      --clr-font-main: hsla(0 0% 20% / 100);
+      --btn-bg-1: hsla(217 100% 56% / 1);
+      --btn-bg-2: hsla(260 100% 60% / 1);
+      --btn-bg-color: hsla(360 100% 100% / 1);
+      --radii: 1rem;
+      cursor: pointer;
+      padding: 0.9em 1.4em;
+      min-width: 120px;
+      min-height: 55px;
+      font-size: var(--size, 1rem);
+      font-weight: 700;
+      transition: 0.8s;
+      background-size: 280% auto;
+      background-image: linear-gradient(325deg, var(--btn-bg-2) 0%, var(--btn-bg-1) 55%, var(--btn-bg-2) 90%);
+      border: none;
+      border-radius: var(--radii);
+      color: var(--btn-bg-color);
+      box-shadow: 0px 0px 20px rgba(71, 184, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-donate:hover {
+      background-position: right top;
+    }
+
+    /* Nav Button Active States */
+    .tab-button.active {
+      background-color: white;
+      color: #2563eb;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab-button:not(.active) {
+      background-color: rgba(255, 255, 255, 0.15);
+      color: #eff6ff;
+    }
+
+    .tab-button:not(.active):hover {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
   </style>
 </head>
-<body class="bg-slate-50 relative h-full w-full text-slate-800 overflow-hidden selection:bg-blue-100 selection:text-blue-600">
-  
-  <!-- Blobs -->
-  <div class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob z-0 pointer-events-none"></div>
-  <div class="fixed top-[10%] right-[-10%] w-[400px] h-[400px] bg-blue-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-2000 z-0 pointer-events-none"></div>
-  <div class="fixed bottom-[-10%] left-[20%] w-[450px] h-[450px] bg-indigo-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-4000 z-0 pointer-events-none"></div>
 
-  <div class="relative z-10 w-full md:max-w-5xl mx-auto bg-white/70 backdrop-blur-2xl h-full md:h-[95vh] md:my-[2.5vh] md:rounded-[2.5rem] md:shadow-2xl md:border md:border-white/60 flex flex-col transition-all duration-300 overflow-hidden ring-1 ring-white/50">
-    
-    <!-- Header -->
-    <div class="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-6 md:rounded-t-[2.5rem] rounded-b-[2.5rem] shadow-lg shadow-indigo-500/20 text-white shrink-0 z-30 flex justify-between items-center relative overflow-hidden">
+<body
+  class="bg-slate-50 relative h-full w-full text-slate-800 overflow-hidden selection:bg-blue-100 selection:text-blue-600">
+
+  <div
+    class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob z-0 pointer-events-none">
+  </div>
+  <div
+    class="fixed top-[10%] right-[-10%] w-[400px] h-[400px] bg-blue-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-2000 z-0 pointer-events-none">
+  </div>
+  <div
+    class="fixed bottom-[-10%] left-[20%] w-[450px] h-[450px] bg-indigo-300/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-4000 z-0 pointer-events-none">
+  </div>
+
+  <div
+    class="relative z-10 w-full h-full md:h-[95vh] md:my-[2.5vh] md:w-[98%] md:mx-auto bg-white/70 backdrop-blur-2xl rounded-none md:rounded-[2.5rem] md:shadow-2xl md:border md:border-white/60 flex flex-col transition-all duration-300 overflow-hidden ring-1 ring-white/50">
+
+    <div
+      class="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 px-6 py-4 md:rounded-t-[2.5rem] shadow-lg shadow-indigo-500/20 text-white shrink-0 z-30 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
       <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
       <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-10 -mb-10 blur-xl"></div>
-      <div class="relative z-10">
-        <h1 class="text-2xl font-extrabold flex items-center gap-3 tracking-tight"><i class="fa-solid fa-prescription-bottle-medical text-blue-200"></i> OPD Pharmacy</h1>
-        <p class="text-blue-100 text-sm opacity-80 font-medium tracking-wide mt-0.5">Expiry Management System</p>
+
+      <div class="relative z-10 flex items-center gap-4 w-full md:w-auto">
+        <div class="bg-white/20 p-2 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner flex-shrink-0">
+          <img src="icons/hoslogo.png" alt="Hospital Logo"
+            class="w-12 h-12 md:w-14 md:h-14 object-contain drop-shadow-md">
+        </div>
+        <div class="flex flex-col justify-center">
+          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-none text-white drop-shadow-sm">
+            OPD Pharmacy
+          </h1>
+          <p class="text-blue-100 text-sm md:text-base opacity-90 font-medium tracking-wide mt-0.5">
+            Expiry Management System
+          </p>
+        </div>
       </div>
-      <a href="https://docs.google.com/spreadsheets/d/1l7gEdZJrgfTbXPF3wWyM1DjfALJIKLM8zokXEfZLw_k/edit?usp=sharing" target="_blank" class="relative z-10 w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-lg cursor-pointer group hover:scale-110 transition-all duration-300 border-2 border-[#1D6F42]">
-        <svg class="w-6 h-6" viewBox="0 0 87.3 113.2" xmlns="http://www.w3.org/2000/svg"><path fill="#1D6F42" d="M5.9 0h53.2l28.2 28.2v79.1c0 3.2-2.6 5.9-5.9 5.9H5.9c-3.2 0-5.9-2.6-5.9-5.9V5.9C0 2.6 2.6 0 5.9 0z"/><path fill="#47C67F" d="M59.1 0v28.2h28.2L59.1 0z"/><path fill="#FFF" d="M19.1 23.5h36.4v9.1H19.1zM19.1 41.7h49.1v9.1H19.1zM19.1 59.8h49.1v9.1H19.1zM19.1 78h49.1v9.1H19.1z"/></svg>
-      </a>
+
+      <div class="relative z-10 flex items-center gap-2 w-full md:w-auto justify-end">
+        <button onclick="switchTab('entry')" id="tab-entry"
+          class="tab-button active w-40 h-11 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap">
+          <i class="fa-solid fa-plus"></i> Add Item
+        </button>
+        <button onclick="switchTab('report')" id="tab-report"
+          class="tab-button w-40 h-11 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap">
+          <i class="fa-solid fa-list-ul"></i> Manage Item
+        </button>
+        <a href="https://docs.google.com/spreadsheets/d/1l7gEdZJrgfTbXPF3wWyM1DjfALJIKLM8zokXEfZLw_k/edit?usp=sharing"
+          target="_blank"
+          class="w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-lg cursor-pointer group hover:scale-110 transition-all duration-300 border-2 border-[#1D6F42] ml-2 shrink-0">
+          <svg class="w-6 h-6" viewBox="0 0 87.3 113.2" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#1D6F42"
+              d="M5.9 0h53.2l28.2 28.2v79.1c0 3.2-2.6 5.9-5.9 5.9H5.9c-3.2 0-5.9-2.6-5.9-5.9V5.9C0 2.6 2.6 0 5.9 0z" />
+            <path fill="#47C67F" d="M59.1 0v28.2h28.2L59.1 0z" />
+            <path fill="#FFF"
+              d="M19.1 23.5h36.4v9.1H19.1zM19.1 41.7h49.1v9.1H19.1zM19.1 59.8h49.1v9.1H19.1zM19.1 78h49.1v9.1H19.1z" />
+          </svg>
+        </a>
+      </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex p-4 gap-3 shrink-0 md:px-8">
-      <button onclick="switchTab('entry')" id="tab-entry" class="flex-1 py-3 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-500/30 transform scale-100"><i class="fa-solid fa-plus mr-2"></i> Add Item</button>
-      <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-3 px-4 rounded-2xl font-bold text-base transition-all duration-300 bg-white/50 hover:bg-white text-slate-500 border border-slate-200/60 backdrop-blur-sm"><i class="fa-solid fa-list-ul mr-2"></i> Manage Item</button>
-    </div>
+    <div id="mainContainer"
+      class="flex-1 px-4 md:px-6 pb-32 overflow-y-auto overflow-x-hidden relative scroll-smooth pt-6">
 
-    <div id="mainContainer" class="flex-1 px-5 md:px-8 pb-32 overflow-y-auto overflow-x-hidden relative scroll-smooth">
-      <!-- TAB 1: ADD ITEM -->
-      <div id="view-entry" class="fade-in space-y-5 pt-2">
-        <form id="expiryForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
-          <input type="hidden" id="generic" name="generic"><input type="hidden" id="unit" name="unit"><input type="hidden" id="strength" name="strength">
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div class="group"><label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Transaction Date</label><input type="date" id="entryDate" name="entryDate" class="w-full h-12 px-4 rounded-2xl bg-white/80 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-lg text-slate-700 shadow-sm" required></div>
-              <div class="relative group">
-                  <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Drug Name</label>
-                  <div class="flex gap-2">
-                      <div class="relative flex-1">
-                          <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 z-10 group-focus-within:text-blue-500 transition-colors text-lg"></i>
-                          <input type="text" id="drugSearch" name="drugName" placeholder="Tap Refresh button first..." class="w-full h-12 pl-11 pr-10 px-4 rounded-2xl bg-white/80 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-lg shadow-sm disabled:bg-slate-50 disabled:text-slate-400" autocomplete="off" required disabled>
-                          <button type="button" id="clearSearchBtn" onclick="clearDrugSearch()" class="absolute right-3 top-2.5 text-slate-400 hover:text-red-500 hidden z-20 w-8 h-8 rounded-full hover:bg-slate-100 transition flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
-                      </div>
-                      <button type="button" onclick="refreshData()" id="btnRefresh" class="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 shadow-sm flex items-center justify-center transition-all active:scale-95" title="Load Data"><i class="fa-solid fa-arrows-rotate text-xl" id="iconRefresh"></i></button>
-                  </div>
-                  <ul id="drugList" class="hidden absolute z-30 w-full bg-white/90 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-xl max-h-60 overflow-y-auto mt-2 overflow-hidden text-base divide-y divide-slate-50"></ul>
-              </div>
-          </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
-              <div class="group"><label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Expiry Date</label><input type="date" id="expiryDateInput" name="expiryDate" class="w-full h-16 px-4 rounded-2xl bg-red-50/50 border border-red-100 focus:border-red-400 focus:ring-4 focus:ring-red-400/10 outline-none text-red-600 font-bold text-xl shadow-sm transition-all" required></div>
-              <div class="group"><label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Quantity</label>
-                 <div class="flex items-center gap-3"> 
-                    <button type="button" onclick="adjustQty(-1)" class="custom-btn btn-minus"><div class="custom-btn-front"><i class="fa-solid fa-minus text-xl"></i></div></button>
-                    <input type="number" id="qtyInput" name="qty" class="flex-1 min-w-0 h-16 text-center rounded-2xl bg-white border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-3xl text-slate-700 shadow-sm" placeholder="0" required>
-                    <button type="button" onclick="adjustQty(1)" class="custom-btn btn-plus"><div class="custom-btn-front"><i class="fa-solid fa-plus text-xl"></i></div></button>
-                    <span id="unitDisplay" class="h-16 px-2 rounded-2xl bg-slate-100 text-slate-500 font-bold border border-slate-200 flex items-center justify-center shadow-sm text-sm tracking-wider min-w-[50px] uppercase">UNIT</span>
-                 </div>
-              </div>
-          </div>
+      <div id="view-entry" class="fade-in w-full">
+        <form id="expiryForm" onsubmit="handleFormSubmit(event)" class="space-y-6 w-full">
+          <input type="hidden" id="generic" name="generic"><input type="hidden" id="unit" name="unit"><input
+            type="hidden" id="strength" name="strength">
 
-          <div><label class="block text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider ml-1">Management Action <span class="text-red-500">*</span></label>
-            <div class="grid grid-cols-3 md:grid-cols-4 gap-3">
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Sticker" class="action-card-input hidden" required onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-tags text-2xl text-orange-500"></i><span class="text-sm font-bold text-slate-600">ติด Sticker</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Transfer" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-share-from-square text-2xl text-blue-500"></i><span class="text-sm font-bold text-slate-600">ส่งต่อ</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Separate" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span class="text-sm font-bold text-slate-600">แยกเก็บ</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ContactWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span class="text-sm font-bold text-slate-600">ติดต่อคลัง</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ReturnWH" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span class="text-sm font-bold text-slate-600">คืนคลัง</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Destroy" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-fire text-2xl text-red-600"></i><span class="text-sm font-bold text-slate-600">ทำลาย</span></div></label>
-              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Other" class="action-card-input hidden" onchange="toggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span class="text-sm font-bold text-slate-600">อื่นๆ</span></div></label>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="group"><label
+                class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Transaction
+                Date</label><input type="date" id="entryDate" name="entryDate"
+                class="w-full h-12 px-4 rounded-2xl bg-white/80 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-lg text-slate-700 shadow-sm"
+                required></div>
+
+            <div class="relative group lg:col-span-1">
+              <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Drug Name</label>
+              <div class="flex gap-2">
+                <div class="relative flex-1">
+                  <i
+                    class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 z-10 group-focus-within:text-blue-500 transition-colors text-lg"></i>
+                  <input type="text" id="drugSearch" name="drugName" placeholder="Tap Refresh button first..."
+                    class="w-full h-12 pl-11 pr-10 px-4 rounded-2xl bg-white/80 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-lg shadow-sm disabled:bg-slate-50 disabled:text-slate-400"
+                    autocomplete="off" required disabled>
+                  <button type="button" id="clearSearchBtn" onclick="clearDrugSearch()"
+                    class="absolute right-3 top-2.5 text-slate-400 hover:text-red-500 hidden z-20 w-8 h-8 rounded-full hover:bg-slate-100 transition flex items-center justify-center"><i
+                      class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <button type="button" onclick="refreshData()" id="btnRefresh"
+                  class="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 shadow-sm flex items-center justify-center transition-all active:scale-95"
+                  title="Load Data"><i class="fa-solid fa-arrows-rotate text-xl" id="iconRefresh"></i></button>
+              </div>
+              <ul id="drugList"
+                class="hidden absolute z-30 w-full bg-white/90 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-xl max-h-60 overflow-y-auto mt-2 overflow-hidden text-base divide-y divide-slate-50">
+              </ul>
+            </div>
+
+            <div class="group"><label
+                class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Expiry
+                Date</label><input type="date" id="expiryDateInput" name="expiryDate"
+                class="w-full h-12 px-4 rounded-2xl bg-red-50/50 border border-red-100 focus:border-red-400 focus:ring-4 focus:ring-red-400/10 outline-none text-red-600 font-bold text-xl shadow-sm transition-all"
+                required></div>
+
+            <div class="group"><label
+                class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider ml-1">Quantity</label>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="adjustQty(-1)" class="custom-btn btn-minus h-12 w-12">
+                  <div class="custom-btn-front rounded-xl"><i class="fa-solid fa-minus"></i></div>
+                </button>
+                <input type="number" id="qtyInput" name="qty"
+                  class="flex-1 min-w-0 h-12 text-center rounded-2xl bg-white border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-2xl text-slate-700 shadow-sm"
+                  placeholder="0" required>
+                <button type="button" onclick="adjustQty(1)" class="custom-btn btn-plus h-12 w-12">
+                  <div class="custom-btn-front rounded-xl"><i class="fa-solid fa-plus"></i></div>
+                </button>
+                <span id="unitDisplay"
+                  class="h-12 px-3 rounded-2xl bg-slate-100 text-slate-500 font-bold border border-slate-200 flex items-center justify-center shadow-sm text-sm tracking-wider min-w-[60px] uppercase">UNIT</span>
+              </div>
             </div>
           </div>
-          
-          <div id="dynamicArea" class="p-5 bg-slate-50/80 backdrop-blur-sm rounded-3xl border border-slate-200 hidden fade-in">
-            <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider" id="dynamicLabel">Additional Details</label>
-            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                <select id="inputTransfer" class="dynamic-input hidden w-full p-3 rounded-xl bg-slate-50 border border-slate-100 outline-none focus:border-blue-400 focus:bg-white text-base">
-                  <option value="" disabled selected>-- เลือกปลายทาง --</option>
-                  <option value="IPD MED">IPD MED</option>
-                  <option value="IPD SURG">IPD SURG</option>
-                  <option value="OPD SURG">OPD SURG</option>
-                  <option value="ER">ER</option>
-                  <option value="Napha">Napha</option>
-                  <option value="เด็ก&จิตเวช">เด็ก&จิตเวช</option>
-                </select>
-                <div class="space-y-2"><textarea id="subNote" placeholder="Note (Optional)..." class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-base" rows="2"></textarea></div>
+
+          <div><label class="block text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider ml-1">Management
+              Action <span class="text-red-500">*</span></label>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Sticker"
+                  class="action-card-input hidden" required onchange="toggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-tags text-2xl text-orange-500"></i><span
+                    class="text-sm font-bold text-slate-600">ติด Sticker</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Transfer"
+                  class="action-card-input hidden" onchange="toggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-share-from-square text-2xl text-blue-500"></i><span
+                    class="text-sm font-bold text-slate-600">ส่งต่อ</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Separate"
+                  class="action-card-input hidden" onchange="toggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span
+                    class="text-sm font-bold text-slate-600">แยกเก็บ</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ContactWH"
+                  class="action-card-input hidden" onchange="toggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span
+                    class="text-sm font-bold text-slate-600">ติดต่อคลัง</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="ReturnWH"
+                  class="action-card-input hidden" onchange="toggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span
+                    class="text-sm font-bold text-slate-600">คืนคลัง</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Destroy"
+                  class="action-card-input hidden" onchange="toggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-fire text-2xl text-red-600"></i><span
+                    class="text-sm font-bold text-slate-600">ทำลาย</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="actionType" value="Other"
+                  class="action-card-input hidden" onchange="toggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span
+                    class="text-sm font-bold text-slate-600">อื่นๆ</span></div>
+              </label>
             </div>
           </div>
-          <button type="submit" class="btn-donate w-full mt-6 text-lg group"><i class="fa-solid fa-save group-hover:scale-110 transition-transform"></i> Save Data</button>
+
+          <div id="dynamicArea"
+            class="p-5 bg-slate-50/80 backdrop-blur-sm rounded-3xl border border-slate-200 hidden fade-in">
+            <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider"
+              id="dynamicLabel">Additional Details</label>
+            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3">
+              <select id="inputTransfer"
+                class="dynamic-input hidden w-full md:w-1/3 p-3 rounded-xl bg-slate-50 border border-slate-100 outline-none focus:border-blue-400 focus:bg-white text-base">
+                <option value="" disabled selected>-- เลือกปลายทาง --</option>
+                <option value="IPD MED">IPD MED</option>
+                <option value="IPD SURG">IPD SURG</option>
+                <option value="OPD SURG">OPD SURG</option>
+                <option value="ER">ER</option>
+                <option value="Napha">Napha</option>
+                <option value="เด็ก&จิตเวช">เด็ก&จิตเวช</option>
+              </select>
+              <div class="flex-1"><textarea id="subNote" placeholder="Note (Optional)..."
+                  class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-base"
+                  rows="1"></textarea></div>
+            </div>
+          </div>
+          <button type="submit" class="btn-donate w-full mt-6 text-lg group"><i
+              class="fa-solid fa-save group-hover:scale-110 transition-transform"></i> Save Data</button>
         </form>
       </div>
 
-      <!-- TAB 2: MANAGE ITEM -->
-      <div id="view-report" class="hidden fade-in pt-2 space-y-4">
-        <div class="sticky top-0 bg-white/80 backdrop-blur-md p-4 -mx-4 z-20 rounded-b-3xl border-b border-slate-100/50 shadow-sm">
-           <div class="grid grid-cols-2 gap-4 mb-3">
-               <div><label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Timeframe</label><div class="relative"><select id="filterTime" onchange="toggleCustomDate()" class="appearance-none w-full text-sm font-semibold p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 shadow-sm outline-none focus:border-blue-400 focus:bg-white transition-colors"><option value="all">All Time</option><option value="30">Next 30 Days</option><option value="90">Next 3 Months</option><option value="180">Next 6 Months</option><option value="custom">Custom...</option></select><i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i></div></div>
-               <div><label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Action Type</label><div class="relative"><select id="filterAction" onchange="renderReport()" class="appearance-none w-full text-sm font-semibold p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 shadow-sm outline-none focus:border-blue-400 focus:bg-white transition-colors"><option value="all">All Types</option><option value="Sticker">ติด Sticker</option><option value="Transfer">ส่งต่อห้องยา</option><option value="Separate">แยกเก็บ</option><option value="ContactWH">ติดต่อคลัง</option><option value="ReturnWH">คืนคลัง</option><option value="Destroy">ทำลาย</option></select><i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i></div></div>
-           </div>
-           <button onclick="forceRefreshReport()" id="btnReportRefresh" class="w-full py-2.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 font-bold text-sm hover:bg-blue-100 hover:text-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-arrows-rotate"></i> Refresh List</button>
+      <div id="view-report" class="hidden fade-in w-full">
+        <div
+          class="sticky top-0 bg-white/80 backdrop-blur-md p-4 -mx-4 z-20 rounded-b-3xl border-b border-slate-100/50 shadow-sm mb-4">
+          <div class="flex flex-col lg:flex-row gap-4 items-end lg:items-center">
+            <div class="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Timeframe</label>
+                <div class="relative"><select id="filterTime" onchange="toggleCustomDate()"
+                    class="appearance-none w-full text-sm font-semibold p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 shadow-sm outline-none focus:border-blue-400 focus:bg-white transition-colors">
+                    <option value="all">All Time</option>
+                    <option value="30">Next 30 Days</option>
+                    <option value="90">Next 3 Months</option>
+                    <option value="180">Next 6 Months</option>
+                    <option value="custom">Custom...</option>
+                  </select><i
+                    class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i>
+                </div>
+              </div>
+              <div><label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Action Type</label>
+                <div class="relative"><select id="filterAction" onchange="renderReport()"
+                    class="appearance-none w-full text-sm font-semibold p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 shadow-sm outline-none focus:border-blue-400 focus:bg-white transition-colors">
+                    <option value="all">All Types</option>
+                    <option value="Sticker">ติด Sticker</option>
+                    <option value="Transfer">ส่งต่อห้องยา</option>
+                    <option value="Separate">แยกเก็บ</option>
+                    <option value="ContactWH">ติดต่อคลัง</option>
+                    <option value="ReturnWH">คืนคลัง</option>
+                    <option value="Destroy">ทำลาย</option>
+                  </select><i
+                    class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i>
+                </div>
+              </div>
+            </div>
+            <button onclick="forceRefreshReport()" id="btnReportRefresh"
+              class="w-full lg:w-auto px-6 py-2.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 font-bold text-sm hover:bg-blue-100 hover:text-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"><i
+                class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+          </div>
         </div>
 
-        <div id="customDateContainer" class="hidden bg-slate-50 p-3 rounded-xl border border-slate-200 flex gap-2 items-center fade-in"><input type="number" id="customNumber" placeholder="Qty" oninput="renderReport()" class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none text-center focus:border-blue-400"><select id="customUnit" onchange="renderReport()" class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none bg-white focus:border-blue-400"><option value="days">Days</option><option value="months">Months</option></select><span class="text-xs text-slate-400 whitespace-nowrap font-medium">from now</span></div>
-        <div id="reportList" class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-24 min-h-[300px]"></div>
-        <div id="paginationControls" class="flex justify-between items-center pt-4 pb-24 hidden"><button onclick="prevPage()" id="btnPrev" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50 shadow-sm">Previous</button><span id="pageIndicator" class="text-sm font-bold text-slate-400">Page 1</span><button onclick="nextPage()" id="btnNext" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50 shadow-sm">Next</button></div>
+        <div id="customDateContainer"
+          class="hidden bg-slate-50 p-3 rounded-xl border border-slate-200 flex gap-2 items-center fade-in mb-4"><input
+            type="number" id="customNumber" placeholder="Qty" oninput="renderReport()"
+            class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none text-center focus:border-blue-400"><select
+            id="customUnit" onchange="renderReport()"
+            class="flex-1 p-2 text-base rounded-lg border border-slate-300 outline-none bg-white focus:border-blue-400">
+            <option value="days">Days</option>
+            <option value="months">Months</option>
+          </select><span class="text-xs text-slate-400 whitespace-nowrap font-medium">from now</span></div>
+
+        <div id="reportList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-24 min-h-[300px]"></div>
+
+        <div id="paginationControls" class="flex justify-between items-center pt-4 pb-24 hidden"><button
+            onclick="prevPage()" id="btnPrev"
+            class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50 shadow-sm">Previous</button><span
+            id="pageIndicator" class="text-sm font-bold text-slate-400">Page 1</span><button onclick="nextPage()"
+            id="btnNext"
+            class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-base font-bold disabled:opacity-50 hover:bg-slate-50 shadow-sm">Next</button>
+        </div>
       </div>
     </div>
-    
-    <button id="backToTop" onclick="scrollToTop()" class="back-to-top w-14 h-14 rounded-full bg-white/90 backdrop-blur border border-slate-200 text-blue-600 shadow-lg shadow-blue-200 flex items-center justify-center hover:scale-110 active:scale-90 hover:bg-blue-50"><i class="fa-solid fa-arrow-up text-xl"></i></button>
 
-    <!-- Manage Modal -->
+    <button id="backToTop" onclick="scrollToTop()"
+      class="back-to-top w-14 h-14 rounded-full bg-white/90 backdrop-blur border border-slate-200 text-blue-600 shadow-lg shadow-blue-200 flex items-center justify-center hover:scale-110 active:scale-90 hover:bg-blue-50"><i
+        class="fa-solid fa-arrow-up text-xl"></i></button>
+
     <div id="manageModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg p-4">
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md md:max-w-lg h-[85vh] flex flex-col overflow-hidden transform transition-all scale-100 ring-1 ring-black/5">
-            <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 text-white flex justify-between items-center shrink-0 relative overflow-hidden">
-                <div class="relative z-10 pr-4">
-                  <h3 class="font-medium text-blue-200 text-xs uppercase tracking-wider mb-1 flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Manage Item</h3>
-                  <p class="text-xl font-bold text-white leading-tight drop-shadow-sm" id="manageDrugName">Drug Name</p>
-                </div>
-                <button onclick="closeManageModal()" class="relative z-10 w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-all shadow-lg p-0 leading-none focus:outline-none active:scale-90 shrink-0 group"><i class="fa-solid fa-xmark text-xl text-white group-hover:rotate-90 transition-transform duration-300"></i></button>
-            </div>
-            <div class="p-6 overflow-y-auto flex-1 space-y-6 scroll-smooth bg-slate-50/50">
-                <input type="hidden" id="manageRowIndex"><input type="hidden" id="manageMaxQty"><input type="hidden" id="manageOriginalAction">
-                
-                <div class="bg-white p-5 rounded-3xl border border-slate-100 text-center relative shadow-sm">
-                    <div id="modalUnitTop" class="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-md uppercase tracking-widest">UNIT</div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-4 tracking-wider">Manage Quantity</label>
-                    <div class="flex items-center justify-center gap-4 mb-6">
-                        <button type="button" onclick="adjustManageQty(-1)" class="w-12 h-12 rounded-full border-2 border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group active:scale-95"><i class="fa-solid fa-minus text-lg"></i></button>
-                        <div class="flex-1 max-w-[100px] border-b-2 border-blue-200 hover:border-blue-400 transition-colors"><input type="number" id="manageQty" class="w-full outline-none text-center text-3xl font-bold text-blue-600 bg-transparent font-mono" placeholder="0"></div>
-                        <button type="button" onclick="adjustManageQty(1)" class="w-12 h-12 rounded-full border-2 border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group active:scale-95"><i class="fa-solid fa-plus text-lg"></i></button>
-                        <button type="button" onclick="setAllQty()" class="w-12 h-12 rounded-full border-2 border-blue-100 text-blue-500 bg-white hover:bg-blue-50 transition-all duration-200 flex items-center justify-center font-bold text-[10px] active:scale-95 shadow-sm hover:shadow-md">ALL</button>
-                    </div>
-                    <div class="text-xs text-slate-500 bg-slate-50 px-4 py-2 rounded-full border border-slate-100 inline-flex items-center gap-2 shadow-inner">Current Stock: <span id="displayMaxQty" class="font-bold text-slate-800 text-base">0</span> <span id="manageUnit" class="text-[10px] font-bold text-blue-500 uppercase">UNIT</span><button onclick="editStockQty()" class="text-blue-400 hover:text-blue-600 ml-2 transition-colors"><i class="fa-solid fa-pen-to-square"></i></button></div>
-                </div>
-
-                <!-- Note Display Box -->
-                <div id="displayCurrentNoteBox" class="hidden bg-amber-50 p-4 rounded-2xl border border-amber-100 relative shadow-sm">
-                    <label class="block text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1 flex items-center gap-1"><i class="fa-solid fa-note-sticky"></i> Note / รายละเอียดเดิม</label>
-                    <p id="displayCurrentNote" class="text-slate-700 text-sm leading-relaxed font-medium break-words"></p>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider ml-1">New Status</label>
-                    <div class="grid grid-cols-3 gap-3">
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Sticker" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-tags text-2xl text-orange-500"></i><span class="text-xs font-bold text-slate-600">Sticker</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Transfer" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-share-from-square text-2xl text-blue-500"></i><span class="text-xs font-bold text-slate-600">ส่งต่อ</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Separate" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span class="text-xs font-bold text-slate-600">แยกเก็บ</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ContactWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span class="text-xs font-bold text-slate-600">แจ้งคลัง</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ReturnWH" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span class="text-xs font-bold text-slate-600">คืนคลัง</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Destroy" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-fire text-2xl text-red-600"></i><span class="text-xs font-bold text-slate-600">ทำลาย</span></div></label>
-                      <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Other" class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)"><div class="action-card"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span class="text-xs font-bold text-slate-600">อื่นๆ</span></div></label>
-                    </div>
-                </div>
-
-                <div id="modalDynamicArea" class="p-5 bg-white rounded-3xl border border-slate-200 hidden fade-in shadow-sm">
-                    <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider" id="modalDynamicLabel">Details</label>
-                    <div class="space-y-3">
-                      <select id="modalTransfer" class="dynamic-input hidden w-full p-3 rounded-xl bg-slate-50 border border-slate-100 outline-none text-sm focus:border-blue-400 focus:bg-white transition-colors">
-                        <option value="" disabled selected>-- เลือกปลายทาง --</option>
-                        <option value="IPD MED">IPD MED</option>
-                        <option value="IPD SURG">IPD SURG</option>
-                        <option value="OPD SURG">OPD SURG</option>
-                        <option value="ER">ER</option>
-                        <option value="Napha">Napha</option>
-                        <option value="เด็ก&จิตเวช">เด็ก&จิตเวช</option>
-                      </select>
-                      <textarea id="modalSubNote" placeholder="Note (Optional)..." class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none transition-colors text-sm focus:ring-2 focus:ring-blue-100" rows="2"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="p-6 border-t border-slate-100 bg-white flex gap-4 shrink-0 pb-8 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
-                <button onclick="confirmDelete()" class="bin-button">
-                    <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg"><line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line><line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line></svg>
-                    <svg class="bin-bottom" viewBox="0 0 33 39" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="path-1-inside-1_8_19" fill="white"><path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path></mask><path d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z" fill="white" mask="url(#path-1-inside-1_8_19)"></path><path d="M12 6L12 29" stroke="white" stroke-width="4"></path><path d="M21 6V29" stroke="white" stroke-width="4"></path></svg>
-                </button>
-                <button onclick="submitManagement()" class="btn-donate flex-1 group">Confirm Update <i class="fa-solid fa-floppy-disk group-hover:scale-125 transition-transform ml-2"></i></button>
-            </div>
+      <div
+        class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md md:max-w-lg h-[85vh] flex flex-col overflow-hidden transform transition-all scale-100 ring-1 ring-black/5">
+        <div
+          class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 text-white flex justify-between items-center shrink-0 relative overflow-hidden">
+          <div class="relative z-10 pr-4">
+            <h3 class="font-medium text-blue-200 text-xs uppercase tracking-wider mb-1 flex items-center gap-2"><i
+                class="fa-solid fa-pen-to-square"></i> Manage Item</h3>
+            <p class="text-xl font-bold text-white leading-tight drop-shadow-sm" id="manageDrugName">Drug Name</p>
+          </div>
+          <button onclick="closeManageModal()"
+            class="relative z-10 w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-all shadow-lg p-0 leading-none focus:outline-none active:scale-90 shrink-0 group"><i
+              class="fa-solid fa-xmark text-xl text-white group-hover:rotate-90 transition-transform duration-300"></i></button>
         </div>
+        <div class="p-6 overflow-y-auto flex-1 space-y-6 scroll-smooth bg-slate-50/50">
+          <input type="hidden" id="manageRowIndex"><input type="hidden" id="manageMaxQty"><input type="hidden"
+            id="manageOriginalAction">
+
+          <div class="bg-white p-5 rounded-3xl border border-slate-100 text-center relative shadow-sm">
+            <div id="modalUnitTop"
+              class="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-md uppercase tracking-widest">
+              UNIT</div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-4 tracking-wider">Manage Quantity</label>
+            <div class="flex items-center justify-center gap-4 mb-6">
+              <button type="button" onclick="adjustManageQty(-1)"
+                class="w-12 h-12 rounded-full border-2 border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group active:scale-95"><i
+                  class="fa-solid fa-minus text-lg"></i></button>
+              <div class="flex-1 max-w-[100px] border-b-2 border-blue-200 hover:border-blue-400 transition-colors">
+                <input type="number" id="manageQty"
+                  class="w-full outline-none text-center text-3xl font-bold text-blue-600 bg-transparent font-mono"
+                  placeholder="0"></div>
+              <button type="button" onclick="adjustManageQty(1)"
+                class="w-12 h-12 rounded-full border-2 border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group active:scale-95"><i
+                  class="fa-solid fa-plus text-lg"></i></button>
+              <button type="button" onclick="setAllQty()"
+                class="w-12 h-12 rounded-full border-2 border-blue-100 text-blue-500 bg-white hover:bg-blue-50 transition-all duration-200 flex items-center justify-center font-bold text-[10px] active:scale-95 shadow-sm hover:shadow-md">ALL</button>
+            </div>
+            <div
+              class="text-xs text-slate-500 bg-slate-50 px-4 py-2 rounded-full border border-slate-100 inline-flex items-center gap-2 shadow-inner">
+              Current Stock: <span id="displayMaxQty" class="font-bold text-slate-800 text-base">0</span> <span
+                id="manageUnit" class="text-[10px] font-bold text-blue-500 uppercase">UNIT</span><button
+                onclick="editStockQty()" class="text-blue-400 hover:text-blue-600 ml-2 transition-colors"><i
+                  class="fa-solid fa-pen-to-square"></i></button></div>
+          </div>
+
+          <div id="displayCurrentNoteBox"
+            class="hidden bg-amber-50 p-4 rounded-2xl border border-amber-100 relative shadow-sm">
+            <label
+              class="block text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1 flex items-center gap-1"><i
+                class="fa-solid fa-note-sticky"></i> Note / รายละเอียดเดิม</label>
+            <p id="displayCurrentNote" class="text-slate-700 text-sm leading-relaxed font-medium break-words"></p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider ml-1">New Status</label>
+            <div class="grid grid-cols-3 gap-3">
+              <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Sticker"
+                  class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-tags text-2xl text-orange-500"></i><span
+                    class="text-xs font-bold text-slate-600">Sticker</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Transfer"
+                  class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-share-from-square text-2xl text-blue-500"></i><span
+                    class="text-xs font-bold text-slate-600">ส่งต่อ</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Separate"
+                  class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-box-open text-2xl text-red-500"></i><span
+                    class="text-xs font-bold text-slate-600">แยกเก็บ</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ContactWH"
+                  class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-phone-volume text-2xl text-teal-500"></i><span
+                    class="text-xs font-bold text-slate-600">แจ้งคลัง</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="ReturnWH"
+                  class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span
+                    class="text-xs font-bold text-slate-600">คืนคลัง</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Destroy"
+                  class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-fire text-2xl text-red-600"></i><span
+                    class="text-xs font-bold text-slate-600">ทำลาย</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Other"
+                  class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-ellipsis text-2xl text-gray-500"></i><span
+                    class="text-xs font-bold text-slate-600">อื่นๆ</span></div>
+              </label>
+            </div>
+          </div>
+
+          <div id="modalDynamicArea" class="p-5 bg-white rounded-3xl border border-slate-200 hidden fade-in shadow-sm">
+            <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider"
+              id="modalDynamicLabel">Details</label>
+            <div class="space-y-3">
+              <select id="modalTransfer"
+                class="dynamic-input hidden w-full p-3 rounded-xl bg-slate-50 border border-slate-100 outline-none text-sm focus:border-blue-400 focus:bg-white transition-colors">
+                <option value="" disabled selected>-- เลือกปลายทาง --</option>
+                <option value="IPD MED">IPD MED</option>
+                <option value="IPD SURG">IPD SURG</option>
+                <option value="OPD SURG">OPD SURG</option>
+                <option value="ER">ER</option>
+                <option value="Napha">Napha</option>
+                <option value="เด็ก&จิตเวช">เด็ก&จิตเวช</option>
+              </select>
+              <textarea id="modalSubNote" placeholder="Note (Optional)..."
+                class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none transition-colors text-sm focus:ring-2 focus:ring-blue-100"
+                rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div
+          class="p-6 border-t border-slate-100 bg-white flex gap-4 shrink-0 pb-8 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+          <button onclick="confirmDelete()" class="bin-button">
+            <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+              <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+            </svg>
+            <svg class="bin-bottom" viewBox="0 0 33 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <mask id="path-1-inside-1_8_19" fill="white">
+                <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
+              </mask>
+              <path
+                d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+                fill="white" mask="url(#path-1-inside-1_8_19)"></path>
+              <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+              <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+            </svg>
+          </button>
+          <button onclick="submitManagement()" class="btn-donate flex-1 group">Confirm Update <i
+              class="fa-solid fa-floppy-disk group-hover:scale-125 transition-transform ml-2"></i></button>
+        </div>
+      </div>
     </div>
 
-    <div id="overlay" class="fixed inset-0 bg-slate-900/60 z-[60] hidden flex items-center justify-center backdrop-blur-sm fade-in">
-        <div class="bg-white p-8 rounded-[2rem] shadow-2xl flex flex-col items-center w-80 transform scale-100 animate-bounce-in">
-            <div class="relative mb-6"><div class="custom-loader"></div></div>
-            <h2 class="text-slate-800 font-bold text-xl">Processing...</h2>
-            <p class="text-slate-400 text-base mt-2">Please wait a moment</p>
+    <div id="overlay"
+      class="fixed inset-0 bg-slate-900/60 z-[60] hidden flex items-center justify-center backdrop-blur-sm fade-in">
+      <div
+        class="bg-white p-8 rounded-[2rem] shadow-2xl flex flex-col items-center w-80 transform scale-100 animate-bounce-in">
+        <div class="relative mb-6">
+          <div class="custom-loader"></div>
         </div>
+        <h2 class="text-slate-800 font-bold text-xl">Processing...</h2>
+        <p class="text-slate-400 text-base mt-2">Please wait a moment</p>
+      </div>
     </div>
   </div>
 
-  <script src="app.js"></script> 
   <script>
-     if ('serviceWorker' in navigator) {
-       window.addEventListener('load', () => {
-         navigator.serviceWorker.register('sw.js');
-       });
-     }
+    // Config
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHyEk6dmWlbm_YObxknK_C8NgUDSa1l9nbFDCRwuGQd-EpCtBnZiul6DZHapy_z3lqCg/exec";
+    const ROWS_PER_PAGE = 20;
+
+    // Global State
+    let drugList = [];
+    let reportData = [];
+    let filteredReportData = [];
+    let currentPage = 1;
+    let currentStockQty = 0;
+
+    // --- On Load ---
+    document.addEventListener("DOMContentLoaded", () => {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('entryDate').value = today;
+      document.getElementById('expiryDateInput').min = today;
+      switchTab('entry');
+      loadDrugList();
+      setupSearch();
+      setupScroll();
+    });
+
+    // --- Navigation ---
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+      if (tab === 'entry') {
+        document.getElementById('view-entry').classList.remove('hidden');
+        document.getElementById('view-report').classList.add('hidden');
+      } else {
+        document.getElementById('view-entry').classList.add('hidden');
+        document.getElementById('view-report').classList.remove('hidden');
+        if (reportData.length === 0) refreshReport();
+      }
+    }
+
+    // --- Data Loading ---
+    function loadDrugList() {
+      const btn = document.getElementById('btnRefresh');
+      const icon = document.getElementById('iconRefresh');
+      icon.classList.add('fa-spin');
+
+      fetch(`${SCRIPT_URL}?action=getDrugList`)
+        .then(res => res.json())
+        .then(data => {
+          drugList = data;
+          document.getElementById('drugSearch').disabled = false;
+          document.getElementById('drugSearch').placeholder = "Search Drug Name...";
+          icon.classList.remove('fa-spin');
+        })
+        .catch(err => {
+          console.error(err);
+          icon.classList.remove('fa-spin');
+          Swal.fire({ icon: 'error', title: 'Connection Error', text: 'Failed to load drug list.' });
+        });
+    }
+
+    function refreshData() { loadDrugList(); }
+
+    function refreshReport() {
+      document.getElementById('overlay').classList.remove('hidden');
+      fetch(`${SCRIPT_URL}?action=getReportData`)
+        .then(res => res.json())
+        .then(data => {
+          reportData = data;
+          renderReport();
+          document.getElementById('overlay').classList.add('hidden');
+        })
+        .catch(err => {
+          document.getElementById('overlay').classList.add('hidden');
+          Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load report data.' });
+        });
+    }
+
+    function forceRefreshReport() { refreshReport(); }
+
+    // --- Search & Autocomplete ---
+    function setupSearch() {
+      const input = document.getElementById('drugSearch');
+      const list = document.getElementById('drugList');
+      const clearBtn = document.getElementById('clearSearchBtn');
+
+      input.addEventListener('input', function () {
+        const val = this.value.toLowerCase();
+        if (!val) {
+          list.classList.add('hidden');
+          clearBtn.classList.add('hidden');
+          return;
+        }
+        clearBtn.classList.remove('hidden');
+        const matches = drugList.filter(d => d.displayName.toLowerCase().includes(val)).slice(0, 10);
+        list.innerHTML = matches.map(d => `<li class="p-3 hover:bg-blue-50 cursor-pointer transition-colors" onclick="selectDrug('${d.drugName}', '${d.generic}', '${d.strength}', '${d.unit}')"><div class="font-bold text-slate-700">${d.drugName}</div><div class="text-xs text-slate-400">${d.generic} | ${d.strength}</div></li>`).join('');
+        list.classList.remove('hidden');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !list.contains(e.target)) list.classList.add('hidden');
+      });
+    }
+
+    function selectDrug(name, generic, strength, unit) {
+      document.getElementById('drugSearch').value = name;
+      document.getElementById('generic').value = generic;
+      document.getElementById('strength').value = strength;
+      document.getElementById('unit').value = unit;
+      document.getElementById('unitDisplay').innerText = unit || "UNIT";
+      document.getElementById('drugList').classList.add('hidden');
+    }
+
+    function clearDrugSearch() {
+      document.getElementById('drugSearch').value = '';
+      document.getElementById('generic').value = '';
+      document.getElementById('strength').value = '';
+      document.getElementById('unit').value = '';
+      document.getElementById('unitDisplay').innerText = 'UNIT';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      document.getElementById('drugList').classList.add('hidden');
+    }
+
+    // --- Form Handling ---
+    function adjustQty(amount) {
+      const input = document.getElementById('qtyInput');
+      let val = parseInt(input.value) || 0;
+      val += amount;
+      if (val < 0) val = 0;
+      input.value = val;
+    }
+
+    function toggleSubDetails(val) {
+      const area = document.getElementById('dynamicArea');
+      const label = document.getElementById('dynamicLabel');
+      const transferSelect = document.getElementById('inputTransfer');
+      const note = document.getElementById('subNote');
+
+      area.classList.remove('hidden');
+      transferSelect.classList.add('hidden');
+
+      if (val === 'Sticker') {
+        label.innerText = 'Sticker Details';
+        note.placeholder = "ระบุจำนวนที่ติด Sticker...";
+      } else if (val === 'Transfer') {
+        label.innerText = 'Transfer Destination';
+        transferSelect.classList.remove('hidden');
+        note.placeholder = "Note...";
+      } else {
+        label.innerText = 'Additional Notes';
+        note.placeholder = "Note...";
+      }
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const drugName = document.getElementById('drugSearch').value;
+      const qty = parseInt(document.getElementById('qtyInput').value);
+      if (!drugName) return Swal.fire('Error', 'Please select a drug.', 'warning');
+      if (!qty || qty <= 0) return Swal.fire('Error', 'Invalid quantity.', 'warning');
+
+      document.getElementById('overlay').classList.remove('hidden');
+      const formData = new FormData(e.target);
+      const obj = Object.fromEntries(formData.entries());
+
+      const payload = {
+        action: 'saveData',
+        payload: obj
+      };
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('overlay').classList.add('hidden');
+          if (data.success) {
+            Swal.fire({ icon: 'success', title: 'Saved!', timer: 1500, showConfirmButton: false });
+            e.target.reset();
+            clearDrugSearch();
+            document.getElementById('dynamicArea').classList.add('hidden');
+            document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+            reportData = []; // Force refresh next time
+          } else {
+            Swal.fire('Error', data.message, 'error');
+          }
+        })
+        .catch(err => {
+          document.getElementById('overlay').classList.add('hidden');
+          Swal.fire('Error', 'Connection failed', 'error');
+        });
+    }
+
+    // --- Report & Pagination ---
+    function toggleCustomDate() {
+      const val = document.getElementById('filterTime').value;
+      const custom = document.getElementById('customDateContainer');
+      if (val === 'custom') custom.classList.remove('hidden');
+      else {
+        custom.classList.add('hidden');
+        renderReport();
+      }
+    }
+
+    function renderReport() {
+      const timeFilter = document.getElementById('filterTime').value;
+      const actionFilter = document.getElementById('filterAction').value;
+
+      let targetDate = null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (timeFilter !== 'all') {
+        let daysToAdd = 0;
+        if (timeFilter === 'custom') {
+          const num = parseInt(document.getElementById('customNumber').value) || 0;
+          const unit = document.getElementById('customUnit').value;
+          daysToAdd = (unit === 'months') ? num * 30 : num;
+        } else {
+          daysToAdd = parseInt(timeFilter);
+        }
+        targetDate = new Date(today);
+        targetDate.setDate(today.getDate() + daysToAdd);
+      }
+
+      filteredReportData = reportData.filter(item => {
+        // 1. Action Filter
+        if (actionFilter !== 'all' && item.action !== actionFilter) return false;
+
+        // 2. Date Filter
+        if (targetDate) {
+          const exp = new Date(item.expiryDate);
+          // Check if exp is within today and targetDate
+          if (exp < today || exp > targetDate) return false;
+        }
+        return true;
+      });
+
+      // Pagination Logic
+      const totalPages = Math.ceil(filteredReportData.length / ROWS_PER_PAGE);
+      if (currentPage > totalPages) currentPage = totalPages || 1;
+
+      const start = (currentPage - 1) * ROWS_PER_PAGE;
+      const pageItems = filteredReportData.slice(start, start + ROWS_PER_PAGE);
+
+      const list = document.getElementById('reportList');
+      list.innerHTML = pageItems.map(item => createCard(item)).join('');
+
+      // Controls
+      document.getElementById('paginationControls').classList.remove('hidden');
+      document.getElementById('pageIndicator').innerText = `Page ${currentPage} / ${totalPages || 1}`;
+      document.getElementById('btnPrev').disabled = (currentPage === 1);
+      document.getElementById('btnNext').disabled = (currentPage >= totalPages);
+
+      if (filteredReportData.length === 0) {
+        list.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400 italic">No items found matching criteria.</div>`;
+      }
+    }
+
+    function createCard(item) {
+      let colorBorder = "border-gray-400";
+      let iconClass = "fa-circle-question text-gray-400";
+      let actionLabel = item.action;
+      let tagBg = "bg-gray-100 text-gray-600 border-gray-200";
+
+      // Map English Actions to Thai Labels & Colors
+      switch (item.action) {
+        case 'Sticker':
+          colorBorder = "border-orange-500";
+          iconClass = "fa-tags text-orange-500";
+          actionLabel = "ติด Sticker";
+          tagBg = "bg-orange-100 text-orange-600 border-orange-200";
+          break;
+        case 'Transfer':
+          colorBorder = "border-blue-500";
+          iconClass = "fa-share-from-square text-blue-500";
+          actionLabel = "ส่งต่อ";
+          tagBg = "bg-blue-100 text-blue-600 border-blue-200";
+          break;
+        case 'Separate':
+          colorBorder = "border-red-400";
+          iconClass = "fa-box-open text-red-400";
+          actionLabel = "แยกเก็บ";
+          tagBg = "bg-red-50 text-red-600 border-red-200";
+          break;
+        case 'ContactWH':
+          colorBorder = "border-teal-500";
+          iconClass = "fa-phone-volume text-teal-500";
+          actionLabel = "ติดต่อคลัง";
+          tagBg = "bg-teal-50 text-teal-600 border-teal-200";
+          break;
+        case 'ReturnWH':
+          colorBorder = "border-green-500";
+          iconClass = "fa-truck-ramp-box text-green-500";
+          actionLabel = "คืนคลัง";
+          tagBg = "bg-green-100 text-green-600 border-green-200";
+          break;
+        case 'Destroy':
+          colorBorder = "border-red-600";
+          iconClass = "fa-fire text-red-600";
+          actionLabel = "ทำลาย";
+          tagBg = "bg-red-100 text-red-700 border-red-200";
+          break;
+        case 'Other':
+          colorBorder = "border-gray-500";
+          iconClass = "fa-ellipsis text-gray-500";
+          actionLabel = "อื่นๆ";
+          tagBg = "bg-gray-100 text-gray-600 border-gray-200";
+          break;
+      }
+
+      // Expiry Badge
+      const expDate = new Date(item.expiryDate);
+      const daysLeft = Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24));
+      let daysBadge = "";
+      if (daysLeft < 30) daysBadge = `<span class="bg-red-50 text-red-600 text-[10px] font-bold px-2 py-1 rounded-md ml-2 border border-red-100 whitespace-nowrap"><i class="fa-regular fa-clock"></i> ${daysLeft}d</span>`;
+
+      // Transfer Destination Tag
+      let destinationTag = "";
+      let displayNotes = item.notes || "";
+
+      if (item.action === 'Transfer' && item.subDetails) {
+        destinationTag = `<span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-md border border-blue-100 ml-1 whitespace-nowrap"><i class="fa-solid fa-location-dot"></i> ${item.subDetails}</span>`;
+      } else if (item.subDetails) {
+        displayNotes = (item.subDetails + " " + displayNotes).trim();
+      }
+
+      // Note Section
+      let noteHtml = "";
+      if (displayNotes) {
+        noteHtml = `
+            <div class="mt-3 pt-2 border-t border-slate-50 flex items-start gap-2 text-xs text-slate-500">
+                <i class="fa-solid fa-note-sticky text-amber-400 mt-0.5"></i>
+                <span class="font-medium line-clamp-2">${displayNotes}</span>
+            </div>
+            `;
+      }
+
+      return `
+        <div class="bg-white border-l-4 ${colorBorder} shadow-sm rounded-r-xl p-4 relative group hover:shadow-md transition-shadow cursor-pointer border-t border-r border-b border-slate-100" onclick="openManageModal(${item.rowIndex})">
+            <div class="flex justify-between items-start mb-3 gap-2">
+                <div class="flex items-start gap-2 overflow-hidden">
+                    <div class="mt-1"><i class="fa-solid ${iconClass} text-lg"></i></div>
+                    <div>
+                        <h3 class="font-bold text-slate-700 leading-tight text-sm md:text-base line-clamp-2">${item.drugName}</h3>
+                        <div class="text-[10px] text-slate-400 font-medium mt-0.5">${item.generic || ''}</div>
+                    </div>
+                </div>
+                <div class="text-right shrink-0 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                    <div class="font-extrabold text-lg text-slate-800 leading-none">${item.qty}</div>
+                    <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wide text-center">${item.unit}</div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-y-2">
+                <div class="flex items-center">
+                   <div class="text-xs text-slate-500 font-semibold bg-slate-50 px-2 py-1 rounded-md border border-slate-100 whitespace-nowrap">
+                     ${item.expiryDate}
+                   </div>
+                   ${daysBadge}
+                </div>
+                
+                <div class="flex items-center justify-end gap-1 ml-auto">
+                    ${destinationTag}
+                    <div class="text-[10px] font-bold px-2 py-1 rounded-md border whitespace-nowrap uppercase tracking-wide ${tagBg}">${actionLabel}</div>
+                </div>
+            </div>
+
+            ${noteHtml}
+            
+            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <i class="fa-solid fa-pen-to-square text-slate-300 hover:text-blue-400"></i>
+            </div>
+        </div>
+        `;
+    }
+
+    function prevPage() { if (currentPage > 1) { currentPage--; renderReport(); } }
+    function nextPage() { const total = Math.ceil(filteredReportData.length / ROWS_PER_PAGE); if (currentPage < total) { currentPage++; renderReport(); } }
+
+    // --- Management Modal ---
+    function openManageModal(rowIndex) {
+      const item = reportData.find(i => i.rowIndex === rowIndex);
+      if (!item) return;
+
+      document.getElementById('manageRowIndex').value = rowIndex;
+      document.getElementById('manageDrugName').innerText = item.drugName;
+      document.getElementById('displayMaxQty').innerText = item.qty;
+      document.getElementById('manageUnit').innerText = item.unit;
+      document.getElementById('manageMaxQty').value = item.qty;
+      document.getElementById('manageQty').value = 0;
+      document.getElementById('manageOriginalAction').value = item.action;
+      currentStockQty = item.qty;
+
+      // Display current note
+      const noteBox = document.getElementById('displayCurrentNoteBox');
+      const noteText = document.getElementById('displayCurrentNote');
+      const fullNote = `${item.subDetails || ''} ${item.notes || ''}`.trim();
+
+      if (fullNote) {
+        noteText.innerText = fullNote;
+        noteBox.classList.remove('hidden');
+      } else {
+        noteBox.classList.add('hidden');
+      }
+
+      // Reset inputs
+      document.querySelectorAll('input[name="manageAction"]').forEach(r => r.checked = false);
+      document.getElementById('modalDynamicArea').classList.add('hidden');
+      document.getElementById('modalSubNote').value = "";
+
+      document.getElementById('manageModal').classList.remove('hidden');
+    }
+
+    function closeManageModal() { document.getElementById('manageModal').classList.add('hidden'); }
+
+    function adjustManageQty(amount) {
+      const input = document.getElementById('manageQty');
+      let val = parseInt(input.value) || 0;
+      val += amount;
+      if (val < 0) val = 0;
+      if (val > currentStockQty) val = currentStockQty;
+      input.value = val;
+    }
+
+    function setAllQty() {
+      document.getElementById('manageQty').value = currentStockQty;
+    }
+
+    function modalToggleSubDetails(val) {
+      const area = document.getElementById('modalDynamicArea');
+      const label = document.getElementById('modalDynamicLabel');
+      const transfer = document.getElementById('modalTransfer');
+      const note = document.getElementById('modalSubNote');
+
+      area.classList.remove('hidden');
+      transfer.classList.add('hidden');
+
+      if (val === 'Transfer') {
+        label.innerText = 'Transfer To';
+        transfer.classList.remove('hidden');
+      } else {
+        label.innerText = 'Details';
+      }
+    }
+
+    function submitManagement() {
+      const rowIndex = document.getElementById('manageRowIndex').value;
+      const manageQty = parseInt(document.getElementById('manageQty').value);
+      const actionEl = document.querySelector('input[name="manageAction"]:checked');
+
+      if (!manageQty || manageQty <= 0) return Swal.fire('Error', 'Qty must be > 0', 'warning');
+      if (!actionEl) return Swal.fire('Error', 'Select an action', 'warning');
+
+      const newAction = actionEl.value;
+      const transferVal = document.getElementById('modalTransfer').value;
+      const notesVal = document.getElementById('modalSubNote').value;
+
+      let newDetails = "";
+      if (newAction === 'Transfer') {
+        if (!transferVal) return Swal.fire('Error', 'Select destination', 'warning');
+        newDetails = transferVal;
+      }
+
+      document.getElementById('overlay').classList.remove('hidden');
+
+      const payload = {
+        action: 'manageItem',
+        payload: {
+          rowIndex: rowIndex,
+          manageQty: manageQty,
+          newAction: newAction,
+          newDetails: newDetails,
+          newNotes: notesVal
+        }
+      };
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('overlay').classList.add('hidden');
+          if (data.success) {
+            Swal.fire({ icon: 'success', title: 'Updated!', timer: 1500, showConfirmButton: false });
+            closeManageModal();
+            refreshReport();
+          } else {
+            Swal.fire('Error', data.message, 'error');
+          }
+        });
+    }
+
+    function confirmDelete() {
+      Swal.fire({
+        title: 'Delete Item?',
+        text: "This cannot be undone.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const rowIndex = document.getElementById('manageRowIndex').value;
+          document.getElementById('overlay').classList.remove('hidden');
+
+          fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'deleteItem', payload: { rowIndex: rowIndex } })
+          })
+            .then(res => res.json())
+            .then(data => {
+              document.getElementById('overlay').classList.add('hidden');
+              if (data.success) {
+                Swal.fire('Deleted!', 'Item has been deleted.', 'success');
+                closeManageModal();
+                refreshReport();
+              } else {
+                Swal.fire('Error', data.message, 'error');
+              }
+            });
+        }
+      });
+    }
+
+    async function editStockQty() {
+      const { value: newQty } = await Swal.fire({
+        title: 'Correct Stock Quantity',
+        input: 'number',
+        inputLabel: 'Enter actual physical quantity',
+        inputValue: currentStockQty,
+        showCancelButton: true,
+        inputValidator: (value) => {
+          if (!value || value < 0) return 'Invalid quantity';
+        }
+      });
+
+      if (newQty) {
+        const rowIndex = document.getElementById('manageRowIndex').value;
+        document.getElementById('overlay').classList.remove('hidden');
+        fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'updateStockQuantity', payload: { rowIndex: rowIndex, newQty: newQty } })
+        })
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById('overlay').classList.add('hidden');
+            if (data.success) {
+              Swal.fire('Updated', 'Stock adjusted.', 'success');
+              closeManageModal();
+              refreshReport();
+            }
+          });
+      }
+    }
+
+    // Scroll Button
+    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function setupScroll() {
+      const btn = document.getElementById('backToTop');
+      const container = document.getElementById('mainContainer');
+      container.addEventListener('scroll', () => {
+        if (container.scrollTop > 300) btn.classList.add('show');
+        else btn.classList.remove('show');
+      });
+    }
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
   </script>
 </body>
+
 </html>
