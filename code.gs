@@ -26,7 +26,7 @@ function doPost(e) {
     if (action === 'saveData') {
       result = saveData(payload);
     } else if (action === 'deleteItem') {
-      result = deleteItem(payload.rowIndex);
+      result = deleteItem(payload.rowIndex, payload.note);
     } else if (action === 'manageItem') {
       result = manageItem(payload.rowIndex, payload.manageQty, payload.newAction, payload.newDetails, payload.newNotes);
     } else if (action === 'updateStockQuantity') {
@@ -78,8 +78,9 @@ function saveData(formObject) {
     sheet.appendRow(header);
   }
 
+  const entryTimestamp = parseEntryTimestamp_(formObject.entryDate, ss.getSpreadsheetTimeZone());
   const rowData = [
-    new Date(), formObject.drugName, formObject.generic, formObject.strength, "'" + formObject.qty, formObject.unit,
+    entryTimestamp, formObject.drugName, formObject.generic, formObject.strength, "'" + formObject.qty, formObject.unit,
     formObject.expiryDate, formObject.actionType, formObject.subDetails || "", formObject.notes || ""
   ];
   sheet.appendRow(rowData);
@@ -113,12 +114,15 @@ function getReportData() {
   })).filter(item => item.drugName && item.drugName !== "");
 }
 
-function deleteItem(rowIndex) {
+function deleteItem(rowIndex, note) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName('data');
-  const idx = parseInt(rowIndex);
+  if (!sheet) return { success: false, message: "Data sheet not found" };
+  const idx = validateRowIndex_(sheet, rowIndex);
   const rowData = sheet.getRange(idx, 1, 1, 10).getDisplayValues()[0];
-  logActionToSheet(ss, rowData[1], rowData[4], "Deleted", "User deleted entire row");
+  const deleteNote = (note || "").toString().trim();
+  const detail = deleteNote ? `User deleted entire row | ${deleteNote}` : "User deleted entire row";
+  logActionToSheet(ss, rowData[1], rowData[4], "Deleted", detail);
   sheet.deleteRow(idx);
   return { success: true, message: "Deleted successfully" };
 }
@@ -126,24 +130,31 @@ function deleteItem(rowIndex) {
 function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName('data');
-  const idx = parseInt(rowIndex);
+  if (!sheet) return { success: false, message: "Data sheet not found" };
+  const idx = validateRowIndex_(sheet, rowIndex);
   const range = sheet.getRange(idx, 1, 1, 10);
   const originalData = range.getValues()[0];
   
   const currentQty = parseInt(originalData[4]) || 0;
   const reqQty = parseInt(manageQty);
   const drugName = originalData[1];
+  const currentAction = originalData[7] || "";
+  const currentDetails = originalData[8] || "";
+  const currentNotes = originalData[9] || "";
+  const actionToUse = newAction || currentAction;
+  const detailsToUse = normalizeManagedField_(newDetails, actionToUse === currentAction ? currentDetails : "");
+  const notesToUse = normalizeManagedField_(newNotes, actionToUse === currentAction ? currentNotes : "");
 
   if (reqQty <= 0) return { success: false, message: "Quantity must be > 0" };
   if (reqQty > currentQty) return { success: false, message: "Not enough stock" };
 
-  const detailLog = `${newDetails} ${newNotes}`.trim();
-  logActionToSheet(ss, drugName, reqQty, newAction, detailLog);
+  const detailLog = `${detailsToUse} ${notesToUse}`.trim();
+  logActionToSheet(ss, drugName, reqQty, actionToUse, detailLog);
 
   if (reqQty === currentQty) {
-      sheet.getRange(idx, 8).setValue(newAction);
-      sheet.getRange(idx, 9).setValue(newDetails);
-      sheet.getRange(idx, 10).setValue(newNotes);
+      sheet.getRange(idx, 8).setValue(actionToUse);
+      sheet.getRange(idx, 9).setValue(detailsToUse);
+      sheet.getRange(idx, 10).setValue(notesToUse);
       return { success: true, message: "Updated all items successfully" };
   } else {
       const remainQty = currentQty - reqQty;
@@ -152,9 +163,9 @@ function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
       const newRow = [...originalData];
       newRow[0] = new Date();
       newRow[4] = "'" + reqQty;
-      newRow[7] = newAction;
-      newRow[8] = newDetails;
-      newRow[9] = newNotes;
+      newRow[7] = actionToUse;
+      newRow[8] = detailsToUse;
+      newRow[9] = notesToUse;
 
       if (originalData[6] instanceof Date) {
         newRow[6] = Utilities.formatDate(originalData[6], ss.getSpreadsheetTimeZone(), "yyyy-MM-dd");
@@ -168,10 +179,46 @@ function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
 function updateStockQuantity(rowIndex, newQty) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName('data');
-  const idx = parseInt(rowIndex);
+  if (!sheet) return { success: false, message: "Data sheet not found" };
+  const idx = validateRowIndex_(sheet, rowIndex);
+  const parsedQty = parseInt(newQty, 10);
+  if (isNaN(parsedQty) || parsedQty < 0) return { success: false, message: "Invalid quantity" };
   const oldQty = sheet.getRange(idx, 5).getValue();
   const drugName = sheet.getRange(idx, 2).getValue();
-  logActionToSheet(ss, drugName, newQty, "Stock Correction", `Adjusted from ${oldQty} to ${newQty}`);
-  sheet.getRange(idx, 5).setValue("'" + newQty);
+  logActionToSheet(ss, drugName, parsedQty, "Stock Correction", `Adjusted from ${oldQty} to ${parsedQty}`);
+  sheet.getRange(idx, 5).setValue("'" + parsedQty);
   return { success: true, message: "Stock adjusted successfully" };
+}
+
+function validateRowIndex_(sheet, rowIndex) {
+  const idx = parseInt(rowIndex, 10);
+  if (isNaN(idx) || idx < 2 || idx > sheet.getLastRow()) {
+    throw new Error("Invalid row index");
+  }
+  return idx;
+}
+
+function normalizeManagedField_(value, fallback) {
+  if (value === undefined || value === null || value === "") return fallback || "";
+  return value;
+}
+
+function parseEntryTimestamp_(entryDate, timezone) {
+  if (!entryDate) return new Date();
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(entryDate);
+  if (!match) return new Date();
+
+  const today = new Date();
+  const year = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10) - 1;
+  const day = parseInt(match[3], 10);
+
+  return new Date(
+    year,
+    month,
+    day,
+    today.getHours(),
+    today.getMinutes(),
+    today.getSeconds()
+  );
 }

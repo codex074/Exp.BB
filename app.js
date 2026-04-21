@@ -5,7 +5,8 @@ let reportData = [];
 let currentPage = 1;
 const itemsPerPage = 10;
 let filteredDataCache = [];
-let isReportLoaded = false; 
+let isReportLoaded = false;
+let currentManageMaxQty = 0;
 
 // --- SweetAlert2 Theme Configuration (For Modals) ---
 const swalTheme = {
@@ -68,18 +69,26 @@ async function callAPI(action, payload = null) {
     } catch (error) { throw new Error(error.toString()); }
 }
 
-window.onload = function() {
+function initApp() {
     const today = new Date();
     document.getElementById('entryDate').value = today.toISOString().split('T')[0];
-    
+    document.getElementById('expiryDateInput').min = today.toISOString().split('T')[0];
+
     refreshData();
-    
+
     const mainContainer = document.getElementById('mainContainer');
     const backBtn = document.getElementById('backToTop');
     mainContainer.addEventListener('scroll', () => {
         if (mainContainer.scrollTop > 300) { backBtn.classList.add('show'); } else { backBtn.classList.remove('show'); }
     });
-};
+    document.addEventListener('click', (event) => {
+        if (!drugInput.contains(event.target) && !drugListEl.contains(event.target)) {
+            drugListEl.classList.add('hidden');
+        }
+    });
+}
+
+window.addEventListener('DOMContentLoaded', initApp);
 
 function onFail(err) {
     document.getElementById('overlay').classList.add('hidden');
@@ -98,16 +107,17 @@ function switchTab(tab) {
     const btnReport = document.getElementById('tab-report');
     const viewEntry = document.getElementById('view-entry');
     const viewReport = document.getElementById('view-report');
-    
+
+    btnEntry.classList.remove('active');
+    btnReport.classList.remove('active');
+
     if (tab === 'entry') {
-        btnEntry.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-200 transform scale-100";
-        btnReport.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-white text-slate-500 hover:bg-slate-50 border border-slate-200";
+        btnEntry.classList.add('active');
         viewEntry.classList.remove('hidden'); viewReport.classList.add('hidden');
     } else {
-        btnReport.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-100";
-        btnEntry.className = "flex-1 py-3 px-4 rounded-2xl font-bold text-lg transition-all duration-300 bg-white text-slate-500 hover:bg-slate-50 border border-slate-200";
+        btnReport.classList.add('active');
         viewEntry.classList.add('hidden'); viewReport.classList.remove('hidden');
-        
+
         if (!isReportLoaded) {
             loadReport();
         }
@@ -122,11 +132,15 @@ function adjustQty(amount) {
 
 function adjustManageQty(amount) {
     const input = document.getElementById('manageQty');
-    let val = parseInt(input.value) || 0; val += amount; if(val < 0) val = 0; input.value = val;
+    let val = parseInt(input.value, 10) || 0;
+    val += amount;
+    if (val < 0) val = 0;
+    if (val > currentManageMaxQty) val = currentManageMaxQty;
+    input.value = val;
 }
 
 const drugInput = document.getElementById('drugSearch');
-const drugList = document.getElementById('drugList');
+const drugListEl = document.getElementById('drugList');
 
 function refreshData() {
     const btn = document.getElementById('btnRefresh');
@@ -155,27 +169,27 @@ function refreshData() {
 }
 
 function renderDrugDropdown(query) {
-    drugList.innerHTML = '';
+    drugListEl.innerHTML = '';
     const val = query ? query.toLowerCase().trim() : "";
-    
+
     if (!val) {
-        drugList.classList.add('hidden');
+        drugListEl.classList.add('hidden');
         return;
     }
 
     const matches = drugDatabase.filter(d => d.displayName.toLowerCase().includes(val)).slice(0, 10);
 
     if (matches.length > 0) {
-        drugList.classList.remove('hidden');
+        drugListEl.classList.remove('hidden');
         matches.forEach(item => {
             const li = document.createElement('li');
             li.className = "p-4 hover:bg-blue-50 cursor-pointer border-b border-slate-100 last:border-0 text-lg text-slate-700 transition-colors flex items-center gap-2";
             li.innerHTML = `<i class="fa-solid fa-pills text-blue-300"></i> ${item.displayName}`;
             li.onclick = () => selectDrug(item);
-            drugList.appendChild(li);
+            drugListEl.appendChild(li);
         });
     } else { 
-        drugList.classList.add('hidden'); 
+        drugListEl.classList.add('hidden');
     }
 }
 
@@ -187,12 +201,12 @@ drugInput.addEventListener('input', function() {
 });
 
 function selectDrug(item) {
-    drugInput.value = item.displayName;
+    drugInput.value = item.drugName;
     document.getElementById('generic').value = item.generic;
     document.getElementById('unit').value = item.unit;
     document.getElementById('strength').value = item.strength;
     document.getElementById('unitDisplay').textContent = item.unit || "Unit";
-    drugList.classList.add('hidden');
+    drugListEl.classList.add('hidden');
 }
 
 function clearDrugSearch() {
@@ -250,9 +264,34 @@ function toggleCustomDate() {
 
 function handleFormSubmit(e) {
     e.preventDefault();
-    const action = document.querySelector('input[name="actionType"]:checked').value;
+    const actionEl = document.querySelector('input[name="actionType"]:checked');
+    const action = actionEl ? actionEl.value : "";
     const note = document.getElementById('subNote').value.trim();
-    
+    const drugName = document.getElementById('drugSearch').value.trim();
+    const qty = parseInt(document.getElementById('qtyInput').value, 10);
+    const expiryDate = document.getElementById('expiryDateInput').value;
+    const transferValue = document.getElementById('inputTransfer').value;
+
+    if (!drugName) {
+        MySwal.fire({ icon: 'warning', title: 'Missing Drug', text: 'Please select a drug from the list.' });
+        return;
+    }
+    if (!qty || qty <= 0) {
+        MySwal.fire({ icon: 'warning', title: 'Invalid Quantity', text: 'Quantity must be greater than 0.' });
+        return;
+    }
+    if (!expiryDate) {
+        MySwal.fire({ icon: 'warning', title: 'Missing Expiry Date', text: 'Please select an expiry date.' });
+        return;
+    }
+    if (!action) {
+        MySwal.fire({ icon: 'warning', title: 'Missing Action', text: 'Please select a management action.' });
+        return;
+    }
+    if (action === 'Transfer' && !transferValue) {
+        MySwal.fire({ icon: 'warning', title: 'Missing Destination', text: 'Please select a transfer destination.' });
+        return;
+    }
     if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action) && !note) { 
         MySwal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.' }); 
         return; 
@@ -269,7 +308,7 @@ function handleFormSubmit(e) {
 function submitDataToServer() {
     const action = document.querySelector('input[name="actionType"]:checked').value;
     let subVal = action === 'Transfer' ? document.getElementById('inputTransfer').value : "";
-    const noteVal = document.getElementById('subNote').value;
+    const noteVal = document.getElementById('subNote').value.trim();
     const formData = { entryDate: document.getElementById('entryDate').value, drugName: document.getElementById('drugSearch').value, generic: document.getElementById('generic').value, strength: document.getElementById('strength').value, unit: document.getElementById('unit').value, qty: document.getElementById('qtyInput').value, expiryDate: document.getElementById('expiryDateInput').value, actionType: action, subDetails: subVal, notes: noteVal };
     document.getElementById('overlay').classList.remove('hidden');
     
@@ -279,9 +318,12 @@ function submitDataToServer() {
             MySwal.fire({ icon: 'success', title: 'Saved!', timer: 1500, showConfirmButton: false }); 
             document.getElementById('expiryForm').reset(); 
             document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('expiryDateInput').min = new Date().toISOString().split('T')[0];
             document.getElementById('qtyInput').value = ""; 
             document.getElementById('dynamicArea').classList.add('hidden'); 
             document.querySelectorAll('.action-card').forEach(el => el.style = ""); 
+            document.getElementById('inputTransfer').value = "";
+            document.getElementById('subNote').value = "";
             clearDrugSearch(); 
             scrollToTop();
             isReportLoaded = false; 
@@ -338,7 +380,8 @@ function renderReport() {
     const today = new Date();
     const processed = reportData.map(item => { const exp = new Date(item.expiryDate); const diffTime = exp - today; const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); return { ...item, diffDays, expObj: exp }; }).sort((a, b) => a.diffDays - b.diffDays);
     const filtered = processed.filter(item => {
-        let matchTime = filterTime === 'all' ? true : (filterTime === 'custom' ? (customMaxDays !== null ? (item.diffDays <= customMaxDays && item.diffDays >= -3650) : true) : (item.diffDays <= parseInt(filterTime) && item.diffDays >= -365));
+        if (item.diffDays < 0) return false;
+        let matchTime = filterTime === 'all' ? true : (filterTime === 'custom' ? (customMaxDays !== null ? item.diffDays <= customMaxDays : true) : item.diffDays <= parseInt(filterTime));
         const matchAction = filterAction === 'all' || item.action === filterAction;
         return matchTime && matchAction;
     });
@@ -399,6 +442,7 @@ function openManageModal(itemEncoded) {
     document.getElementById('manageMaxQty').value = item.qty;
     document.getElementById('displayMaxQty').textContent = item.qty;
     document.getElementById('manageUnit').textContent = item.unit || 'Unit';
+    currentManageMaxQty = parseInt(item.qty, 10) || 0;
     
     if(document.getElementById('modalUnitTop')) {
         document.getElementById('modalUnitTop').textContent = item.unit || 'UNIT';
@@ -433,6 +477,8 @@ function openManageModal(itemEncoded) {
     document.querySelectorAll('input[name="manageAction"]').forEach(el => el.checked = false);
     document.getElementById('modalDynamicArea').classList.add('hidden');
     document.querySelectorAll('.action-card').forEach(el => el.style = "");
+    document.getElementById('modalTransfer').value = "";
+    document.getElementById('modalSubNote').value = "";
     document.getElementById('manageModal').classList.remove('hidden');
 }
 
@@ -461,9 +507,9 @@ function editStockQty() {
            ...swalTheme,
            input: 'w-1/2 mx-auto text-center text-4xl font-bold text-blue-600 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none py-4 transition-all mb-6'
        },
-       preConfirm: (newQty) => { 
-           if (!newQty || newQty < 0) Swal.showValidationMessage('Invalid quantity'); 
-           return newQty; 
+       preConfirm: (newQty) => {
+           if (newQty === '' || newQty === null || Number(newQty) < 0) Swal.showValidationMessage('Invalid quantity');
+           return Number(newQty);
        }
    }).then((result) => {
        if (result.isConfirmed) {
@@ -481,9 +527,15 @@ function submitManagement() {
     const manageQty = document.getElementById('manageQty').value;
     const actionEl = document.querySelector('input[name="manageAction"]:checked');
     const originalAction = document.getElementById('manageOriginalAction').value;
+    const selectedAction = actionEl ? actionEl.value : originalAction;
+    const transferValue = document.getElementById('modalTransfer').value;
 
     if(!manageQty || parseInt(manageQty) <= 0) { MySwal.fire('Warning', 'Invalid Quantity', 'warning'); return; }
     if(parseInt(manageQty) > parseInt(document.getElementById('manageMaxQty').value)) { MySwal.fire('Warning', 'Exceed Stock', 'warning'); return; }
+    if (actionEl && selectedAction === 'Transfer' && !transferValue) {
+        MySwal.fire({ icon: 'warning', title: 'Missing Destination', text: 'Please select a transfer destination.' });
+        return;
+    }
     
     let actionToSubmit = originalAction;
     if (actionEl) {
@@ -505,7 +557,7 @@ function submitManagement() {
 function processManagement(manageQty, action) {
     const rowIndex = document.getElementById('manageRowIndex').value;
     let subVal = action === 'Transfer' ? document.getElementById('modalTransfer').value : "";
-    const noteVal = document.getElementById('modalSubNote').value;
+    const noteVal = document.getElementById('modalSubNote').value.trim();
 
     closeManageModal();
     document.getElementById('overlay').classList.remove('hidden');

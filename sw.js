@@ -1,4 +1,4 @@
-const CACHE_NAME = 'opd-expiry-v4'; // เปลี่ยนเป็น v4 เพื่อให้เครื่องรู้ว่ามีการอัปเดต
+const CACHE_NAME = 'opd-expiry-v5';
 const ASSETS = [
   './index.html',
   './app.js',
@@ -14,6 +14,14 @@ const ASSETS = [
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
+    )
   );
 });
 
