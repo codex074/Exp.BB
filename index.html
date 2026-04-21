@@ -501,6 +501,12 @@
                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-base"
                   rows="1"></textarea></div>
             </div>
+            <label id="otherStockOutWrap"
+              class="hidden mt-3 flex items-center gap-3 rounded-2xl border border-lime-200 bg-lime-50 px-4 py-3 text-sm font-semibold text-lime-800">
+              <input type="checkbox" id="otherStockOut"
+                class="h-5 w-5 rounded border-lime-300 text-lime-600 focus:ring-lime-400">
+              <span>ตัด stock ออกจากห้องแล้ว</span>
+            </label>
           </div>
           <button type="submit" class="btn-donate w-full mt-6 text-lg group"><i
               class="fa-solid fa-save group-hover:scale-110 transition-transform"></i> Save Data</button>
@@ -533,6 +539,7 @@
                     <option value="Separate">แยกเก็บ</option>
                     <option value="ContactWH">ติดต่อคลัง</option>
                     <option value="ReturnWH">คืนคลัง</option>
+                    <option value="UsedUp">ใช้หมดแล้ว</option>
                     <option value="Destroy">ทำลาย</option>
                   </select><i
                     class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i>
@@ -554,6 +561,51 @@
             <option value="days">Days</option>
             <option value="months">Months</option>
           </select><span class="text-xs text-slate-400 whitespace-nowrap font-medium">from now</span></div>
+
+        <div id="reportDashboard" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-4"></div>
+
+        <div class="bg-white/80 backdrop-blur-md border border-slate-100 rounded-3xl p-4 shadow-sm mb-4 space-y-4">
+          <div class="flex flex-col xl:flex-row xl:items-center gap-4">
+            <div class="flex-1">
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">View Mode</p>
+              <div class="inline-flex rounded-2xl bg-slate-100 p-1 gap-1">
+                <button id="viewMode-items" onclick="setViewMode('items')"
+                  class="px-4 py-2 rounded-2xl text-sm font-bold text-slate-600 transition-all bg-white shadow-sm">Lot View</button>
+                <button id="viewMode-grouped" onclick="setViewMode('grouped')"
+                  class="px-4 py-2 rounded-2xl text-sm font-bold text-slate-500 transition-all">Grouped View</button>
+              </div>
+            </div>
+            <div class="w-full xl:w-64">
+              <label class="text-xs font-bold text-slate-400 uppercase ml-1 mb-1 block">Sort By</label>
+              <div class="relative">
+                <select id="sortMode" onchange="renderReport()"
+                  class="appearance-none w-full text-sm font-semibold p-2.5 pl-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 shadow-sm outline-none focus:border-blue-400 focus:bg-white transition-colors">
+                  <option value="expiry">Closest Expiry</option>
+                  <option value="qty">Highest Quantity</option>
+                  <option value="name">Drug Name</option>
+                </select>
+                <i
+                  class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-400 pointer-events-none"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row gap-3">
+            <button onclick="requestNotificationPermission()" id="btnEnableAlerts"
+              class="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 font-bold text-sm hover:bg-amber-100 transition-colors flex items-center justify-center gap-2">
+              <i class="fa-regular fa-bell"></i> Enable Alerts
+            </button>
+            <button onclick="exportCurrentView()" id="btnExportCsv"
+              class="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2">
+              <i class="fa-solid fa-file-export"></i> Export CSV
+            </button>
+            <div id="reportInsight"
+              class="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-600 flex items-center gap-2">
+              <i class="fa-solid fa-sparkles text-blue-500"></i>
+              <span id="reportInsightText">Expiry insights will appear here.</span>
+            </div>
+          </div>
+        </div>
 
         <div id="reportList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-24 min-h-[300px]"></div>
 
@@ -622,6 +674,10 @@
               class="block text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1 flex items-center gap-1"><i
                 class="fa-solid fa-note-sticky"></i> Note / รายละเอียดเดิม</label>
             <p id="displayCurrentNote" class="text-slate-700 text-sm leading-relaxed font-medium break-words"></p>
+            <button type="button" onclick="openHistoryModal()"
+              class="mt-3 w-full px-4 py-2 rounded-xl bg-white border border-amber-200 text-amber-700 text-sm font-bold hover:bg-amber-100 transition-colors flex items-center justify-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left"></i> View History
+            </button>
           </div>
 
           <div>
@@ -651,6 +707,11 @@
                   class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)">
                 <div class="action-card"><i class="fa-solid fa-truck-ramp-box text-2xl text-green-500"></i><span
                     class="text-xs font-bold text-slate-600">คืนคลัง</span></div>
+              </label>
+              <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="UsedUp"
+                  class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)">
+                <div class="action-card"><i class="fa-solid fa-check-double text-2xl text-lime-600"></i><span
+                    class="text-xs font-bold text-slate-600">ใช้หมดแล้ว</span></div>
               </label>
               <label class="cursor-pointer relative group"><input type="radio" name="manageAction" value="Destroy"
                   class="action-card-input hidden" onchange="modalToggleSubDetails(this.value)">
@@ -682,6 +743,12 @@
               <textarea id="modalSubNote" placeholder="Note (Optional)..."
                 class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none transition-colors text-sm focus:ring-2 focus:ring-blue-100"
                 rows="2"></textarea>
+              <label id="modalOtherStockOutWrap"
+                class="hidden flex items-center gap-3 rounded-2xl border border-lime-200 bg-lime-50 px-4 py-3 text-sm font-semibold text-lime-800">
+                <input type="checkbox" id="modalOtherStockOut"
+                  class="h-5 w-5 rounded border-lime-300 text-lime-600 focus:ring-lime-400">
+                <span>ตัด stock ออกจากห้องแล้ว</span>
+              </label>
             </div>
           </div>
         </div>

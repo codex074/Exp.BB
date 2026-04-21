@@ -1,4 +1,5 @@
 const SPREADSHEET_ID = '1l7gEdZJrgfTbXPF3wWyM1DjfALJIKLM8zokXEfZLw_k';
+const OTHER_STOCK_OUT_TOKEN = '__ROOM_OUT__';
 
 function doGet(e) {
   const action = e.parameter.action;
@@ -8,6 +9,8 @@ function doGet(e) {
       result = getDrugList();
     } else if (action === 'getReportData') {
       result = getReportData();
+    } else if (action === 'getActionHistory') {
+      result = getActionHistory(e.parameter.drugName, e.parameter.limit);
     }
   } catch (err) {
     result = { error: err.toString() };
@@ -85,7 +88,7 @@ function saveData(formObject) {
   ];
   sheet.appendRow(rowData);
 
-  const detailLog = (formObject.subDetails || "") + " " + (formObject.notes || "");
+  const detailLog = `${humanizeManagedDetails_(formObject.subDetails || "")} ${formObject.notes || ""}`.trim();
   logActionToSheet(ss, formObject.drugName, formObject.qty, "New Entry (" + formObject.actionType + ")", detailLog.trim());
 
   return { success: true, message: "Saved successfully!" };
@@ -148,7 +151,7 @@ function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
   if (reqQty <= 0) return { success: false, message: "Quantity must be > 0" };
   if (reqQty > currentQty) return { success: false, message: "Not enough stock" };
 
-  const detailLog = `${detailsToUse} ${notesToUse}`.trim();
+  const detailLog = `${humanizeManagedDetails_(detailsToUse)} ${notesToUse}`.trim();
   logActionToSheet(ss, drugName, reqQty, actionToUse, detailLog);
 
   if (reqQty === currentQty) {
@@ -190,6 +193,35 @@ function updateStockQuantity(rowIndex, newQty) {
   return { success: true, message: "Stock adjusted successfully" };
 }
 
+function getActionHistory(drugName, limit) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName('action.log');
+  if (!sheet) return [];
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  const maxItems = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+  const normalizedDrugName = (drugName || "").toString().trim().toLowerCase();
+  const data = sheet.getRange(2, 1, lastRow - 1, 5).getDisplayValues();
+
+  const filtered = data
+    .filter((row) => {
+      if (!normalizedDrugName) return true;
+      return (row[1] || "").toString().trim().toLowerCase() === normalizedDrugName;
+    })
+    .reverse()
+    .slice(0, maxItems);
+
+  return filtered.map((row) => ({
+    timestamp: row[0],
+    drugName: row[1],
+    qty: row[2],
+    action: row[3],
+    details: row[4]
+  }));
+}
+
 function validateRowIndex_(sheet, rowIndex) {
   const idx = parseInt(rowIndex, 10);
   if (isNaN(idx) || idx < 2 || idx > sheet.getLastRow()) {
@@ -199,8 +231,16 @@ function validateRowIndex_(sheet, rowIndex) {
 }
 
 function normalizeManagedField_(value, fallback) {
-  if (value === undefined || value === null || value === "") return fallback || "";
+  if (value === undefined || value === null) return fallback || "";
   return value;
+}
+
+function humanizeManagedDetails_(details) {
+  const normalized = String(details || "").replace(OTHER_STOCK_OUT_TOKEN, "").trim();
+  if (String(details || "").includes(OTHER_STOCK_OUT_TOKEN)) {
+    return normalized ? `ตัด stock ออกจากห้องแล้ว ${normalized}` : "ตัด stock ออกจากห้องแล้ว";
+  }
+  return normalized;
 }
 
 function parseEntryTimestamp_(entryDate, timezone) {
