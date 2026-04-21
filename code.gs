@@ -1,5 +1,6 @@
 const SPREADSHEET_ID = '1l7gEdZJrgfTbXPF3wWyM1DjfALJIKLM8zokXEfZLw_k';
 const OTHER_STOCK_OUT_TOKEN = '__ROOM_OUT__';
+const DATA_SHEET_HEADERS = ['Timestamp', 'Drug Name', 'Generic', 'Strength', 'Quantity', 'Unit', 'Expiry Date', 'Action', 'Sub-details', 'Notes', 'Lot No'];
 
 function doGet(e) {
   const action = e.parameter.action;
@@ -32,6 +33,8 @@ function doPost(e) {
       result = deleteItem(payload.rowIndex, payload.note);
     } else if (action === 'manageItem') {
       result = manageItem(payload.rowIndex, payload.manageQty, payload.newAction, payload.newDetails, payload.newNotes);
+    } else if (action === 'updateItemNote') {
+      result = updateItemNote(payload.rowIndex, payload.newNote);
     } else if (action === 'updateStockQuantity') {
       result = updateStockQuantity(payload.rowIndex, payload.newQty);
     }
@@ -76,15 +79,12 @@ function saveData(formObject) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet = ss.getSheetByName('data');
   if (!sheet) sheet = ss.insertSheet('data');
-  if (sheet.getLastRow() === 0) {
-    const header = ['Timestamp', 'Drug Name', 'Generic', 'Strength', 'Quantity', 'Unit', 'Expiry Date', 'Action', 'Sub-details', 'Notes'];
-    sheet.appendRow(header);
-  }
+  ensureDataSheetHeaders_(sheet);
 
   const entryTimestamp = parseEntryTimestamp_(formObject.entryDate, ss.getSpreadsheetTimeZone());
   const rowData = [
     entryTimestamp, formObject.drugName, formObject.generic, formObject.strength, "'" + formObject.qty, formObject.unit,
-    formObject.expiryDate, formObject.actionType, formObject.subDetails || "", formObject.notes || ""
+    formObject.expiryDate, formObject.actionType, formObject.subDetails || "", formObject.notes || "", formObject.lotNo || ""
   ];
   sheet.appendRow(rowData);
 
@@ -98,11 +98,11 @@ function getReportData() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName('data');
   if (!sheet) return [];
+  ensureDataSheetHeaders_(sheet);
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
   
-  // Fetch columns A to J (10 columns)
-  const data = sheet.getRange(2, 1, lastRow - 1, 10).getDisplayValues();
+  const data = sheet.getRange(2, 1, lastRow - 1, DATA_SHEET_HEADERS.length).getDisplayValues();
 
   return data.map((row, i) => ({
     rowIndex: i + 2, 
@@ -113,7 +113,8 @@ function getReportData() {
     expiryDate: row[6], 
     action: row[7], 
     subDetails: row[8],
-    notes: row[9] // <--- Column J (Notes) is now included
+    notes: row[9],
+    lotNo: row[10]
   })).filter(item => item.drugName && item.drugName !== "");
 }
 
@@ -121,8 +122,9 @@ function deleteItem(rowIndex, note) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName('data');
   if (!sheet) return { success: false, message: "Data sheet not found" };
+  ensureDataSheetHeaders_(sheet);
   const idx = validateRowIndex_(sheet, rowIndex);
-  const rowData = sheet.getRange(idx, 1, 1, 10).getDisplayValues()[0];
+  const rowData = sheet.getRange(idx, 1, 1, DATA_SHEET_HEADERS.length).getDisplayValues()[0];
   const deleteNote = (note || "").toString().trim();
   const detail = deleteNote ? `User deleted entire row | ${deleteNote}` : "User deleted entire row";
   logActionToSheet(ss, rowData[1], rowData[4], "Deleted", detail);
@@ -134,8 +136,9 @@ function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName('data');
   if (!sheet) return { success: false, message: "Data sheet not found" };
+  ensureDataSheetHeaders_(sheet);
   const idx = validateRowIndex_(sheet, rowIndex);
-  const range = sheet.getRange(idx, 1, 1, 10);
+  const range = sheet.getRange(idx, 1, 1, DATA_SHEET_HEADERS.length);
   const originalData = range.getValues()[0];
   
   const currentQty = parseInt(originalData[4]) || 0;
@@ -179,10 +182,34 @@ function manageItem(rowIndex, manageQty, newAction, newDetails, newNotes) {
   }
 }
 
+function updateItemNote(rowIndex, newNote) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName('data');
+  if (!sheet) return { success: false, message: "Data sheet not found" };
+  ensureDataSheetHeaders_(sheet);
+  const idx = validateRowIndex_(sheet, rowIndex);
+  const rowData = sheet.getRange(idx, 1, 1, DATA_SHEET_HEADERS.length).getDisplayValues()[0];
+
+  const drugName = rowData[1];
+  const qty = rowData[4];
+  const action = rowData[7] || "";
+  const normalizedNote = (newNote || "").toString().trim();
+
+  if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action) && !normalizedNote) {
+    return { success: false, message: "รายการประเภทนี้จำเป็นต้องมีหมายเหตุ" };
+  }
+
+  sheet.getRange(idx, 10).setValue(normalizedNote);
+  logActionToSheet(ss, drugName, qty, "Note Updated", normalizedNote || "Cleared note");
+
+  return { success: true, message: "Note updated successfully" };
+}
+
 function updateStockQuantity(rowIndex, newQty) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName('data');
   if (!sheet) return { success: false, message: "Data sheet not found" };
+  ensureDataSheetHeaders_(sheet);
   const idx = validateRowIndex_(sheet, rowIndex);
   const parsedQty = parseInt(newQty, 10);
   if (isNaN(parsedQty) || parsedQty < 0) return { success: false, message: "Invalid quantity" };
@@ -261,4 +288,17 @@ function parseEntryTimestamp_(entryDate, timezone) {
     today.getMinutes(),
     today.getSeconds()
   );
+}
+
+function ensureDataSheetHeaders_(sheet) {
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(DATA_SHEET_HEADERS);
+    sheet.getRange(1, 1, 1, DATA_SHEET_HEADERS.length).setFontWeight("bold").setBackground("#f3f4f6");
+    return;
+  }
+
+  const lotHeaderCell = sheet.getRange(1, DATA_SHEET_HEADERS.length);
+  if (!lotHeaderCell.getValue()) {
+    lotHeaderCell.setValue(DATA_SHEET_HEADERS[DATA_SHEET_HEADERS.length - 1]);
+  }
 }

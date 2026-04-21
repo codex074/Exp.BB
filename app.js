@@ -32,7 +32,7 @@ const swalTheme = {
 const MySwal = Swal.mixin({
     customClass: swalTheme,
     buttonsStyling: false,
-    confirmButtonText: 'OK'
+    confirmButtonText: 'ตกลง'
 });
 
 // --- Toast Configuration (Updated: Reverted to Standard Small Size) ---
@@ -50,7 +50,7 @@ const Toast = Swal.mixin({
 
 // Action Styles Configuration
 const actionStyles = {
-    'Sticker': { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', label: 'Sticker', icon: 'fa-tags' },
+    'Sticker': { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', label: 'ติด Sticker', icon: 'fa-tags' },
     'Transfer': { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200', label: 'ส่งต่อ', icon: 'fa-share-from-square' },
     'Separate': { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200', label: 'แยกเก็บ', icon: 'fa-box-open' },
     'ContactWH': { bg: 'bg-teal-50', text: 'text-teal-600', border: 'border-teal-200', label: 'ติดต่อคลัง', icon: 'fa-phone-volume' },
@@ -59,6 +59,55 @@ const actionStyles = {
     'Destroy': { bg: 'bg-slate-700', text: 'text-white', border: 'border-slate-600', label: 'ทำลาย', icon: 'fa-fire' },
     'Other': { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200', label: 'อื่นๆ', icon: 'fa-ellipsis' }
 };
+
+function renderStateCard({ icon, title, description, tone = 'slate' }) {
+    const tones = {
+        slate: {
+            iconWrap: 'bg-slate-100 text-slate-600',
+            border: 'border-slate-200',
+            title: 'text-slate-800',
+            description: 'text-slate-500'
+        },
+        brand: {
+            iconWrap: 'bg-teal-50 text-teal-700',
+            border: 'border-teal-100',
+            title: 'text-slate-800',
+            description: 'text-slate-500'
+        },
+        amber: {
+            iconWrap: 'bg-amber-50 text-amber-700',
+            border: 'border-amber-100',
+            title: 'text-slate-800',
+            description: 'text-slate-500'
+        }
+    };
+
+    const palette = tones[tone] || tones.slate;
+    return `<div class="col-span-full flex items-center justify-center py-6">
+        <div class="section-card ${palette.border} w-full max-w-2xl px-8 py-10 text-center">
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl ${palette.iconWrap}">
+                <i class="fa-solid ${icon} text-2xl"></i>
+            </div>
+            <h3 class="mt-5 text-xl font-bold ${palette.title}">${title}</h3>
+            <p class="mt-2 text-sm leading-relaxed ${palette.description}">${description}</p>
+        </div>
+    </div>`;
+}
+
+function formatDisplayDate(dateObj, fallback) {
+    try {
+        return dateObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+    } catch (error) {
+        return fallback;
+    }
+}
+
+function handleCardKeyActivate(event, callback) {
+    if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        callback();
+    }
+}
 
 async function callAPI(action, payload = null) {
     try {
@@ -89,10 +138,9 @@ function initApp() {
 
     refreshData();
 
-    const mainContainer = document.getElementById('mainContainer');
     const backBtn = document.getElementById('backToTop');
-    mainContainer.addEventListener('scroll', () => {
-        if (mainContainer.scrollTop > 300) { backBtn.classList.add('show'); } else { backBtn.classList.remove('show'); }
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) { backBtn.classList.add('show'); } else { backBtn.classList.remove('show'); }
     });
     document.addEventListener('click', (event) => {
         if (!drugInput.contains(event.target) && !drugListEl.contains(event.target)) {
@@ -106,14 +154,14 @@ window.addEventListener('DOMContentLoaded', initApp);
 function onFail(err) {
     document.getElementById('overlay').classList.add('hidden');
     MySwal.fire({ 
-        title: 'Connection Failed', 
-        text: err.message || 'Something went wrong', 
+        title: 'เชื่อมต่อไม่สำเร็จ', 
+        text: err.message || 'เกิดข้อผิดพลาดบางอย่าง', 
         icon: 'error',
         confirmButtonColor: '#ef4444' 
     });
 }
 
-function scrollToTop() { document.getElementById('mainContainer').scrollTo({ top: 0, behavior: 'smooth' }); }
+function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 function switchTab(tab) {
     const btnEntry = document.getElementById('tab-entry');
@@ -150,7 +198,7 @@ function updateViewModeButtons() {
     const groupedBtn = document.getElementById('viewMode-grouped');
     if (!itemBtn || !groupedBtn) return;
 
-    const activeClasses = ['bg-white', 'text-slate-700', 'shadow-sm'];
+    const activeClasses = ['bg-white', 'text-slate-800', 'shadow-sm'];
     const inactiveClasses = ['text-slate-500'];
 
     [itemBtn, groupedBtn].forEach((btn) => {
@@ -200,24 +248,25 @@ function refreshData() {
     const icon = document.getElementById('iconRefresh');
     const searchInput = document.getElementById('drugSearch');
 
+    btn.disabled = true;
     icon.classList.add('fa-spin');
-    searchInput.placeholder = "Downloading database...";
+    searchInput.placeholder = "กำลังโหลดฐานข้อมูลยา...";
     searchInput.disabled = true; 
     
     callAPI('getDrugList').then(data => { 
         drugDatabase = data; 
         
+        btn.disabled = false;
         icon.classList.remove('fa-spin');
         searchInput.disabled = false;
         searchInput.value = "";
-        searchInput.classList.remove('bg-white/80');
-        searchInput.classList.add('bg-white');
-        searchInput.placeholder = "🔍 Search Drug...";
+        searchInput.placeholder = "ค้นหายา...";
         
     }).catch(err => {
         onFail(err);
+        btn.disabled = false;
         icon.classList.remove('fa-spin');
-        searchInput.placeholder = "❌ Error. Try again.";
+        searchInput.placeholder = "โหลดฐานข้อมูลไม่สำเร็จ ลองอีกครั้ง";
     });
 }
 
@@ -236,8 +285,8 @@ function renderDrugDropdown(query) {
         drugListEl.classList.remove('hidden');
         matches.forEach(item => {
             const li = document.createElement('li');
-            li.className = "p-4 hover:bg-blue-50 cursor-pointer border-b border-slate-100 last:border-0 text-lg text-slate-700 transition-colors flex items-center gap-2";
-            li.innerHTML = `<i class="fa-solid fa-pills text-blue-300"></i> ${item.displayName}`;
+            li.className = "flex cursor-pointer items-center gap-3 border-b border-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-teal-50 last:border-0";
+            li.innerHTML = `<span class="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-50 text-teal-700"><i class="fa-solid fa-pills"></i></span><span class="min-w-0 flex-1 truncate">${item.displayName}</span>`;
             li.onclick = () => selectDrug(item);
             drugListEl.appendChild(li);
         });
@@ -258,7 +307,7 @@ function selectDrug(item) {
     document.getElementById('generic').value = item.generic;
     document.getElementById('unit').value = item.unit;
     document.getElementById('strength').value = item.strength;
-    document.getElementById('unitDisplay').textContent = item.unit || "Unit";
+    document.getElementById('unitDisplay').textContent = item.unit || "หน่วย";
     drugListEl.classList.add('hidden');
 }
 
@@ -270,7 +319,7 @@ function clearDrugSearch() {
     document.getElementById('generic').value = '';
     document.getElementById('unit').value = '';
     document.getElementById('strength').value = '';
-    document.getElementById('unitDisplay').textContent = 'Unit';
+    document.getElementById('unitDisplay').textContent = 'หน่วย';
 }
 
 function toggleSubDetails(action) {
@@ -285,11 +334,11 @@ function toggleSubDetails(action) {
     
     if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action)) { 
         subNote.required = true; 
-        subNote.placeholder = "Note (Required)..."; 
+        subNote.placeholder = "หมายเหตุ (จำเป็น)..."; 
         subNote.classList.add('border-blue-300', 'ring-1', 'ring-blue-200'); 
     } else { 
         subNote.required = false; 
-        subNote.placeholder = "Note (Optional)..."; 
+        subNote.placeholder = "หมายเหตุ (ไม่บังคับ)..."; 
         subNote.classList.remove('border-blue-300', 'ring-1', 'ring-blue-200'); 
     }
 }
@@ -306,11 +355,11 @@ function modalToggleSubDetails(action) {
     
     if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action)) { 
         subNote.required = true; 
-        subNote.placeholder = "Note (Required)..."; 
+        subNote.placeholder = "หมายเหตุ (จำเป็น)..."; 
         subNote.classList.add('border-blue-300', 'ring-1', 'ring-blue-200'); 
     } else { 
         subNote.required = false; 
-        subNote.placeholder = "Note (Optional)..."; 
+        subNote.placeholder = "หมายเหตุ (ไม่บังคับ)..."; 
         subNote.classList.remove('border-blue-300', 'ring-1', 'ring-blue-200'); 
     }
 }
@@ -332,35 +381,35 @@ function handleFormSubmit(e) {
     const transferValue = document.getElementById('inputTransfer').value;
 
     if (!drugName) {
-        MySwal.fire({ icon: 'warning', title: 'Missing Drug', text: 'Please select a drug from the list.' });
+        MySwal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกยา', text: 'กรุณาเลือกยาจากรายการค้นหา' });
         return;
     }
     if (!qty || qty <= 0) {
-        MySwal.fire({ icon: 'warning', title: 'Invalid Quantity', text: 'Quantity must be greater than 0.' });
+        MySwal.fire({ icon: 'warning', title: 'จำนวนไม่ถูกต้อง', text: 'จำนวนต้องมากกว่า 0' });
         return;
     }
     if (!expiryDate) {
-        MySwal.fire({ icon: 'warning', title: 'Missing Expiry Date', text: 'Please select an expiry date.' });
+        MySwal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกวันหมดอายุ', text: 'กรุณาเลือกวันหมดอายุ' });
         return;
     }
     if (!action) {
-        MySwal.fire({ icon: 'warning', title: 'Missing Action', text: 'Please select a management action.' });
+        MySwal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกวิธีจัดการ', text: 'กรุณาเลือกวิธีจัดการรายการ' });
         return;
     }
     if (action === 'Transfer' && !transferValue) {
-        MySwal.fire({ icon: 'warning', title: 'Missing Destination', text: 'Please select a transfer destination.' });
+        MySwal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกปลายทาง', text: 'กรุณาเลือกปลายทางสำหรับการส่งต่อ' });
         return;
     }
     if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action) && !note) { 
-        MySwal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.' }); 
+        MySwal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกหมายเหตุ' }); 
         return; 
     }
     MySwal.fire({ 
-        title: 'Save Entry?', 
-        text: "Please check details", 
+        title: 'บันทึกรายการนี้หรือไม่?', 
+        text: "กรุณาตรวจสอบข้อมูลให้เรียบร้อย", 
         icon: 'question', 
         showCancelButton: true, 
-        confirmButtonText: 'Yes, Save' 
+        confirmButtonText: 'ยืนยันการบันทึก' 
     }).then((result) => { if (result.isConfirmed) { submitDataToServer(); } });
 }
 
@@ -369,16 +418,17 @@ function submitDataToServer() {
     let subVal = action === 'Transfer' ? document.getElementById('inputTransfer').value : "";
     if (action === 'Other') subVal = document.getElementById('otherStockOut').checked ? OTHER_STOCK_OUT_TOKEN : "";
     const noteVal = document.getElementById('subNote').value.trim();
-    const formData = { entryDate: document.getElementById('entryDate').value, drugName: document.getElementById('drugSearch').value, generic: document.getElementById('generic').value, strength: document.getElementById('strength').value, unit: document.getElementById('unit').value, qty: document.getElementById('qtyInput').value, expiryDate: document.getElementById('expiryDateInput').value, actionType: action, subDetails: subVal, notes: noteVal };
+    const formData = { entryDate: document.getElementById('entryDate').value, drugName: document.getElementById('drugSearch').value, generic: document.getElementById('generic').value, strength: document.getElementById('strength').value, unit: document.getElementById('unit').value, lotNo: document.getElementById('lotNoInput').value.trim(), qty: document.getElementById('qtyInput').value, expiryDate: document.getElementById('expiryDateInput').value, actionType: action, subDetails: subVal, notes: noteVal };
     document.getElementById('overlay').classList.remove('hidden');
     
     callAPI('saveData', formData).then(res => { 
         document.getElementById('overlay').classList.add('hidden'); 
         if(res.success) { 
-            MySwal.fire({ icon: 'success', title: 'Saved!', timer: 1500, showConfirmButton: false }); 
+            MySwal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1500, showConfirmButton: false }); 
             document.getElementById('expiryForm').reset(); 
             document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('expiryDateInput').min = new Date().toISOString().split('T')[0];
+            document.getElementById('lotNoInput').value = "";
             document.getElementById('qtyInput').value = ""; 
             document.getElementById('dynamicArea').classList.add('hidden'); 
             document.querySelectorAll('.action-card').forEach(el => el.style = ""); 
@@ -390,7 +440,7 @@ function submitDataToServer() {
             scrollToTop();
             isReportLoaded = false; 
         } else { 
-            MySwal.fire('Error', res.message, 'error'); 
+            MySwal.fire('ผิดพลาด', res.message, 'error'); 
         } 
     }).catch(err => onFail(err));
 }
@@ -407,7 +457,7 @@ function forceRefreshReport() {
         icon.classList.remove('fa-spin');
         btn.disabled = false;
         btn.classList.remove('opacity-75');
-        Toast.fire({ icon: 'success', title: 'List Updated' });
+        Toast.fire({ icon: 'success', title: 'อัปเดตรายการแล้ว' });
     }).catch(() => {
         icon.classList.remove('fa-spin');
         btn.disabled = false;
@@ -417,7 +467,13 @@ function forceRefreshReport() {
 
 function loadReport() {
     currentPage = 1;
-    document.getElementById('reportList').innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-slate-400 min-h-[60vh]"><div class="custom-loader mb-4"></div>Loading Data...</div>';
+    document.getElementById('reportList').innerHTML = `<div class="col-span-full flex min-h-[320px] items-center justify-center">
+        <div class="section-card flex w-full max-w-xl flex-col items-center px-8 py-10 text-center">
+            <div class="custom-loader"></div>
+            <h3 class="mt-5 text-xl font-bold text-slate-800">กำลังโหลดข้อมูล</h3>
+            <p class="mt-2 text-sm text-slate-500">กำลังดึงข้อมูลล่าสุดจากแหล่งข้อมูลเดิม</p>
+        </div>
+    </div>`;
     
     return callAPI('getReportData').then(data => { 
         reportData = data; 
@@ -429,6 +485,7 @@ function loadReport() {
 function renderReport() {
     const container = document.getElementById('reportList');
     const paginationControls = document.getElementById('paginationControls');
+    updateReportListLayout();
     const filterTime = document.getElementById('filterTime').value;
     const filterAction = document.getElementById('filterAction').value;
     const sortMode = document.getElementById('sortMode') ? document.getElementById('sortMode').value : 'expiry';
@@ -444,7 +501,12 @@ function renderReport() {
         updateReportInsight([]);
         currentFilteredItems = [];
         currentRenderedRows = [];
-        container.innerHTML = '<div class="col-span-full text-center text-slate-400 mt-10 font-light text-lg">No data found.</div>';
+        container.innerHTML = renderStateCard({
+            icon: 'fa-box-open',
+            title: 'ไม่พบข้อมูล',
+            description: 'ขณะนี้ยังไม่มีข้อมูลรายงานจากแหล่งข้อมูลที่เชื่อมต่ออยู่',
+            tone: 'slate'
+        });
         paginationControls.classList.add('hidden');
         return;
     }
@@ -500,7 +562,12 @@ function renderReport() {
     }
 
     if (currentRenderedRows.length === 0) {
-        container.innerHTML = '<div class="col-span-full text-center text-slate-400 mt-10 font-light text-lg">No items match filter.</div>';
+        container.innerHTML = renderStateCard({
+            icon: 'fa-filter',
+            title: 'ไม่พบรายการที่ตรงกับตัวกรอง',
+            description: 'ลองเปลี่ยนหมวดบน dashboard ช่วงเวลา หรือประเภทการจัดการ เพื่อดูรายการเพิ่มเติม',
+            tone: 'amber'
+        });
         paginationControls.classList.add('hidden');
         return;
     }
@@ -510,8 +577,20 @@ function renderReport() {
     renderPage(currentPage);
 }
 
+function updateReportListLayout() {
+    const container = document.getElementById('reportList');
+    if (!container) return;
+
+    if (currentViewMode === 'grouped') {
+        container.className = 'grid min-h-[300px] grid-cols-1 gap-4 pb-8 md:grid-cols-2 2xl:grid-cols-3';
+    } else {
+        container.className = 'flex min-h-[300px] flex-col gap-3 pb-8';
+    }
+}
+
 function renderPage(page) {
     const container = document.getElementById('reportList');
+    updateReportListLayout();
     container.innerHTML = '';
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
@@ -522,37 +601,51 @@ function renderPage(page) {
         container.innerHTML += currentViewMode === 'grouped' ? createGroupedCard(item) : createItemCard(item);
     });
     document.getElementById('paginationControls').classList.remove('hidden');
-    document.getElementById('pageIndicator').textContent = `Page ${currentPage} of ${totalPages}`;
+    document.getElementById('pageIndicator').textContent = `หน้า ${currentPage} จาก ${totalPages}`;
     document.getElementById('btnPrev').disabled = (currentPage === 1);
     document.getElementById('btnNext').disabled = (currentPage === totalPages);
 }
 
 function createItemCard(item) {
     const status = getExpiryStyles(item.diffDays);
-    let dateStr = item.expiryDate;
-    try { dateStr = item.expObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }); } catch(e) {}
+    const dateStr = formatDisplayDate(item.expObj, item.expiryDate);
     const style = actionStyles[item.action] || actionStyles['Other'];
+    const lotNo = (item.lotNo || '').trim();
+    const noteText = item.notes && item.notes.trim() !== "" ? item.notes : "ไม่มีหมายเหตุ";
     let actionLabel = `<i class="fa-solid ${style.icon} mr-1"></i> ${style.label}`;
     if (item.action === 'Transfer' && item.subDetails) {
         actionLabel += ` <i class="fa-solid fa-arrow-right text-sm mx-1 text-slate-400"></i> ${item.subDetails}`;
     }
 
     const itemStr = encodeURIComponent(JSON.stringify(item));
-    const noteText = item.notes && item.notes.trim() !== "" ? item.notes : "-";
 
-    return `<div onclick="openManageModal('${itemStr}')" class="relative cursor-pointer bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-[4px] ${status.borderStatus} hover:shadow-lg hover:shadow-blue-100 hover:-translate-y-1 transition-all duration-300 group fade-in">
-        <div class="absolute top-3 right-3">
-            <span class="px-3 py-1.5 text-sm font-bold rounded-lg ${style.bg} ${style.text} border ${style.border} shadow-sm flex items-center">${actionLabel}</span>
-        </div>
-        <div class="pr-32">
-            <h3 class="font-bold text-slate-800 text-xl truncate mb-1 group-hover:text-blue-600 transition-colors">${item.drugName}</h3>
-            <p class="text-base text-slate-400 mb-2 font-medium pl-0.5">${item.strength || '-'}</p>
-            <div class="flex flex-wrap items-center gap-2 mb-3">
-                <div class="bg-slate-50 px-3 py-1 rounded-md border border-slate-200 text-base shadow-sm">Qty: <b class="text-slate-800">${item.remainingQty}</b> <span class="text-slate-400 text-sm">${item.unit}</span></div>
-                <div class="px-3 py-1 rounded-md border text-base font-bold shadow-sm flex items-center gap-1 ${status.expBg} ${status.textExp}"><i class="fa-regular fa-calendar-xmark text-sm opacity-70"></i> ${dateStr} <span class="font-normal opacity-80 text-sm">(${item.diffDays}d)</span></div>
+    return `<div role="button" tabindex="0" onclick="openManageModal('${itemStr}')" onkeydown="handleCardKeyActivate(event, () => openManageModal('${itemStr}'))"
+        class="section-card gesture-scrollable group relative w-full cursor-pointer overflow-hidden border-l-4 ${status.borderStatus} px-4 py-4 text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none fade-in sm:px-5">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-5">
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">รายละเอียดล็อต</p>
+                    ${lotNo ? `<span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-600">Lot No. <span class="ml-1.5 normal-case tracking-normal text-slate-700">${lotNo}</span></span>` : ''}
+                </div>
+                <h3 class="mt-2 truncate text-lg font-bold text-slate-800 transition-colors group-hover:text-teal-700 sm:text-xl">${item.drugName}</h3>
+                <p class="mt-1 text-sm font-medium text-slate-500">${item.strength || '-'}</p>
+                <p class="mt-3 break-words text-sm text-slate-600"><span class="font-semibold text-slate-500">หมายเหตุ:</span> ${noteText}</p>
             </div>
-            <div class="pt-2 border-t border-slate-100 text-xs text-slate-500 truncate flex items-center">
-               <i class="fa-solid fa-note-sticky text-amber-400 mr-1.5 text-sm"></i> Note: <span class="ml-1 font-medium text-slate-600">${noteText}</span>
+
+            <div class="grid gap-3 sm:grid-cols-3 xl:min-w-[620px] xl:max-w-[620px]">
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">จำนวนคงเหลือ</p>
+                    <p class="mt-2 text-xl font-bold text-slate-800 sm:text-2xl">${item.remainingQty} <span class="text-sm font-semibold text-slate-500">${item.unit || ''}</span></p>
+                </div>
+                <div class="rounded-2xl border px-4 py-3 ${status.expBg} ${status.textExp}">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] opacity-75">วันหมดอายุ</p>
+                    <p class="mt-2 text-base font-bold sm:text-lg">${dateStr}</p>
+                    <p class="text-sm opacity-80">เหลืออีก ${item.diffDays} วัน</p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700 shadow-sm">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">การจัดการ</p>
+                    <div class="mt-2 inline-flex items-center rounded-2xl border px-3 py-2 text-sm font-bold shadow-sm ${style.bg} ${style.text} ${style.border}">${actionLabel}</div>
+                </div>
             </div>
         </div>
     </div>`;
@@ -562,42 +655,44 @@ function createGroupedCard(group) {
     const status = getExpiryStyles(group.nearestDiffDays);
     const lotHtml = group.items.slice(0, 4).map((item) => {
         const itemStr = encodeURIComponent(JSON.stringify(item));
-        return `<button type="button" onclick="event.stopPropagation(); openManageModal('${itemStr}')" class="px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-left hover:bg-blue-50 hover:border-blue-200 transition-colors">
+        const lotNo = (item.lotNo || '').trim();
+        return `<div role="button" tabindex="0" onclick="event.stopPropagation(); openManageModal('${itemStr}')" onkeydown="handleCardKeyActivate(event, () => openManageModal('${itemStr}'))" class="gesture-scrollable rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left transition-colors hover:border-teal-200 hover:bg-teal-50">
             <div class="text-sm font-bold text-slate-700">${item.qty} ${item.unit || ''}</div>
-            <div class="text-xs text-slate-500">${item.expiryDate} (${item.diffDays}d)</div>
-        </button>`;
+            ${lotNo ? `<div class="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Lot No. <span class="normal-case tracking-normal text-slate-600">${lotNo}</span></div>` : ''}
+            <div class="mt-1 text-xs text-slate-500">${item.expiryDate} (${item.diffDays}d)</div>
+        </div>`;
     }).join('');
-    const remainingLots = group.items.length > 4 ? `<div class="px-3 py-2 rounded-xl border border-dashed border-slate-200 text-xs font-bold text-slate-400 flex items-center justify-center">+${group.items.length - 4} more lots</div>` : '';
+    const remainingLots = group.items.length > 4 ? `<div class="flex items-center justify-center rounded-2xl border border-dashed border-slate-200 px-4 py-3 text-xs font-bold text-slate-400">+ อีก ${group.items.length - 4} ล็อต</div>` : '';
 
-    return `<div class="bg-white rounded-3xl border border-slate-100 border-l-[4px] ${status.borderStatus} shadow-sm p-5 hover:shadow-lg transition-all duration-300 fade-in">
+    return `<div class="section-card border-l-4 ${status.borderStatus} p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl fade-in">
         <div class="flex items-start justify-between gap-4">
             <div>
-                <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Grouped Drug View</p>
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">มุมมองจัดกลุ่มยา</p>
                 <h3 class="text-xl font-bold text-slate-800">${group.drugName}</h3>
-                <p class="text-sm text-slate-500">${group.strength || '-'} • ${group.inRoomLots} lots in room • Qty ${group.remainingQty} ${group.unit || ''}</p>
+                <p class="text-sm text-slate-500">${group.strength || '-'} • ${group.inRoomLots} ล็อตในห้องยา • จำนวน ${group.remainingQty} ${group.unit || ''}</p>
             </div>
             <div class="flex flex-col items-end gap-2">
                 <button type="button" onclick="openHistoryModal('${encodeURIComponent(group.drugName)}')"
-                    class="px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-100 transition-colors">
-                    <i class="fa-solid fa-clock-rotate-left mr-1"></i>History
+                    class="gesture-scrollable rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100">
+                    <i class="fa-solid fa-clock-rotate-left mr-1"></i>ประวัติ
                 </button>
             </div>
         </div>
-        <div class="mt-4 grid grid-cols-2 gap-3">
-            <div class="rounded-2xl border ${status.expBg} ${status.textExp} px-4 py-3">
-                <p class="text-[11px] uppercase font-bold opacity-70">Nearest Expiry</p>
+        <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div class="rounded-2xl border px-4 py-3 ${status.expBg} ${status.textExp}">
+                <p class="text-[11px] uppercase font-bold opacity-70">หมดอายุใกล้ที่สุด</p>
                 <p class="text-lg font-extrabold">${group.nearestExpiryDate}</p>
-                <p class="text-xs opacity-80">${group.nearestDiffDays} days remaining</p>
+                <p class="text-xs opacity-80">เหลืออีก ${group.nearestDiffDays} วัน</p>
             </div>
-            <div class="rounded-2xl border bg-slate-50 border-slate-200 px-4 py-3 text-slate-700">
-                <p class="text-[11px] uppercase font-bold text-slate-400">Action Mix</p>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700">
+                <p class="text-[11px] uppercase font-bold text-slate-400">ภาพรวมการจัดการ</p>
                 <p class="text-sm font-bold">${group.actionsSummary}</p>
                 <p class="text-xs text-slate-500">${group.recommendation}</p>
             </div>
         </div>
         <div class="mt-4">
-            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Lots</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">ล็อต</p>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 ${lotHtml}
                 ${remainingLots}
             </div>
@@ -666,7 +761,7 @@ function buildGroupedRows(items) {
     return Object.values(grouped).map((group) => {
         group.items = applySort(group.items, 'expiry');
         group.actionsSummary = Object.entries(group.actionMap).map(([action, count]) => `${actionStyles[action]?.label || action}: ${count}`).join(' • ');
-        group.recommendation = group.nearestDiffDays <= 30 ? 'Action this batch first' : (group.nearestDiffDays <= 60 ? 'Prepare transfer / sticker plan' : 'Monitor and review regularly');
+        group.recommendation = group.nearestDiffDays <= 30 ? 'ควรดำเนินการล็อตนี้ก่อน' : (group.nearestDiffDays <= 60 ? 'เตรียมแผนส่งต่อ / ติด Sticker' : 'ติดตามและตรวจสอบอย่างสม่ำเสมอ');
         return group;
     });
 }
@@ -709,26 +804,26 @@ function renderDashboard(items) {
     if (!dashboard) return;
 
     const cards = [
-        { key: 'urgent', label: '0-30 Days', tone: 'from-red-500 to-rose-500', icon: 'fa-triangle-exclamation', detail: 'Urgent batch' },
-        { key: 'soon', label: '31-60 Days', tone: 'from-orange-400 to-amber-400', icon: 'fa-hourglass-half', detail: 'Prepare action' },
-        { key: 'watch', label: '61-90 Days', tone: 'from-blue-500 to-cyan-500', icon: 'fa-bell', detail: 'Watch list' },
-        { key: 'all', label: 'All Active', tone: 'from-slate-700 to-slate-500', icon: 'fa-capsules', detail: 'All non-expired lots' }
+        { key: 'urgent', label: '0-30 วัน', tone: 'from-rose-500 to-red-500', icon: 'fa-triangle-exclamation', detail: 'เร่งด่วน' },
+        { key: 'soon', label: '31-60 วัน', tone: 'from-amber-400 to-orange-400', icon: 'fa-hourglass-half', detail: 'เตรียมจัดการ' },
+        { key: 'watch', label: '61-90 วัน', tone: 'from-sky-500 to-cyan-500', icon: 'fa-bell', detail: 'ติดตามต่อเนื่อง' },
+        { key: 'all', label: 'ทั้งหมดที่ยังใช้งาน', tone: 'from-slate-700 to-slate-500', icon: 'fa-capsules', detail: 'ล็อตที่ยังไม่หมดอายุทั้งหมด' }
     ];
 
     dashboard.innerHTML = cards.map((card) => {
         const scopedItems = card.key === 'all' ? items : items.filter((item) => matchesDashboardFilter(item, card.key));
-        const activeRing = currentDashboardFilter === card.key ? 'ring-4 ring-offset-2 ring-blue-200 scale-[1.02]' : 'hover:scale-[1.01]';
-        return `<button type="button" onclick="setDashboardFilter('${card.key}')" class="w-full text-left rounded-3xl bg-gradient-to-br ${card.tone} text-white p-5 shadow-lg shadow-slate-200/60 transition-all duration-300 ${activeRing}">
+        const activeRing = currentDashboardFilter === card.key ? 'ring-4 ring-offset-2 ring-teal-100 scale-[1.01]' : 'hover:-translate-y-1';
+        return `<div role="button" tabindex="0" onclick="setDashboardFilter('${card.key}')" onkeydown="handleCardKeyActivate(event, () => setDashboardFilter('${card.key}'))" class="gesture-scrollable w-full cursor-pointer rounded-[1.75rem] bg-gradient-to-br ${card.tone} p-5 text-left text-white shadow-lg shadow-slate-200/60 transition-all duration-300 ${activeRing}">
         <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
                 <p class="text-xs font-bold uppercase tracking-wider text-white/75">${card.label}</p>
                 <div class="mt-3 grid grid-cols-2 gap-3">
                     <div class="rounded-2xl bg-white/12 px-3 py-2">
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-white/70">Items</p>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-white/70">จำนวนรายการ</p>
                         <p class="text-2xl sm:text-3xl font-extrabold mt-1">${scopedItems.length}</p>
                     </div>
                     <div class="rounded-2xl bg-white/12 px-3 py-2">
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-white/70">Drugs</p>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-white/70">จำนวนยาคงเหลือ</p>
                         <p class="text-2xl sm:text-3xl font-extrabold mt-1">${countUniqueDrugs(scopedItems)}</p>
                     </div>
                 </div>
@@ -738,7 +833,7 @@ function renderDashboard(items) {
                 <i class="fa-solid ${card.icon} text-xl"></i>
             </div>
         </div>
-    </button>`;
+    </div>`;
     }).join('');
 }
 
@@ -746,25 +841,25 @@ function updateReportInsight(items) {
     const insightText = document.getElementById('reportInsightText');
     if (!insightText) return;
     if (!items.length) {
-        insightText.textContent = 'No active items match this filter.';
+        insightText.textContent = 'ไม่พบรายการที่ยังใช้งานตรงกับตัวกรองนี้';
         return;
     }
 
     const visibleItems = applyDashboardFilter(items);
     if (!visibleItems.length) {
-        insightText.textContent = 'No items match the selected dashboard category.';
+        insightText.textContent = 'ไม่พบรายการที่ตรงกับหมวดบน dashboard ที่เลือก';
         return;
     }
 
     const top = applySort(visibleItems, 'expiry')[0];
     const groupedCount = buildGroupedRows(visibleItems).length;
     const uniqueDrugCount = countUniqueDrugs(visibleItems);
-    insightText.textContent = `${top.drugName} expires soonest in ${top.diffDays} days. ${visibleItems.length} items across ${uniqueDrugCount} drugs (${groupedCount} grouped views) are in this category.`;
+    insightText.textContent = `${top.drugName} จะหมดอายุเร็วที่สุดในอีก ${top.diffDays} วัน ขณะนี้มี ${visibleItems.length} รายการ จากยา ${uniqueDrugCount} ชนิด (${groupedCount} มุมมองจัดกลุ่ม) ในหมวดนี้`;
 }
 
 function requestNotificationPermission() {
     if (!('Notification' in window)) {
-        MySwal.fire({ icon: 'info', title: 'Notifications Unavailable', text: 'This browser does not support notifications.' });
+        MySwal.fire({ icon: 'info', title: 'ไม่รองรับการแจ้งเตือน', text: 'เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน' });
         return;
     }
 
@@ -780,16 +875,19 @@ function updateNotificationButtonState() {
     if (!('Notification' in window)) {
         button.disabled = true;
         button.classList.add('opacity-50');
-        button.innerHTML = '<i class="fa-regular fa-bell-slash"></i> Alerts Unsupported';
+        button.innerHTML = '<i class="fa-regular fa-bell-slash"></i> ไม่รองรับการแจ้งเตือน';
         return;
     }
 
+    button.classList.remove('opacity-50', 'border-rose-200', 'bg-rose-50', 'text-rose-700', 'border-emerald-200', 'bg-emerald-50', 'text-emerald-700');
     if (Notification.permission === 'granted') {
-        button.innerHTML = '<i class="fa-solid fa-bell"></i> Alerts Enabled';
+        button.classList.add('border-emerald-200', 'bg-emerald-50', 'text-emerald-700');
+        button.innerHTML = '<i class="fa-solid fa-bell"></i> เปิดการแจ้งเตือนแล้ว';
     } else if (Notification.permission === 'denied') {
-        button.innerHTML = '<i class="fa-regular fa-bell-slash"></i> Alerts Blocked';
+        button.classList.add('border-rose-200', 'bg-rose-50', 'text-rose-700');
+        button.innerHTML = '<i class="fa-regular fa-bell-slash"></i> บล็อกการแจ้งเตือน';
     } else {
-        button.innerHTML = '<i class="fa-regular fa-bell"></i> Enable Alerts';
+        button.innerHTML = '<i class="fa-regular fa-bell"></i> เปิดการแจ้งเตือน';
     }
 }
 
@@ -806,15 +904,15 @@ function maybeSendExpiryNotification(items) {
 
     localStorage.setItem(storageKey, payload);
     const topItem = applySort(items.filter((item) => item.diffDays <= dailyAlertWindow), 'expiry')[0];
-    new Notification('Expiry Alert', {
-        body: `${urgentCount} lot(s) expire within ${dailyAlertWindow} days. Top priority: ${topItem.drugName}.`,
+    new Notification('แจ้งเตือนวันหมดอายุ', {
+        body: `มี ${urgentCount} ล็อตที่จะหมดอายุภายใน ${dailyAlertWindow} วัน รายการสำคัญที่สุดคือ ${topItem.drugName}`,
         icon: 'icons/icon-192.png'
     });
 }
 
 function exportCurrentView() {
     if (!currentRenderedRows.length) {
-        MySwal.fire({ icon: 'info', title: 'Nothing to Export', text: 'There is no visible data to export right now.' });
+        MySwal.fire({ icon: 'info', title: 'ไม่มีข้อมูลให้ส่งออก', text: 'ขณะนี้ไม่มีข้อมูลที่แสดงอยู่สำหรับส่งออก' });
         return;
     }
 
@@ -832,6 +930,7 @@ function exportCurrentView() {
         : currentRenderedRows.map((row) => ({
             drugName: row.drugName,
             strength: row.strength,
+            lotNo: row.lotNo,
             qty: row.qty,
             unit: row.unit,
             expiryDate: row.expiryDate,
@@ -850,7 +949,7 @@ function exportCurrentView() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `expiry-report-${currentViewMode}-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `รายงานยาใกล้หมดอายุ-${currentViewMode}-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -871,12 +970,12 @@ function openManageModal(itemEncoded) {
     document.getElementById('manageDrugName').textContent = item.drugName;
     document.getElementById('manageMaxQty').value = item.qty;
     document.getElementById('displayMaxQty').textContent = item.qty;
-    document.getElementById('manageUnit').textContent = item.unit || 'Unit';
+    document.getElementById('manageUnit').textContent = item.unit || 'หน่วย';
     currentManageMaxQty = parseInt(item.qty, 10) || 0;
     currentManageDrugName = item.drugName;
     
     if(document.getElementById('modalUnitTop')) {
-        document.getElementById('modalUnitTop').textContent = item.unit || 'UNIT';
+        document.getElementById('modalUnitTop').textContent = item.unit || 'หน่วย';
     }
     
     document.getElementById('manageOriginalAction').value = item.action;
@@ -884,12 +983,21 @@ function openManageModal(itemEncoded) {
     // --- Note Logic (Case Insensitive Check) ---
     const noteBox = document.getElementById('displayCurrentNoteBox');
     const noteText = document.getElementById('displayCurrentNote');
+    const noteEditor = document.getElementById('manageNoteEditor');
     
     const getVal = (obj, key) => obj[key] || obj[key.toLowerCase()] || obj[key.charAt(0).toUpperCase() + key.slice(1)] || "";
     
+    const rawLotNo = getVal(item, 'lotNo').trim();
     const rawSub = getVal(item, 'subDetails');
     const rawNote = getVal(item, 'notes'); 
     const stockOutByOther = hasOtherStockOut(rawSub);
+    const lotWrap = document.getElementById('manageLotNoWrap');
+    const lotText = document.getElementById('manageLotNo');
+
+    if (lotWrap && lotText) {
+        lotText.textContent = rawLotNo || '-';
+        lotWrap.classList.toggle('hidden', !rawLotNo);
+    }
 
     let detailsToShow = [];
     if (stockOutByOther) { detailsToShow.push('[ตัด stock ออกจากห้องแล้ว]'); }
@@ -899,7 +1007,10 @@ function openManageModal(itemEncoded) {
     
     const finalNote = detailsToShow.join(" ");
 
-    noteText.textContent = finalNote || "No note saved for this lot.";
+    noteText.textContent = finalNote || "ไม่มีหมายเหตุสำหรับล็อตนี้";
+    if (noteEditor) {
+        noteEditor.value = rawNote || "";
+    }
     noteBox.classList.remove('hidden');
 
     document.getElementById('manageQty').value = ''; 
@@ -916,30 +1027,62 @@ function openManageModal(itemEncoded) {
 function closeManageModal() { document.getElementById('manageModal').classList.add('hidden'); }
 function setAllQty() { document.getElementById('manageQty').value = document.getElementById('manageMaxQty').value; }
 
+function saveCurrentNote() {
+    const rowIndex = document.getElementById('manageRowIndex').value;
+    const originalAction = document.getElementById('manageOriginalAction').value;
+    const noteEditor = document.getElementById('manageNoteEditor');
+    const noteValue = noteEditor ? noteEditor.value.trim() : '';
+
+    if (!rowIndex) {
+        MySwal.fire({ icon: 'warning', title: 'ไม่พบรายการ', text: 'กรุณาเปิดรายการที่ต้องการแก้ไขอีกครั้ง' });
+        return;
+    }
+
+    if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(originalAction) && !noteValue) {
+        MySwal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'รายการประเภทนี้จำเป็นต้องมีหมายเหตุ' });
+        return;
+    }
+
+    document.getElementById('overlay').classList.remove('hidden');
+
+    callAPI('updateItemNote', { rowIndex: rowIndex, newNote: noteValue })
+        .then((res) => {
+            document.getElementById('overlay').classList.add('hidden');
+            if (res.success) {
+                closeManageModal();
+                MySwal.fire({ icon: 'success', title: 'บันทึกหมายเหตุแล้ว', timer: 1200, showConfirmButton: false });
+                loadReport().then(() => isReportLoaded = true);
+            } else {
+                MySwal.fire('ผิดพลาด', res.message, 'error');
+            }
+        })
+        .catch(err => onFail(err));
+}
+
 function editStockQty() {
    const currentQty = document.getElementById('displayMaxQty').textContent;
    const rowIndex = document.getElementById('manageRowIndex').value;
    
    MySwal.fire({
-       title: '<span class="text-slate-800">Adjust Stock</span>',
+       title: '<span class="text-slate-800">ปรับจำนวนคงเหลือ</span>',
        html: `
          <div class="mb-4">
-            <p class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Current Amount</p>
-            <p class="text-slate-600 text-xl font-semibold">${currentQty} <span class="text-xs text-slate-400">UNIT</span></p>
+            <p class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">จำนวนปัจจุบัน</p>
+            <p class="text-slate-600 text-xl font-semibold">${currentQty} <span class="text-xs text-slate-400">หน่วย</span></p>
          </div>
        `,
        input: 'number',
-       inputPlaceholder: 'New Qty',
+       inputPlaceholder: 'จำนวนใหม่',
        inputValue: currentQty,
        showCancelButton: true,
-       confirmButtonText: 'Update Stock',
-       cancelButtonText: 'Cancel',
+       confirmButtonText: 'อัปเดตจำนวน',
+       cancelButtonText: 'ยกเลิก',
        customClass: {
            ...swalTheme,
            input: 'w-1/2 mx-auto text-center text-4xl font-bold text-blue-600 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none py-4 transition-all mb-6'
        },
        preConfirm: (newQty) => {
-           if (newQty === '' || newQty === null || Number(newQty) < 0) Swal.showValidationMessage('Invalid quantity');
+           if (newQty === '' || newQty === null || Number(newQty) < 0) Swal.showValidationMessage('จำนวนไม่ถูกต้อง');
            return Number(newQty);
        }
    }).then((result) => {
@@ -947,8 +1090,8 @@ function editStockQty() {
            document.getElementById('overlay').classList.remove('hidden');
            callAPI('updateStockQuantity', { rowIndex: rowIndex, newQty: result.value }).then(res => {
                document.getElementById('overlay').classList.add('hidden');
-               if(res.success) { MySwal.fire({ icon: 'success', title: 'Stock Updated', timer: 1000, showConfirmButton: false }); loadReport().then(() => isReportLoaded=true); }
-               else { MySwal.fire('Error', res.message, 'error'); }
+               if(res.success) { MySwal.fire({ icon: 'success', title: 'อัปเดตจำนวนแล้ว', timer: 1000, showConfirmButton: false }); loadReport().then(() => isReportLoaded=true); }
+               else { MySwal.fire('ผิดพลาด', res.message, 'error'); }
            }).catch(err => onFail(err));
        }
    });
@@ -961,10 +1104,10 @@ function submitManagement() {
     const selectedAction = actionEl ? actionEl.value : originalAction;
     const transferValue = document.getElementById('modalTransfer').value;
 
-    if(!manageQty || parseInt(manageQty) <= 0) { MySwal.fire('Warning', 'Invalid Quantity', 'warning'); return; }
-    if(parseInt(manageQty) > parseInt(document.getElementById('manageMaxQty').value)) { MySwal.fire('Warning', 'Exceed Stock', 'warning'); return; }
+    if(!manageQty || parseInt(manageQty) <= 0) { MySwal.fire('คำเตือน', 'จำนวนไม่ถูกต้อง', 'warning'); return; }
+    if(parseInt(manageQty) > parseInt(document.getElementById('manageMaxQty').value)) { MySwal.fire('คำเตือน', 'จำนวนเกินคงเหลือ', 'warning'); return; }
     if (actionEl && selectedAction === 'Transfer' && !transferValue) {
-        MySwal.fire({ icon: 'warning', title: 'Missing Destination', text: 'Please select a transfer destination.' });
+        MySwal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกปลายทาง', text: 'กรุณาเลือกปลายทางสำหรับการส่งต่อ' });
         return;
     }
     
@@ -974,14 +1117,14 @@ function submitManagement() {
         const note = document.getElementById('modalSubNote').value.trim();
         
         if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(actionToSubmit) && !note) {
-            MySwal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a note.' });
+            MySwal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกหมายเหตุ' });
             return;
         }
     }
 
     MySwal.fire({
-        title: 'Confirm Update?', text: `Updating ${manageQty} items`, icon: 'warning',
-        showCancelButton: true, confirmButtonText: 'Yes, Confirm',
+        title: 'ยืนยันการอัปเดตหรือไม่?', text: `กำลังอัปเดตจำนวน ${manageQty} รายการ`, icon: 'warning',
+        showCancelButton: true, confirmButtonText: 'ยืนยันการอัปเดต',
     }).then((result) => { if (result.isConfirmed) { processManagement(manageQty, actionToSubmit, !!actionEl); } });
 }
 
@@ -1006,10 +1149,10 @@ function processManagement(manageQty, action, actionSelected) {
         .then(res => {
             document.getElementById('overlay').classList.add('hidden');
             if (res.success) { 
-                MySwal.fire({ icon: 'success', title: 'Success', text: res.message, timer: 1500, showConfirmButton: false }); 
+                MySwal.fire({ icon: 'success', title: 'สำเร็จ', text: res.message, timer: 1500, showConfirmButton: false }); 
                 loadReport().then(() => isReportLoaded=true); 
             }
-            else { MySwal.fire('Error', res.message, 'error'); }
+            else { MySwal.fire('ผิดพลาด', res.message, 'error'); }
         })
         .catch(err => onFail(err));
 }
@@ -1018,19 +1161,19 @@ function confirmDelete() {
     const rowIndex = document.getElementById('manageRowIndex').value;
     
     MySwal.fire({
-        title: 'Delete Item?',
+        title: 'ลบรายการนี้หรือไม่?',
         html: `
-            <p class="text-slate-500 text-sm mb-3">This action cannot be undone.</p>
+            <p class="text-slate-500 text-sm mb-3">การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
             <div class="mb-3">
-                <input type="password" id="deletePin" class="w-full p-3 rounded-xl border border-slate-200 outline-none text-center text-lg tracking-widest font-bold focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all" placeholder="Enter PIN" maxlength="4">
+                <input type="password" id="deletePin" class="w-full p-3 rounded-xl border border-slate-200 outline-none text-center text-lg tracking-widest font-bold focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all" placeholder="กรอก PIN" maxlength="4">
             </div>
-            <textarea id="deleteNote" class="w-full p-3 rounded-xl border border-slate-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none transition-all text-base text-slate-600" rows="2" placeholder="Reason for deletion (Optional)..."></textarea>
+            <textarea id="deleteNote" class="w-full p-3 rounded-xl border border-slate-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none transition-all text-base text-slate-600" rows="2" placeholder="เหตุผลในการลบ (ไม่บังคับ)..."></textarea>
         `,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
-        confirmButtonText: 'Verify & Delete',
-        cancelButtonText: 'Cancel',
+        confirmButtonText: 'ยืนยันและลบ',
+        cancelButtonText: 'ยกเลิก',
         didOpen: () => {
             const pinInput = document.getElementById('deletePin');
             if(pinInput) pinInput.focus();
@@ -1040,12 +1183,12 @@ function confirmDelete() {
             const note = document.getElementById('deleteNote').value;
             
             if (!pin) {
-                Swal.showValidationMessage('Please enter PIN');
+                Swal.showValidationMessage('กรุณากรอก PIN');
                 return false;
             }
             
             if (pin !== '1234') {
-                Swal.showValidationMessage('Incorrect PIN Code');
+                Swal.showValidationMessage('PIN ไม่ถูกต้อง');
                 return false;
             }
             
@@ -1061,10 +1204,10 @@ function confirmDelete() {
             callAPI('deleteItem', { rowIndex: rowIndex, note: userNote }).then(res => {
                 document.getElementById('overlay').classList.add('hidden');
                 if(res.success) { 
-                    MySwal.fire({ icon: 'success', title: 'Deleted', text: 'Item removed successfully', timer: 1500, showConfirmButton: false }); 
+                    MySwal.fire({ icon: 'success', title: 'ลบแล้ว', text: 'ลบรายการเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false }); 
                     loadReport().then(() => isReportLoaded=true); 
                 }
-                else { MySwal.fire('Error', res.message, 'error'); }
+                else { MySwal.fire('ผิดพลาด', res.message, 'error'); }
             }).catch(err => onFail(err));
         }
     });
@@ -1086,7 +1229,7 @@ async function fetchActionHistory(drugName, limit = 20) {
 async function openHistoryModal(drugName = null) {
     const targetDrugName = drugName ? decodeURIComponent(drugName) : currentManageDrugName;
     if (!targetDrugName) {
-        MySwal.fire({ icon: 'info', title: 'No Drug Selected', text: 'Please open a drug item first.' });
+        MySwal.fire({ icon: 'info', title: 'ยังไม่ได้เลือกยา', text: 'กรุณาเปิดรายละเอียดรายการยาก่อน' });
         return;
     }
 
@@ -1107,13 +1250,13 @@ async function openHistoryModal(drugName = null) {
                     </div>
                     <p class="mt-2 text-sm text-slate-600 break-words">${entry.details || '-'}</p>
                 </div>`).join('')}</div>`
-            : '<div class="text-slate-400 text-center py-6">No history found for this drug.</div>';
+            : '<div class="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-8 text-center text-slate-500">ไม่พบประวัติสำหรับยานี้</div>';
 
         MySwal.fire({
-            title: `History: ${targetDrugName}`,
+            title: `ประวัติ: ${targetDrugName}`,
             html,
             width: 720,
-            confirmButtonText: 'Close'
+            confirmButtonText: 'ปิด'
         });
     } catch (error) {
         onFail(error);
