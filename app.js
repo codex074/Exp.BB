@@ -580,12 +580,7 @@ function renderReport() {
 function updateReportListLayout() {
     const container = document.getElementById('reportList');
     if (!container) return;
-
-    if (currentViewMode === 'grouped') {
-        container.className = 'grid min-h-[300px] grid-cols-1 gap-4 pb-8 md:grid-cols-2 2xl:grid-cols-3';
-    } else {
-        container.className = 'flex min-h-[300px] flex-col gap-3 pb-8';
-    }
+    container.className = 'flex min-h-[300px] flex-col gap-3 pb-8';
 }
 
 function renderPage(page) {
@@ -653,48 +648,54 @@ function createItemCard(item) {
 
 function createGroupedCard(group) {
     const status = getExpiryStyles(group.nearestDiffDays);
-    const lotHtml = group.items.slice(0, 4).map((item) => {
-        const itemStr = encodeURIComponent(JSON.stringify(item));
-        const lotNo = (item.lotNo || '').trim();
-        return `<div role="button" tabindex="0" onclick="event.stopPropagation(); openManageModal('${itemStr}')" onkeydown="handleCardKeyActivate(event, () => openManageModal('${itemStr}'))" class="gesture-scrollable rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left transition-colors hover:border-teal-200 hover:bg-teal-50">
-            <div class="text-sm font-bold text-slate-700">${item.qty} ${item.unit || ''}</div>
-            ${lotNo ? `<div class="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Lot No. <span class="normal-case tracking-normal text-slate-600">${lotNo}</span></div>` : ''}
-            <div class="mt-1 text-xs text-slate-500">${item.expiryDate} (${item.diffDays}d)</div>
-        </div>`;
-    }).join('');
-    const remainingLots = group.items.length > 4 ? `<div class="flex items-center justify-center rounded-2xl border border-dashed border-slate-200 px-4 py-3 text-xs font-bold text-slate-400">+ อีก ${group.items.length - 4} ล็อต</div>` : '';
 
-    return `<div class="section-card border-l-4 ${status.borderStatus} p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl fade-in">
-        <div class="flex items-start justify-between gap-4">
-            <div>
-                <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">มุมมองจัดกลุ่มยา</p>
-                <h3 class="text-xl font-bold text-slate-800">${group.drugName}</h3>
-                <p class="text-sm text-slate-500">${group.strength || '-'} • ${group.inRoomLots} ล็อตในห้องยา • จำนวน ${group.remainingQty} ${group.unit || ''}</p>
+    const lotChips = group.items.slice(0, 6).map((item) => {
+        const chipItemStr = encodeURIComponent(JSON.stringify(item));
+        const lotNo = (item.lotNo || '').trim();
+        const style = actionStyles[item.action] || actionStyles['Other'];
+        return `<button type="button" onclick="event.stopPropagation(); openManageModal('${chipItemStr}')"
+            class="gesture-scrollable inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-left transition-colors hover:border-teal-200 hover:bg-teal-50 focus-visible:outline-none">
+            <span class="text-sm font-bold text-slate-700">${item.qty} ${item.unit || ''}</span>
+            ${lotNo ? `<span class="text-[11px] font-semibold text-slate-400">Lot ${lotNo}</span>` : ''}
+            <span class="text-[11px] text-slate-400">${item.expiryDate} (${item.diffDays}d)</span>
+            <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${style.bg} ${style.text} ${style.border}"><i class="fa-solid ${style.icon}"></i> ${style.label}</span>
+        </button>`;
+    }).join('');
+
+    const remainingLots = group.items.length > 6
+        ? `<span class="inline-flex items-center rounded-xl border border-dashed border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-400">+ อีก ${group.items.length - 6} ล็อต</span>`
+        : '';
+
+    return `<div class="section-card gesture-scrollable relative w-full overflow-hidden border-l-4 ${status.borderStatus} px-4 py-4 text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl fade-in sm:px-5">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:gap-5">
+            <div class="min-w-0 flex-1">
+                <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">มุมมองจัดกลุ่มยา</p>
+                <h3 class="mt-1.5 text-lg font-bold text-slate-800 sm:text-xl">${group.drugName}</h3>
+                <p class="mt-0.5 text-sm font-medium text-slate-500">${group.strength || '-'}</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    ${lotChips}
+                    ${remainingLots}
+                </div>
             </div>
-            <div class="flex flex-col items-end gap-2">
-                <button type="button" onclick="openHistoryModal('${encodeURIComponent(group.drugName)}')"
-                    class="gesture-scrollable rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100">
-                    <i class="fa-solid fa-clock-rotate-left mr-1"></i>ประวัติ
-                </button>
-            </div>
-        </div>
-        <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div class="rounded-2xl border px-4 py-3 ${status.expBg} ${status.textExp}">
-                <p class="text-[11px] uppercase font-bold opacity-70">หมดอายุใกล้ที่สุด</p>
-                <p class="text-lg font-extrabold">${group.nearestExpiryDate}</p>
-                <p class="text-xs opacity-80">เหลืออีก ${group.nearestDiffDays} วัน</p>
-            </div>
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700">
-                <p class="text-[11px] uppercase font-bold text-slate-400">ภาพรวมการจัดการ</p>
-                <p class="text-sm font-bold">${group.actionsSummary}</p>
-                <p class="text-xs text-slate-500">${group.recommendation}</p>
-            </div>
-        </div>
-        <div class="mt-4">
-            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">ล็อต</p>
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                ${lotHtml}
-                ${remainingLots}
+            <div class="grid gap-3 sm:grid-cols-3 xl:min-w-[560px] xl:max-w-[560px]">
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">ล็อตในห้องยา</p>
+                    <p class="mt-2 text-xl font-bold text-slate-800">${group.inRoomLots} <span class="text-sm font-semibold text-slate-500">ล็อต</span></p>
+                    <p class="mt-0.5 text-xs text-slate-400">รวม ${group.remainingQty} ${group.unit || ''}</p>
+                </div>
+                <div class="rounded-2xl border px-4 py-3 ${status.expBg} ${status.textExp}">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] opacity-75">หมดอายุใกล้ที่สุด</p>
+                    <p class="mt-2 text-base font-bold sm:text-lg">${group.nearestExpiryDate}</p>
+                    <p class="text-sm opacity-80">เหลืออีก ${group.nearestDiffDays} วัน</p>
+                </div>
+                <div class="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">การจัดการ</p>
+                    <p class="text-xs font-semibold leading-relaxed text-slate-600">${group.actionsSummary}</p>
+                    <button type="button" onclick="openHistoryModal('${encodeURIComponent(group.drugName)}')"
+                        class="gesture-scrollable mt-auto inline-flex items-center gap-1.5 self-start rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100">
+                        <i class="fa-solid fa-clock-rotate-left"></i> ประวัติ
+                    </button>
+                </div>
             </div>
         </div>
     </div>`;
@@ -813,24 +814,24 @@ function renderDashboard(items) {
     dashboard.innerHTML = cards.map((card) => {
         const scopedItems = card.key === 'all' ? items : items.filter((item) => matchesDashboardFilter(item, card.key));
         const activeRing = currentDashboardFilter === card.key ? 'ring-4 ring-offset-2 ring-teal-100 scale-[1.01]' : 'hover:-translate-y-1';
-        return `<div role="button" tabindex="0" onclick="setDashboardFilter('${card.key}')" onkeydown="handleCardKeyActivate(event, () => setDashboardFilter('${card.key}'))" class="gesture-scrollable w-full cursor-pointer rounded-[1.75rem] bg-gradient-to-br ${card.tone} p-5 text-left text-white shadow-lg shadow-slate-200/60 transition-all duration-300 ${activeRing}">
-        <div class="flex items-start justify-between gap-4">
-            <div class="min-w-0">
-                <p class="text-xs font-bold uppercase tracking-wider text-white/75">${card.label}</p>
-                <div class="mt-3 grid grid-cols-2 gap-3">
-                    <div class="rounded-2xl bg-white/12 px-3 py-2">
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-white/70">จำนวนรายการ</p>
-                        <p class="text-2xl sm:text-3xl font-extrabold mt-1">${scopedItems.length}</p>
+        return `<div role="button" tabindex="0" onclick="setDashboardFilter('${card.key}')" onkeydown="handleCardKeyActivate(event, () => setDashboardFilter('${card.key}'))" class="gesture-scrollable w-full cursor-pointer rounded-2xl bg-gradient-to-br ${card.tone} p-3 sm:p-5 text-left text-white shadow-lg shadow-slate-200/60 transition-all duration-300 ${activeRing}">
+        <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0 flex-1">
+                <p class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/75">${card.label}</p>
+                <div class="mt-2 grid grid-cols-2 gap-1.5 sm:gap-3">
+                    <div class="rounded-xl sm:rounded-2xl bg-white/12 px-2 py-1.5 sm:px-3 sm:py-2">
+                        <p class="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-white/70">รายการ</p>
+                        <p class="text-xl sm:text-3xl font-extrabold mt-0.5">${scopedItems.length}</p>
                     </div>
-                    <div class="rounded-2xl bg-white/12 px-3 py-2">
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-white/70">จำนวนยาคงเหลือ</p>
-                        <p class="text-2xl sm:text-3xl font-extrabold mt-1">${countUniqueDrugs(scopedItems)}</p>
+                    <div class="rounded-xl sm:rounded-2xl bg-white/12 px-2 py-1.5 sm:px-3 sm:py-2">
+                        <p class="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-white/70">ชนิดยา</p>
+                        <p class="text-xl sm:text-3xl font-extrabold mt-0.5">${countUniqueDrugs(scopedItems)}</p>
                     </div>
                 </div>
-                <p class="text-sm text-white/80 mt-3">${card.detail}</p>
+                <p class="text-[11px] sm:text-sm text-white/80 mt-2">${card.detail}</p>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">
-                <i class="fa-solid ${card.icon} text-xl"></i>
+            <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white/15 flex items-center justify-center shrink-0">
+                <i class="fa-solid ${card.icon} text-base sm:text-xl"></i>
             </div>
         </div>
     </div>`;
@@ -1013,6 +1014,11 @@ function openManageModal(itemEncoded) {
     }
     noteBox.classList.remove('hidden');
 
+    const expiryDateEdit = document.getElementById('manageExpiryDateEdit');
+    const lotNoEdit = document.getElementById('manageLotNoEdit');
+    if (expiryDateEdit) expiryDateEdit.value = formatDateForInput(item.expiryDate || '');
+    if (lotNoEdit) lotNoEdit.value = rawLotNo || '';
+
     document.getElementById('manageQty').value = ''; 
     document.querySelectorAll('input[name="manageAction"]').forEach(el => el.checked = false);
     document.getElementById('modalDynamicArea').classList.add('hidden');
@@ -1027,11 +1033,22 @@ function openManageModal(itemEncoded) {
 function closeManageModal() { document.getElementById('manageModal').classList.add('hidden'); }
 function setAllQty() { document.getElementById('manageQty').value = document.getElementById('manageMaxQty').value; }
 
+function formatDateForInput(dateStr) {
+    if (!dateStr) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    try {
+        const d = new Date(dateStr);
+        if (!isNaN(d)) return d.toISOString().split('T')[0];
+    } catch (e) {}
+    return '';
+}
+
 function saveCurrentNote() {
     const rowIndex = document.getElementById('manageRowIndex').value;
     const originalAction = document.getElementById('manageOriginalAction').value;
-    const noteEditor = document.getElementById('manageNoteEditor');
-    const noteValue = noteEditor ? noteEditor.value.trim() : '';
+    const noteValue = (document.getElementById('manageNoteEditor')?.value || '').trim();
+    const expiryDate = (document.getElementById('manageExpiryDateEdit')?.value || '').trim();
+    const lotNo = (document.getElementById('manageLotNoEdit')?.value || '').trim();
 
     if (!rowIndex) {
         MySwal.fire({ icon: 'warning', title: 'ไม่พบรายการ', text: 'กรุณาเปิดรายการที่ต้องการแก้ไขอีกครั้ง' });
@@ -1045,12 +1062,12 @@ function saveCurrentNote() {
 
     document.getElementById('overlay').classList.remove('hidden');
 
-    callAPI('updateItemNote', { rowIndex: rowIndex, newNote: noteValue })
+    callAPI('editItemFields', { rowIndex: rowIndex, fields: { note: noteValue, expiryDate: expiryDate, lotNo: lotNo } })
         .then((res) => {
             document.getElementById('overlay').classList.add('hidden');
             if (res.success) {
                 closeManageModal();
-                MySwal.fire({ icon: 'success', title: 'บันทึกหมายเหตุแล้ว', timer: 1200, showConfirmButton: false });
+                MySwal.fire({ icon: 'success', title: 'บันทึกการแก้ไขแล้ว', timer: 1200, showConfirmButton: false });
                 loadReport().then(() => isReportLoaded = true);
             } else {
                 MySwal.fire('ผิดพลาด', res.message, 'error');

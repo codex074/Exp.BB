@@ -37,6 +37,8 @@ function doPost(e) {
       result = updateItemNote(payload.rowIndex, payload.newNote);
     } else if (action === 'updateStockQuantity') {
       result = updateStockQuantity(payload.rowIndex, payload.newQty);
+    } else if (action === 'editItemFields') {
+      result = editItemFields(payload.rowIndex, payload.fields);
     }
   } catch (err) {
     result = { success: false, message: err.toString() };
@@ -203,6 +205,36 @@ function updateItemNote(rowIndex, newNote) {
   logActionToSheet(ss, drugName, qty, "Note Updated", normalizedNote || "Cleared note");
 
   return { success: true, message: "Note updated successfully" };
+}
+
+function editItemFields(rowIndex, fields) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName('data');
+  if (!sheet) return { success: false, message: "Data sheet not found" };
+  ensureDataSheetHeaders_(sheet);
+  const idx = validateRowIndex_(sheet, rowIndex);
+  const rowData = sheet.getRange(idx, 1, 1, DATA_SHEET_HEADERS.length).getDisplayValues()[0];
+  const action = rowData[7] || "";
+
+  const newNote = (fields.note !== undefined) ? String(fields.note).trim() : rowData[9];
+  const newLotNo = (fields.lotNo !== undefined) ? String(fields.lotNo).trim() : rowData[10];
+  const newExpiryDate = (fields.expiryDate !== undefined && fields.expiryDate !== '') ? String(fields.expiryDate).trim() : null;
+
+  if (['Other', 'ContactWH', 'ReturnWH', 'Destroy'].includes(action) && !newNote) {
+    return { success: false, message: "รายการประเภทนี้จำเป็นต้องมีหมายเหตุ" };
+  }
+
+  if (newExpiryDate) sheet.getRange(idx, 7).setValue(newExpiryDate);
+  sheet.getRange(idx, 10).setValue(newNote);
+  sheet.getRange(idx, 11).setValue(newLotNo);
+
+  const drugName = rowData[1];
+  const qty = rowData[4];
+  const changeLog = [`Note: "${newNote}"`, `LotNo: "${newLotNo}"`];
+  if (newExpiryDate) changeLog.push(`Expiry: ${newExpiryDate}`);
+  logActionToSheet(ss, drugName, qty, "Fields Edited", changeLog.join(', '));
+
+  return { success: true, message: "แก้ไขข้อมูลสำเร็จ" };
 }
 
 function updateStockQuantity(rowIndex, newQty) {
