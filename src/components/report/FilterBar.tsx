@@ -1,0 +1,161 @@
+import { FilterTime, SortMode } from '../../types'
+
+interface Props {
+  filterTime: FilterTime
+  filterAction: string
+  customNumber: string
+  customUnit: 'days' | 'months'
+  onFilterTimeChange: (v: FilterTime) => void
+  onFilterActionChange: (v: string) => void
+  onCustomNumberChange: (v: string) => void
+  onCustomUnitChange: (v: 'days' | 'months') => void
+  onRefresh: () => void
+  isRefreshing: boolean
+  sortMode: SortMode
+  onSortChange: (v: SortMode) => void
+  viewMode: 'items' | 'grouped'
+  onViewModeChange: (v: 'items' | 'grouped') => void
+  notifPermission: NotificationPermission | null
+  onNotifRequest: () => void
+  onExport: () => void
+  insightText: string
+}
+
+export default function FilterBar({
+  filterTime, filterAction, customNumber, customUnit,
+  onFilterTimeChange, onFilterActionChange, onCustomNumberChange, onCustomUnitChange,
+  onRefresh, isRefreshing,
+  sortMode, onSortChange, viewMode, onViewModeChange,
+  notifPermission, onNotifRequest, onExport,
+  insightText,
+}: Props) {
+  const notifLabel =
+    notifPermission === 'granted' ? 'เปิดการแจ้งเตือนแล้ว' :
+    notifPermission === 'denied' ? 'บล็อกการแจ้งเตือน' : 'เปิดการแจ้งเตือน'
+  const notifIcon =
+    notifPermission === 'granted' ? 'fa-bell' :
+    notifPermission === 'denied' ? 'fa-bell-slash fa-regular' : 'fa-bell fa-regular'
+  const notifClass =
+    notifPermission === 'granted' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' :
+    notifPermission === 'denied' ? 'border-rose-200 bg-rose-50 text-rose-700' :
+    'border-amber-200 bg-amber-50 text-amber-700'
+
+  return (
+    <>
+      <div className="section-card p-4 sm:p-6">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="section-title">ติดตามวันหมดอายุ</p>
+            <h2 className="mt-1 truncate text-lg font-bold tracking-tight text-ink-900 sm:text-2xl">ตรวจสอบ จัดกลุ่ม และจัดการล็อตยา</h2>
+          </div>
+          <button
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="secondary-button shrink-0 px-4 text-brand-700"
+          >
+            <i className={`fa-solid fa-arrows-rotate ${isRefreshing ? 'fa-spin' : ''}`}></i>
+            <span className="hidden sm:inline">รีเฟรช</span>
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="section-title">ช่วงเวลา</label>
+            <div className="relative">
+              <select value={filterTime} onChange={(e) => onFilterTimeChange(e.target.value as FilterTime)} className="select-shell">
+                <option value="all">ทั้งหมด</option>
+                <option value="30">ภายใน 30 วัน</option>
+                <option value="90">ภายใน 3 เดือน</option>
+                <option value="180">ภายใน 6 เดือน</option>
+                <option value="custom">กำหนดเอง...</option>
+              </select>
+              <i className="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ink-400"></i>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="section-title">ประเภทการจัดการ</label>
+            <div className="relative">
+              <select value={filterAction} onChange={(e) => onFilterActionChange(e.target.value)} className="select-shell">
+                <option value="all">ทุกประเภท</option>
+                <option value="Sticker">ติด Sticker</option>
+                <option value="Transfer">ส่งต่อห้องยา</option>
+                <option value="Separate">แยกเก็บ</option>
+                <option value="ContactWH">ติดต่อคลัง</option>
+                <option value="ReturnWH">คืนคลัง</option>
+                <option value="UsedUp">ใช้หมดแล้ว</option>
+                <option value="Destroy">ทำลาย</option>
+              </select>
+              <i className="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ink-400"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {filterTime === 'custom' && (
+        <div className="section-card flex items-center gap-3 p-4 fade-in sm:flex-row">
+          <input
+            type="number"
+            value={customNumber}
+            onChange={(e) => onCustomNumberChange(e.target.value)}
+            placeholder="จำนวน"
+            className="field-shell text-center sm:max-w-[140px]"
+          />
+          <div className="relative flex-1 sm:max-w-[220px]">
+            <select value={customUnit} onChange={(e) => onCustomUnitChange(e.target.value as 'days' | 'months')} className="select-shell">
+              <option value="days">วัน</option>
+              <option value="months">เดือน</option>
+            </select>
+            <i className="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ink-400"></i>
+          </div>
+          <span className="text-sm font-semibold text-ink-500">นับจากวันนี้</span>
+        </div>
+      )}
+
+      <div className="section-card p-4 sm:p-6">
+        <p className="section-title mb-3">การแสดงผล</p>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="inline-flex shrink-0 rounded-xl bg-slate-100 p-1">
+            {(['items', 'grouped'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => onViewModeChange(mode)}
+                className={`whitespace-nowrap rounded-lg px-3 py-2 text-xs sm:text-sm font-bold transition-all ${viewMode === mode ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}
+              >
+                {mode === 'items' ? 'มุมมองล็อต' : 'มุมมองจัดกลุ่ม'}
+              </button>
+            ))}
+          </div>
+          <div className="relative shrink-0 min-w-0 flex-1 sm:flex-none sm:w-[210px]">
+            <select value={sortMode} onChange={(e) => onSortChange(e.target.value as SortMode)} className="select-shell text-sm">
+              <option value="expiry">วันหมดอายุใกล้ที่สุด</option>
+              <option value="qty">จำนวนมากที่สุด</option>
+              <option value="name">ชื่อยา</option>
+            </select>
+            <i className="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ink-400"></i>
+          </div>
+          <div className="hidden sm:flex sm:flex-1"></div>
+          <button onClick={onNotifRequest} className={`soft-button shrink-0 justify-center px-3 sm:px-4 text-sm ${notifClass}`}>
+            <i className={`fa-solid ${notifIcon}`}></i>
+            <span className="hidden sm:inline">{notifLabel}</span>
+          </button>
+          <button onClick={onExport} className="soft-button shrink-0 justify-center border-emerald-200 bg-emerald-50 text-emerald-700 px-3 sm:px-4 text-sm">
+            <i className="fa-solid fa-file-export"></i>
+            <span className="hidden sm:inline">ส่งออก CSV</span>
+          </button>
+        </div>
+
+        <div className="mt-5 rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4 text-sm text-ink-600">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
+              <i className="fa-solid fa-sparkles"></i>
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-ink-800">ข้อมูลสรุป</p>
+              <p className="mt-1 leading-relaxed">{insightText || 'ข้อมูลสรุปเกี่ยวกับวันหมดอายุจะแสดงที่นี่'}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
