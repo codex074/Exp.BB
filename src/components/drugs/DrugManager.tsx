@@ -229,8 +229,8 @@ export default function DrugManager() {
 
       {/* Add / Edit Modal */}
       {modalOpen && (
-        <div className="modal-bg fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-md overflow-hidden rounded-[2rem] border border-white/60 bg-white shadow-lift">
+        <div className="modal-bg fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="flex w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-white/60 bg-white shadow-lift max-h-[calc(100vh-2rem)]">
 
             {/* Modal header */}
             <div className="bg-[linear-gradient(135deg,#0f766e_0%,#0d9488_55%,#0369a1_100%)] px-6 py-5 text-white">
@@ -254,7 +254,7 @@ export default function DrugManager() {
             </div>
 
             {/* Modal body */}
-            <div className="space-y-4 px-6 py-6">
+            <div className="flex-1 overflow-y-auto overscroll-contain space-y-4 px-6 py-6">
               <div className="space-y-1.5">
                 <label className="section-title">
                   ชื่อยา <span className="text-rose-500">*</span>

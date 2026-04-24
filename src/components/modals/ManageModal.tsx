@@ -230,8 +230,8 @@ export default function ManageModal({ item, onClose, onSuccess, setOverlay, hist
   const noteRequired = selectedAction ? NOTE_REQUIRED.includes(selectedAction) : false
 
   return (
-    <div id="manageModal" className="modal-bg fixed inset-0 z-50 flex items-start justify-center p-2 pt-3 sm:p-4 sm:pt-6 overflow-y-auto">
-      <div className="w-full max-w-3xl overflow-hidden rounded-2xl sm:rounded-[2rem] border border-white/60 bg-white shadow-lift">
+    <div id="manageModal" className="modal-bg fixed inset-0 z-50 flex items-start justify-center p-2 pt-3 sm:p-4 sm:pt-6">
+      <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/60 bg-white shadow-lift max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] sm:rounded-[2rem]">
         {/* Header */}
         <div className="bg-[linear-gradient(135deg,#0f766e_0%,#0d9488_55%,#0369a1_100%)] px-4 py-4 text-white sm:px-7 sm:py-5">
           <div className="flex items-start justify-between gap-4">
@@ -258,7 +258,7 @@ export default function ManageModal({ item, onClose, onSuccess, setOverlay, hist
         </div>
 
         {/* Body */}
-        <div className="max-h-[80vh] overflow-y-auto bg-slate-50/80 px-3 py-3 sm:px-7 sm:py-6">
+        <div className="flex-1 overflow-y-auto overscroll-contain bg-slate-50/80 px-3 py-3 sm:px-7 sm:py-6">
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6">
               {/* Qty section */}
