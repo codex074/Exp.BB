@@ -16,7 +16,7 @@ export default function GroupedCard({ group, onItemClick, onHistoryClick }: Prop
     const lotNo = (item.lotNo || '').trim()
     return (
       <button
-        key={item.rowIndex}
+        key={item.id}
         type="button"
         onClick={(e) => { e.stopPropagation(); onItemClick(item) }}
         className="gesture-scrollable inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-left transition-colors hover:border-teal-200 hover:bg-teal-50 focus-visible:outline-none"
