@@ -1,11 +1,5 @@
 import { ActionStyle, ActionType } from '../types'
 
-export const GAS_URL =
-  'https://script.google.com/macros/s/AKfycbwHyEk6dmWlbm_YObxknK_C8NgUDSa1l9nbFDCRwuGQd-EpCtBnZiul6DZHapy_z3lqCg/exec'
-
-export const SHEETS_URL =
-  'https://docs.google.com/spreadsheets/d/1l7gEdZJrgfTbXPF3wWyM1DjfALJIKLM8zokXEfZLw_k/edit?usp=sharing'
-
 export const ITEMS_PER_PAGE = 10
 export const DAILY_ALERT_WINDOW = 30
 export const OTHER_STOCK_OUT_TOKEN = '__ROOM_OUT__'

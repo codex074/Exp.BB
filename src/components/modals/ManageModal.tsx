@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ReportItem, ActionType, ActionHistoryEntry } from '../../types'
-import { callAPI, fetchActionHistory } from '../../api/gasApi'
+import { manageItem, editItemFields, updateStockQuantity, deleteItem, fetchActionHistory } from '../../api/firestoreApi'
 import { MySwal, swalTheme } from '../../utils/swal'
 import { sanitizeSubDetails, hasOtherStockOut } from '../../utils/stockUtils'
 import { formatDateForInput } from '../../utils/dateUtils'
@@ -84,8 +84,8 @@ export default function ManageModal({ item, onClose, onSuccess, setOverlay, hist
     onClose()
     setOverlay(true)
     try {
-      const res = await callAPI<{ success: boolean; message?: string }>('manageItem', {
-        rowIndex: item.rowIndex,
+      const res = await manageItem({
+        id: item.id,
         manageQty: qty,
         newAction: activeAction,
         newDetails: subVal,
@@ -111,9 +111,10 @@ export default function ManageModal({ item, onClose, onSuccess, setOverlay, hist
     }
     setOverlay(true)
     try {
-      const res = await callAPI<{ success: boolean; message?: string }>('editItemFields', {
-        rowIndex: item.rowIndex,
-        fields: { note: noteEditor, expiryDate: expiryDateEdit, lotNo: lotNoEdit },
+      const res = await editItemFields(item.id, {
+        note: noteEditor,
+        expiryDate: expiryDateEdit,
+        lotNo: lotNoEdit,
       })
       setOverlay(false)
       if (res.success) {
@@ -150,10 +151,7 @@ export default function ManageModal({ item, onClose, onSuccess, setOverlay, hist
     }).then((result) => {
       if (!result.isConfirmed) return
       setOverlay(true)
-      callAPI<{ success: boolean; message?: string }>('updateStockQuantity', {
-        rowIndex: item.rowIndex,
-        newQty: result.value,
-      }).then((res) => {
+      updateStockQuantity(item.id, result.value).then((res) => {
         setOverlay(false)
         if (res.success) {
           MySwal.fire({ icon: 'success', title: 'อัปเดตจำนวนแล้ว', timer: 1000, showConfirmButton: false })
@@ -187,10 +185,7 @@ export default function ManageModal({ item, onClose, onSuccess, setOverlay, hist
       if (!result.isConfirmed) return
       onClose()
       setOverlay(true)
-      callAPI<{ success: boolean; message?: string }>('deleteItem', {
-        rowIndex: item.rowIndex,
-        note: result.value || '',
-      }).then((res) => {
+      deleteItem(item.id, result.value || '').then((res) => {
         setOverlay(false)
         if (res.success) {
           MySwal.fire({ icon: 'success', title: 'ลบแล้ว', text: 'ลบรายการเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false })
@@ -235,10 +230,10 @@ export default function ManageModal({ item, onClose, onSuccess, setOverlay, hist
   const noteRequired = selectedAction ? NOTE_REQUIRED.includes(selectedAction) : false
 
   return (
-    <div id="manageModal" className="modal-bg fixed inset-0 z-50 flex items-start justify-center p-4 pt-6 overflow-y-auto">
-      <div className="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/60 bg-white shadow-lift">
+    <div id="manageModal" className="modal-bg fixed inset-0 z-50 flex items-start justify-center p-2 pt-3 sm:p-4 sm:pt-6 overflow-y-auto">
+      <div className="w-full max-w-3xl overflow-hidden rounded-2xl sm:rounded-[2rem] border border-white/60 bg-white shadow-lift">
         {/* Header */}
-        <div className="bg-[linear-gradient(135deg,#0f766e_0%,#0d9488_55%,#0369a1_100%)] px-6 py-5 text-white sm:px-7">
+        <div className="bg-[linear-gradient(135deg,#0f766e_0%,#0d9488_55%,#0369a1_100%)] px-4 py-4 text-white sm:px-7 sm:py-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="section-title !text-white/70">จัดการรายการ</p>
@@ -263,7 +258,7 @@ export default function ManageModal({ item, onClose, onSuccess, setOverlay, hist
         </div>
 
         {/* Body */}
-        <div className="max-h-[78vh] overflow-y-auto bg-slate-50/80 px-5 py-5 sm:px-7 sm:py-6">
+        <div className="max-h-[80vh] overflow-y-auto bg-slate-50/80 px-3 py-3 sm:px-7 sm:py-6">
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6">
               {/* Qty section */}
@@ -318,7 +313,7 @@ export default function ManageModal({ item, onClose, onSuccess, setOverlay, hist
                     onChange={setSelectedAction}
                     name="manageAction"
                     variant="modal"
-                    gridClass="grid grid-cols-4 gap-2"
+                    gridClass="grid grid-cols-4 gap-1.5 sm:gap-2"
                     iconSize="text-xl"
                     textSize="text-xs"
                   />
@@ -394,7 +389,7 @@ export default function ManageModal({ item, onClose, onSuccess, setOverlay, hist
                 <div className="mt-4 space-y-3 text-sm text-ink-600">
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">ตรวจสอบจำนวนให้ถูกต้องก่อนอัปเดตรายการล็อต</div>
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">หากไม่เลือกสถานะใหม่ ระบบจะคง action เดิมไว้</div>
-                  <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">การลบยังคงต้องใช้ PIN เดิมและทำงานตามกฎฝั่งเซิร์ฟเวอร์เหมือนเดิม</div>
+                  <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">การลบต้องใช้ PIN ยืนยันก่อนดำเนินการและไม่สามารถย้อนกลับได้</div>
                 </div>
               </div>
             </div>

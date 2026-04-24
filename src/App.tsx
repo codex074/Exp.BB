@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback } from 'react'
 import Header from './components/layout/Header'
 import EntryForm from './components/entry/EntryForm'
 import ReportView from './components/report/ReportView'
+import DrugManager from './components/drugs/DrugManager'
 import LoadingOverlay from './components/common/LoadingOverlay'
 import BackToTop from './components/common/BackToTop'
-import { callAPI } from './api/gasApi'
+import { getDrugList } from './api/firestoreApi'
 import { Drug } from './types'
 import { MySwal } from './utils/swal'
 
-type Tab = 'entry' | 'report'
+type Tab = 'entry' | 'report' | 'drugs'
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('entry')
@@ -28,7 +29,7 @@ export default function App() {
   const loadDrugDatabase = useCallback(async () => {
     setIsDrugLoading(true)
     try {
-      const data = await callAPI<Drug[]>('getDrugList')
+      const data = await getDrugList()
       setDrugDatabase(data)
     } catch (err) {
       MySwal.fire({ icon: 'error', title: 'เชื่อมต่อไม่สำเร็จ', text: String(err) })
@@ -45,13 +46,15 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const handleDrugsTabChange = () => handleTabChange('drugs')
+
   const handleEntrySuccess = () => setReportKey((k) => k + 1)
 
   return (
     <div className="min-h-screen w-full text-ink-900 selection:bg-brand-100 selection:text-brand-800">
       <div className="relative min-h-screen w-full px-0 md:px-4 md:py-4">
         <div className="app-shell">
-          <Header tab={tab} onTabChange={handleTabChange} />
+          <Header tab={tab} onTabChange={handleTabChange} onDrugsTab={handleDrugsTabChange} />
 
           <main className="relative flex-1 overflow-x-hidden px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pt-6">
             <div className={tab === 'entry' ? '' : 'hidden'}>
@@ -71,6 +74,10 @@ export default function App() {
                   setOverlay={setIsOverlayOpen}
                 />
               )}
+            </div>
+
+            <div className={tab === 'drugs' ? '' : 'hidden'}>
+              {tab === 'drugs' && <DrugManager />}
             </div>
           </main>
 

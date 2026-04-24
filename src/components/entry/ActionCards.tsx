@@ -36,7 +36,7 @@ export default function ActionCards({
   onChange,
   name,
   variant = 'entry',
-  gridClass = 'grid grid-cols-2 gap-3 lg:grid-cols-4 2xl:grid-cols-7',
+  gridClass = 'grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7',
   iconSize = 'text-2xl',
   textSize = 'text-sm',
 }: Props) {

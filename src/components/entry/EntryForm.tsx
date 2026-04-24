@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Drug, ActionType } from '../../types'
-import { callAPI } from '../../api/gasApi'
+import { saveData, importDrugsFromGAS, importItemsFromGAS } from '../../api/firestoreApi'
 import { MySwal } from '../../utils/swal'
 import { todayISO } from '../../utils/dateUtils'
 import { OTHER_STOCK_OUT_TOKEN, TRANSFER_DESTINATIONS } from '../../constants'
@@ -46,6 +46,50 @@ export default function EntryForm({ drugDatabase, isDrugLoading, onDrugRefresh, 
   const [key, setKey] = useState(0)
 
   const set = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }))
+
+  const handleImportDrugs = async () => {
+    const confirm = await MySwal.fire({
+      title: 'นำเข้ารายการยาจาก Google Sheets?',
+      text: 'ระบบจะลบรายการยาเดิมใน Firestore แล้วนำเข้าชุดใหม่ทั้งหมด',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'นำเข้าเลย',
+      cancelButtonText: 'ยกเลิก',
+    })
+    if (!confirm.isConfirmed) return
+    setOverlay(true)
+    try {
+      const { count } = await importDrugsFromGAS()
+      setOverlay(false)
+      await MySwal.fire({ icon: 'success', title: `นำเข้าสำเร็จ ${count} รายการ`, timer: 2000, showConfirmButton: false })
+      onDrugRefresh()
+    } catch (err) {
+      setOverlay(false)
+      MySwal.fire({ icon: 'error', title: 'นำเข้าไม่สำเร็จ', text: String(err) })
+    }
+  }
+
+  const handleImportItems = async () => {
+    const confirm = await MySwal.fire({
+      title: 'นำเข้าข้อมูลที่บันทึกไว้ทั้งหมด?',
+      html: '<p class="text-slate-500 text-sm">ระบบจะลบข้อมูลเดิมใน Firestore ทั้งหมด<br>แล้วนำเข้าจาก Google Sheets ใหม่</p>',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'นำเข้าเลย',
+      cancelButtonText: 'ยกเลิก',
+    })
+    if (!confirm.isConfirmed) return
+    setOverlay(true)
+    try {
+      const { count } = await importItemsFromGAS()
+      setOverlay(false)
+      await MySwal.fire({ icon: 'success', title: `นำเข้าสำเร็จ ${count} รายการ`, timer: 2000, showConfirmButton: false })
+      onSuccess()
+    } catch (err) {
+      setOverlay(false)
+      MySwal.fire({ icon: 'error', title: 'นำเข้าไม่สำเร็จ', text: String(err) })
+    }
+  }
 
   const handleActionChange = (action: ActionType) => {
     set({ action, transferDest: '', otherStockOut: false })
@@ -111,7 +155,7 @@ export default function EntryForm({ drugDatabase, isDrugLoading, onDrugRefresh, 
 
     setOverlay(true)
     try {
-      const res = await callAPI<{ success: boolean; message?: string }>('saveData', payload)
+      const res = await saveData(payload)
       setOverlay(false)
       if (res.success) {
         MySwal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1500, showConfirmButton: false })
@@ -169,6 +213,24 @@ export default function EntryForm({ drugDatabase, isDrugLoading, onDrugRefresh, 
                     onClear={() => set({ selectedDrug: null })}
                     value={form.selectedDrug?.drugName ?? ''}
                   />
+                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+                    <button
+                      type="button"
+                      onClick={handleImportDrugs}
+                      className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-800 transition-colors"
+                    >
+                      <i className="fa-brands fa-google-drive"></i>
+                      นำเข้ารายการยาจาก Google Sheets
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleImportItems}
+                      className="flex items-center gap-1.5 text-xs text-amber-600 hover:text-amber-800 transition-colors"
+                    >
+                      <i className="fa-solid fa-database"></i>
+                      นำเข้าข้อมูลที่บันทึกไว้ทั้งหมด
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -297,7 +359,7 @@ export default function EntryForm({ drugDatabase, isDrugLoading, onDrugRefresh, 
           </div>
         </div>
 
-        <aside className="space-y-6">
+        <aside className="hidden xl:block space-y-6">
           <div className="section-card p-5">
             <p className="section-title">ลำดับการทำงาน</p>
             <h3 className="mt-2 text-lg font-bold text-ink-900">ขั้นตอนแนะนำในการบันทึก</h3>

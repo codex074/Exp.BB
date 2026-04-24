@@ -15,10 +15,10 @@ interface Props {
   onSortChange: (v: SortMode) => void
   viewMode: 'items' | 'grouped'
   onViewModeChange: (v: 'items' | 'grouped') => void
-  notifPermission: NotificationPermission | null
-  onNotifRequest: () => void
   onExport: () => void
   insightText: string
+  searchQuery: string
+  onSearchChange: (v: string) => void
 }
 
 export default function FilterBar({
@@ -26,20 +26,10 @@ export default function FilterBar({
   onFilterTimeChange, onFilterActionChange, onCustomNumberChange, onCustomUnitChange,
   onRefresh, isRefreshing,
   sortMode, onSortChange, viewMode, onViewModeChange,
-  notifPermission, onNotifRequest, onExport,
+  onExport,
   insightText,
+  searchQuery, onSearchChange,
 }: Props) {
-  const notifLabel =
-    notifPermission === 'granted' ? 'เปิดการแจ้งเตือนแล้ว' :
-    notifPermission === 'denied' ? 'บล็อกการแจ้งเตือน' : 'เปิดการแจ้งเตือน'
-  const notifIcon =
-    notifPermission === 'granted' ? 'fa-bell' :
-    notifPermission === 'denied' ? 'fa-bell-slash fa-regular' : 'fa-bell fa-regular'
-  const notifClass =
-    notifPermission === 'granted' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' :
-    notifPermission === 'denied' ? 'border-rose-200 bg-rose-50 text-rose-700' :
-    'border-amber-200 bg-amber-50 text-amber-700'
-
   return (
     <>
       <div className="section-card p-4 sm:p-6">
@@ -58,7 +48,29 @@ export default function FilterBar({
           </button>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-4 space-y-3">
+          <div className="relative">
+            <i className="fa-solid fa-magnifying-glass pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-ink-400"></i>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="ค้นหาชื่อยา, สูตร, Lot No..."
+              className="field-shell pl-10 pr-10"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => onSearchChange('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full text-ink-400 hover:bg-slate-100 hover:text-ink-700"
+                aria-label="ล้างการค้นหา"
+              >
+                <i className="fa-solid fa-xmark text-xs"></i>
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <label className="section-title">ช่วงเวลา</label>
             <div className="relative">
@@ -113,34 +125,30 @@ export default function FilterBar({
 
       <div className="section-card p-4 sm:p-6">
         <p className="section-title mb-3">การแสดงผล</p>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        {/* Row 1: view toggle + sort */}
+        <div className="flex flex-wrap items-center gap-2">
           <div className="inline-flex shrink-0 rounded-xl bg-slate-100 p-1">
             {(['items', 'grouped'] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => onViewModeChange(mode)}
-                className={`whitespace-nowrap rounded-lg px-3 py-2 text-xs sm:text-sm font-bold transition-all ${viewMode === mode ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}
+                className={`whitespace-nowrap rounded-lg px-2.5 py-2 text-xs sm:px-3 sm:text-sm font-bold transition-all ${viewMode === mode ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}
               >
-                {mode === 'items' ? 'มุมมองล็อต' : 'มุมมองจัดกลุ่ม'}
+                {mode === 'items' ? 'ล็อต' : 'จัดกลุ่ม'}
               </button>
             ))}
           </div>
-          <div className="relative shrink-0 min-w-0 flex-1 sm:flex-none sm:w-[210px]">
+          <div className="relative min-w-0 flex-1 sm:flex-none sm:w-[200px]">
             <select value={sortMode} onChange={(e) => onSortChange(e.target.value as SortMode)} className="select-shell text-sm">
-              <option value="expiry">วันหมดอายุใกล้ที่สุด</option>
-              <option value="qty">จำนวนมากที่สุด</option>
+              <option value="expiry">หมดอายุใกล้สุด</option>
+              <option value="qty">จำนวนมากสุด</option>
               <option value="name">ชื่อยา</option>
             </select>
-            <i className="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ink-400"></i>
+            <i className="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-400"></i>
           </div>
-          <div className="hidden sm:flex sm:flex-1"></div>
-          <button onClick={onNotifRequest} className={`soft-button shrink-0 justify-center px-3 sm:px-4 text-sm ${notifClass}`}>
-            <i className={`fa-solid ${notifIcon}`}></i>
-            <span className="hidden sm:inline">{notifLabel}</span>
-          </button>
-          <button onClick={onExport} className="soft-button shrink-0 justify-center border-emerald-200 bg-emerald-50 text-emerald-700 px-3 sm:px-4 text-sm">
+          <button onClick={onExport} className="soft-button shrink-0 justify-center border-emerald-200 bg-emerald-50 text-emerald-700 px-3 text-sm">
             <i className="fa-solid fa-file-export"></i>
-            <span className="hidden sm:inline">ส่งออก CSV</span>
+            <span className="hidden sm:inline ml-1">ส่งออก CSV</span>
           </button>
         </div>
 

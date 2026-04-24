@@ -6,6 +6,14 @@ export interface Drug {
   displayName: string
 }
 
+export interface DrugRecord {
+  id: string
+  drugName: string
+  generic: string
+  strength: string
+  unit: string
+}
+
 export type ActionType =
   | 'Sticker'
   | 'Transfer'
@@ -17,7 +25,7 @@ export type ActionType =
   | 'Other'
 
 export interface RawReportItem {
-  rowIndex: number
+  id: string
   drugName: string
   generic: string
   strength: string

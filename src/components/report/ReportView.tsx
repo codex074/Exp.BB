@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ReportItem, GroupedRow, RawReportItem, DashboardFilter, FilterTime, SortMode, ActionHistoryEntry } from '../../types'
-import { callAPI } from '../../api/gasApi'
+import { getReportData } from '../../api/firestoreApi'
 import { MySwal, Toast } from '../../utils/swal'
 import {
   processReportData, applySort, buildGroupedRows,
@@ -8,7 +8,7 @@ import {
   countUniqueDrugs,
 } from '../../utils/stockUtils'
 import { exportCSV } from '../../utils/csvUtils'
-import { ITEMS_PER_PAGE, DAILY_ALERT_WINDOW } from '../../constants'
+import { ITEMS_PER_PAGE } from '../../constants'
 import DashboardCards from './DashboardCards'
 import FilterBar from './FilterBar'
 import ItemCard from './ItemCard'
@@ -53,14 +53,13 @@ export default function ReportView({ reportKey, setOverlay }: Props) {
   const [selectedItem, setSelectedItem] = useState<ReportItem | null>(null)
   const [historyCache, setHistoryCache] = useState<Record<string, ActionHistoryEntry[]>>({})
 
-  const [notifPermission, setNotifPermission] = useState<NotificationPermission | null>(
-    'Notification' in window ? Notification.permission : null,
-  )
+  const [searchQuery, setSearchQuery] = useState('')
+
 
   const loadReport = async (showToast = false) => {
     setIsLoading(true)
     try {
-      const data = await callAPI<RawReportItem[]>('getReportData')
+      const data = await getReportData()
       setRawData(data)
       if (showToast) Toast.fire({ icon: 'success', title: 'อัปเดตรายการแล้ว' })
     } catch (err) {
@@ -108,9 +107,17 @@ export default function ReportView({ reportKey, setOverlay }: Props) {
     [timeFilteredItems, dashboardFilter],
   )
 
+  const searchFilteredItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return dashboardFilteredItems
+    return dashboardFilteredItems.filter((i) =>
+      [i.drugName, i.generic, i.strength, i.lotNo].some((f) => f?.toLowerCase().includes(q)),
+    )
+  }, [dashboardFilteredItems, searchQuery])
+
   const sortedItems = useMemo(
-    () => applySort(dashboardFilteredItems, sortMode),
-    [dashboardFilteredItems, sortMode],
+    () => applySort(searchFilteredItems, sortMode),
+    [searchFilteredItems, sortMode],
   )
 
   const renderedRows = useMemo((): (ReportItem | GroupedRow)[] => {
@@ -150,31 +157,6 @@ export default function ReportView({ reportKey, setOverlay }: Props) {
     setCurrentPage(1)
   }
 
-  useEffect(() => {
-    if (!('Notification' in window) || Notification.permission !== 'granted') return
-    const urgent = activeItems.filter((i) => !i.isStockExcluded && i.diffDays <= DAILY_ALERT_WINDOW)
-    if (!urgent.length) return
-    const todayKey = new Date().toISOString().split('T')[0]
-    const storageKey = `exp-alert-${todayKey}`
-    const prev = localStorage.getItem(storageKey)
-    const payload = String(urgent.length)
-    if (prev === payload) return
-    localStorage.setItem(storageKey, payload)
-    const top = applySort(urgent, 'expiry')[0]
-    new Notification('แจ้งเตือนวันหมดอายุ', {
-      body: `มี ${urgent.length} ล็อตที่จะหมดอายุภายใน ${DAILY_ALERT_WINDOW} วัน รายการสำคัญที่สุดคือ ${top.drugName}`,
-      icon: '/icons/icon-192.png',
-    })
-  }, [activeItems])
-
-  const handleNotifRequest = () => {
-    if (!('Notification' in window)) {
-      MySwal.fire({ icon: 'info', title: 'ไม่รองรับการแจ้งเตือน', text: 'เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน' })
-      return
-    }
-    Notification.requestPermission().then((p) => setNotifPermission(p))
-  }
-
   const handleExport = () => {
     if (!renderedRows.length) {
       MySwal.fire({ icon: 'info', title: 'ไม่มีข้อมูลให้ส่งออก', text: 'ขณะนี้ไม่มีข้อมูลที่แสดงอยู่สำหรับส่งออก' })
@@ -199,14 +181,14 @@ export default function ReportView({ reportKey, setOverlay }: Props) {
         onFilterActionChange={handleFilterActionChange}
         onCustomNumberChange={(v) => { setCustomNumber(v); setCurrentPage(1) }}
         onCustomUnitChange={(v) => { setCustomUnit(v); setCurrentPage(1) }}
+        searchQuery={searchQuery}
+        onSearchChange={(v) => { setSearchQuery(v); setCurrentPage(1) }}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
         sortMode={sortMode}
         onSortChange={handleSortChange}
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
-        notifPermission={notifPermission}
-        onNotifRequest={handleNotifRequest}
         onExport={handleExport}
         insightText={insightText}
       />
@@ -223,11 +205,11 @@ export default function ReportView({ reportKey, setOverlay }: Props) {
             <div className="section-card flex w-full max-w-xl flex-col items-center px-8 py-10 text-center">
               <div className="custom-loader"></div>
               <h3 className="mt-5 text-xl font-bold text-slate-800">กำลังโหลดข้อมูล</h3>
-              <p className="mt-2 text-sm text-slate-500">กำลังดึงข้อมูลล่าสุดจากแหล่งข้อมูลเดิม</p>
+              <p className="mt-2 text-sm text-slate-500">กำลังดึงข้อมูลล่าสุดจาก Firestore</p>
             </div>
           </div>
         ) : !rawData.length ? (
-          <StateCard icon="fa-box-open" title="ไม่พบข้อมูล" description="ขณะนี้ยังไม่มีข้อมูลรายงานจากแหล่งข้อมูลที่เชื่อมต่ออยู่" tone="slate" />
+          <StateCard icon="fa-box-open" title="ไม่พบข้อมูล" description="ขณะนี้ยังไม่มีข้อมูลใน Firestore กรุณาเพิ่มรายการใหม่" tone="slate" />
         ) : !renderedRows.length ? (
           <StateCard icon="fa-filter" title="ไม่พบรายการที่ตรงกับตัวกรอง" description="ลองเปลี่ยนหมวดบน dashboard ช่วงเวลา หรือประเภทการจัดการ เพื่อดูรายการเพิ่มเติม" tone="amber" />
         ) : (
@@ -242,7 +224,7 @@ export default function ReportView({ reportKey, setOverlay }: Props) {
                 />
               ) : (
                 <ItemCard
-                  key={(row as ReportItem).rowIndex}
+                  key={(row as ReportItem).id}
                   item={row as ReportItem}
                   onClick={setSelectedItem}
                 />
@@ -261,7 +243,7 @@ export default function ReportView({ reportKey, setOverlay }: Props) {
         />
       )}
 
-      {selectedItem && selectedItem.rowIndex && (
+      {selectedItem && selectedItem.id && (
         <ManageModal
           item={selectedItem}
           onClose={() => setSelectedItem(null)}
