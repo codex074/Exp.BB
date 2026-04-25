@@ -1,3 +1,5 @@
+import hosLogoUrl from '/icons/hoslogo.png'
+
 interface Props {
   tab: 'entry' | 'report' | 'drugs'
   onTabChange: (tab: 'entry' | 'report' | 'drugs') => void
@@ -13,7 +15,7 @@ export default function Header({ tab, onTabChange, onDrugsTab }: Props) {
         {/* Logo + Title */}
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/12 shadow-lg shadow-slate-950/15 backdrop-blur sm:h-14 sm:w-14">
-            <img src="/icons/hoslogo.png" alt="โลโก้โรงพยาบาล" className="h-8 w-8 object-contain sm:h-10 sm:w-10" />
+            <img src={hosLogoUrl} alt="โลโก้โรงพยาบาล" className="h-8 w-8 object-contain sm:h-10 sm:w-10" />
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight leading-tight sm:text-3xl">ระบบจัดการยาใกล้หมดอายุ</h1>

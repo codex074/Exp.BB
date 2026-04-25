@@ -213,24 +213,6 @@ export default function EntryForm({ drugDatabase, isDrugLoading, onDrugRefresh, 
                     onClear={() => set({ selectedDrug: null })}
                     value={form.selectedDrug?.drugName ?? ''}
                   />
-                  <div className="flex flex-wrap gap-x-4 gap-y-1">
-                    <button
-                      type="button"
-                      onClick={handleImportDrugs}
-                      className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-800 transition-colors"
-                    >
-                      <i className="fa-brands fa-google-drive"></i>
-                      นำเข้ารายการยาจาก Google Sheets
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleImportItems}
-                      className="flex items-center gap-1.5 text-xs text-amber-600 hover:text-amber-800 transition-colors"
-                    >
-                      <i className="fa-solid fa-database"></i>
-                      นำเข้าข้อมูลที่บันทึกไว้ทั้งหมด
-                    </button>
-                  </div>
                 </div>
 
                 <div className="space-y-2">
