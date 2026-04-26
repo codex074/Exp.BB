@@ -83,6 +83,16 @@ export interface ActionHistoryEntry {
   details: string
 }
 
+export interface ActionLogEntry {
+  id: string
+  timestamp: string
+  timestampDate: Date | null
+  drugName: string
+  action: string
+  qty: string
+  details: string
+}
+
 export interface ActionStyle {
   bg: string
   text: string

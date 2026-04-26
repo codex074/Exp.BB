@@ -3,7 +3,8 @@ import {
   query, where, orderBy, limit, serverTimestamp, writeBatch,
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import { Drug, DrugRecord, RawReportItem, ActionHistoryEntry, ActionType } from '../types'
+import { Drug, DrugRecord, RawReportItem, ActionHistoryEntry, ActionLogEntry, ActionType } from '../types'
+import { Timestamp } from 'firebase/firestore'
 import { OTHER_STOCK_OUT_TOKEN } from '../constants'
 
 const GAS_URL =
@@ -383,6 +384,41 @@ export async function fetchActionHistory(
     const ts = data.timestamp?.toDate?.() as Date | undefined
     return {
       timestamp: ts ? ts.toLocaleString('th-TH') : '',
+      action: (data.action as string) || '',
+      qty: String(data.qty ?? ''),
+      details: (data.details as string) || '',
+    }
+  })
+}
+
+export interface FetchActionLogsOptions {
+  startDate?: Date | null
+  endDate?: Date | null
+  limitCount?: number
+}
+
+export async function fetchAllActionLogs(
+  options: FetchActionLogsOptions = {},
+): Promise<ActionLogEntry[]> {
+  const { startDate, endDate, limitCount = 500 } = options
+
+  const constraints: any[] = []
+  if (startDate) constraints.push(where('timestamp', '>=', Timestamp.fromDate(startDate)))
+  if (endDate) constraints.push(where('timestamp', '<=', Timestamp.fromDate(endDate)))
+  constraints.push(orderBy('timestamp', 'desc'))
+  constraints.push(limit(limitCount))
+
+  const q = query(collection(db, 'actionLog'), ...constraints)
+  const snap = await getDocs(q)
+
+  return snap.docs.map((d) => {
+    const data = d.data()
+    const ts = data.timestamp?.toDate?.() as Date | undefined
+    return {
+      id: d.id,
+      timestamp: ts ? ts.toLocaleString('th-TH') : '',
+      timestampDate: ts ?? null,
+      drugName: (data.drugName as string) || '',
       action: (data.action as string) || '',
       qty: String(data.qty ?? ''),
       details: (data.details as string) || '',

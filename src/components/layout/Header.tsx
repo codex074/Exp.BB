@@ -1,8 +1,8 @@
 import hosLogoUrl from '/icons/hoslogo.png'
 
 interface Props {
-  tab: 'entry' | 'report' | 'drugs'
-  onTabChange: (tab: 'entry' | 'report' | 'drugs') => void
+  tab: 'entry' | 'report' | 'drugs' | 'history'
+  onTabChange: (tab: 'entry' | 'report' | 'drugs' | 'history') => void
   onDrugsTab: () => void
 }
 
@@ -51,6 +51,15 @@ export default function Header({ tab, onTabChange, onDrugsTab }: Props) {
             <i className="fa-solid fa-pills"></i>
             <span className="hidden sm:inline">บัญชียา</span>
             <span className="sm:hidden">ยา</span>
+          </button>
+          <button
+            onClick={() => onTabChange('history')}
+            className={`tab-button flex-1 sm:flex-none ${tab === 'history' ? 'active' : ''}`}
+            aria-label="เปิดหน้าประวัติการทำรายการ"
+          >
+            <i className="fa-solid fa-clock-rotate-left"></i>
+            <span className="hidden sm:inline">ประวัติ</span>
+            <span className="sm:hidden">log</span>
           </button>
         </div>
       </div>

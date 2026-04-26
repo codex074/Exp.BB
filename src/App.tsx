@@ -3,13 +3,14 @@ import Header from './components/layout/Header'
 import EntryForm from './components/entry/EntryForm'
 import ReportView from './components/report/ReportView'
 import DrugManager from './components/drugs/DrugManager'
+import HistoryView from './components/history/HistoryView'
 import LoadingOverlay from './components/common/LoadingOverlay'
 import BackToTop from './components/common/BackToTop'
 import { getDrugList } from './api/firestoreApi'
 import { Drug } from './types'
 import { MySwal } from './utils/swal'
 
-type Tab = 'entry' | 'report' | 'drugs'
+type Tab = 'entry' | 'report' | 'drugs' | 'history'
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('entry')
@@ -78,6 +79,10 @@ export default function App() {
 
             <div className={tab === 'drugs' ? '' : 'hidden'}>
               {tab === 'drugs' && <DrugManager />}
+            </div>
+
+            <div className={tab === 'history' ? '' : 'hidden'}>
+              {tab === 'history' && <HistoryView />}
             </div>
           </main>
 
