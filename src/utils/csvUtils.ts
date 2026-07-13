@@ -39,7 +39,7 @@ export function exportCSV(rows: (ReportItem | GroupedRow)[], viewMode: string): 
     ...data.map((row) => headers.map((h) => csvEscape((row as Record<string, unknown>)[h])).join(',')),
   ].join('\n')
 
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
