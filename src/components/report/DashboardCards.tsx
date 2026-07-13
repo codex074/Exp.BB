@@ -8,6 +8,7 @@ interface Props {
 }
 
 const CARDS: { key: DashboardFilter; label: string; tone: string; icon: string; detail: string }[] = [
+  { key: 'expired', label: 'หมดอายุแล้ว', tone: 'from-rose-800 to-rose-950', icon: 'fa-calendar-xmark', detail: 'จัดการด่วน' },
   { key: 'urgent', label: '0-30 วัน', tone: 'from-rose-500 to-red-500', icon: 'fa-triangle-exclamation', detail: 'เร่งด่วน' },
   { key: 'soon', label: '31-60 วัน', tone: 'from-amber-400 to-orange-400', icon: 'fa-hourglass-half', detail: 'เตรียมจัดการ' },
   { key: 'watch', label: '61-90 วัน', tone: 'from-sky-500 to-cyan-500', icon: 'fa-bell', detail: 'ติดตาม' },
@@ -16,9 +17,9 @@ const CARDS: { key: DashboardFilter; label: string; tone: string; icon: string; 
 
 export default function DashboardCards({ items, activeFilter, onFilter }: Props) {
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-5">
       {CARDS.map((card) => {
-        const scoped = card.key === 'all' ? items : items.filter((i) => matchesDashboardFilter(i, card.key))
+        const scoped = items.filter((i) => matchesDashboardFilter(i, card.key))
         const ring = activeFilter === card.key ? 'ring-4 ring-offset-2 ring-teal-100 scale-[1.01]' : 'hover:-translate-y-0.5'
         return (
           <div

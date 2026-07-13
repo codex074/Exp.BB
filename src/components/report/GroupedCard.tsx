@@ -1,6 +1,6 @@
 import { GroupedRow, ReportItem } from '../../types'
 import { ACTION_STYLES } from '../../constants'
-import { getExpiryStyles } from '../../utils/stockUtils'
+import { getExpiryStyles, formatDiffDays } from '../../utils/stockUtils'
 
 interface Props {
   group: GroupedRow
@@ -23,7 +23,7 @@ export default function GroupedCard({ group, onItemClick, onHistoryClick }: Prop
       >
         <span className="text-[11px] font-bold text-slate-700">{item.qty} {item.unit || ''}</span>
         {lotNo && <span className="hidden sm:inline text-[10px] text-slate-400">· {lotNo}</span>}
-        <span className="text-[10px] text-slate-400">{item.diffDays}d</span>
+        <span className="text-[10px] text-slate-400">{formatDiffDays(item.diffDays)}</span>
         <span className={`inline-flex items-center gap-0.5 rounded-md border px-1 py-0.5 text-[9px] font-bold ${style.bg} ${style.text} ${style.border}`}>
           <i className={`fa-solid ${style.icon}`}></i>
           <span className="hidden sm:inline ml-0.5">{style.label}</span>
@@ -61,7 +61,9 @@ export default function GroupedCard({ group, onItemClick, onHistoryClick }: Prop
           <div className={`rounded-lg border px-2.5 py-2 ${status.expBg} ${status.textExp}`}>
             <p className="text-[9px] font-bold uppercase tracking-wider opacity-70">หมดอายุ</p>
             <p className="mt-0.5 text-xs font-bold leading-tight">{group.nearestExpiryDate}</p>
-            <p className="text-[10px] opacity-75">อีก {group.nearestDiffDays}d</p>
+            <p className="text-[10px] opacity-75">
+              {group.nearestDiffDays < 0 ? formatDiffDays(group.nearestDiffDays) : `อีก ${group.nearestDiffDays}d`}
+            </p>
           </div>
 
           <div className="flex flex-col gap-1 rounded-lg border border-slate-100 bg-white px-2.5 py-2">

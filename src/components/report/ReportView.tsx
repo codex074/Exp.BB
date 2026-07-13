@@ -18,7 +18,6 @@ import StateCard from '../common/StateCard'
 import ManageModal from '../modals/ManageModal'
 
 function applyDashboardFilter(items: ReportItem[], filter: DashboardFilter): ReportItem[] {
-  if (filter === 'all') return items
   return items.filter((i) => matchesDashboardFilter(i, filter))
 }
 
@@ -28,7 +27,11 @@ function buildInsightText(items: ReportItem[], dashboardFilter: DashboardFilter)
   const top = applySort(visible, 'expiry')[0]
   const groupedCount = buildGroupedRows(visible).length
   const uniqueCount = countUniqueDrugs(visible)
-  return `${top.drugName} จะหมดอายุเร็วที่สุดในอีก ${top.diffDays} วัน ขณะนี้มี ${visible.length} รายการ จากยา ${uniqueCount} ชนิด (${groupedCount} มุมมองจัดกลุ่ม) ในหมวดนี้`
+  const expiryLabel =
+    top.diffDays < 0
+      ? `${top.drugName} หมดอายุไปแล้ว ${Math.abs(top.diffDays)} วัน`
+      : `${top.drugName} จะหมดอายุเร็วที่สุดในอีก ${top.diffDays} วัน`
+  return `${expiryLabel} ขณะนี้มี ${visible.length} รายการ จากยา ${uniqueCount} ชนิด (${groupedCount} มุมมองจัดกลุ่ม) ในหมวดนี้`
 }
 
 interface Props {
@@ -79,7 +82,7 @@ export default function ReportView({ reportKey, setOverlay }: Props) {
 
   const processedItems = useMemo(() => processReportData(rawData), [rawData])
 
-  const activeItems = useMemo(() => processedItems.filter((i) => i.diffDays >= 0), [processedItems])
+  const activeItems = processedItems
 
   const actionFilteredItems = useMemo(
     () =>

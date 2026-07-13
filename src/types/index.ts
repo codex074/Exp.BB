@@ -101,7 +101,7 @@ export interface ActionStyle {
   icon: string
 }
 
-export type DashboardFilter = 'all' | 'urgent' | 'soon' | 'watch' | 'later'
+export type DashboardFilter = 'all' | 'expired' | 'urgent' | 'soon' | 'watch' | 'later'
 export type ViewMode = 'items' | 'grouped'
 export type SortMode = 'expiry' | 'qty' | 'name'
 export type FilterTime = 'all' | '30' | '90' | '180' | 'custom'

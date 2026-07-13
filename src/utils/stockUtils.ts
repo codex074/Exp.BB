@@ -26,11 +26,16 @@ export function getDrugKey(
 }
 
 export function matchesDashboardFilter(item: ReportItem, filterKey: DashboardFilter): boolean {
+  if (filterKey === 'expired') return item.diffDays < 0
   if (filterKey === 'urgent') return item.diffDays >= 0 && item.diffDays <= 30
   if (filterKey === 'soon') return item.diffDays >= 31 && item.diffDays <= 60
   if (filterKey === 'watch') return item.diffDays >= 61 && item.diffDays <= 90
   if (filterKey === 'later') return item.diffDays > 90
-  return true
+  return item.diffDays >= 0
+}
+
+export function formatDiffDays(diffDays: number): string {
+  return diffDays < 0 ? `เกิน ${Math.abs(diffDays)}d` : `${diffDays}d`
 }
 
 export function countUniqueDrugs(items: ReportItem[]): number {
@@ -106,6 +111,8 @@ export function buildGroupedRows(items: ReportItem[]): GroupedRow[] {
 }
 
 export function getExpiryStyles(diffDays: number) {
+  if (diffDays < 0)
+    return { borderStatus: 'border-l-rose-800', textExp: 'text-rose-800', expBg: 'bg-rose-100 border-rose-200' }
   if (diffDays <= 30)
     return { borderStatus: 'border-l-red-500', textExp: 'text-red-600', expBg: 'bg-red-50 border-red-100' }
   if (diffDays <= 90)

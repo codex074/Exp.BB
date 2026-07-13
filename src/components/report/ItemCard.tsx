@@ -1,6 +1,6 @@
 import { ReportItem } from '../../types'
 import { ACTION_STYLES } from '../../constants'
-import { getExpiryStyles, sanitizeSubDetails } from '../../utils/stockUtils'
+import { getExpiryStyles, sanitizeSubDetails, formatDiffDays } from '../../utils/stockUtils'
 import { formatDisplayDate } from '../../utils/dateUtils'
 
 interface Props {
@@ -56,7 +56,7 @@ export default function ItemCard({ item, onClick }: Props) {
           </div>
           <div className={`px-3 py-1.5 font-semibold ${status.textExp}`}>
             {dateStr}
-            <span className="ml-1 text-[10px] opacity-70">({item.diffDays}d)</span>
+            <span className="ml-1 text-[10px] opacity-70">({formatDiffDays(item.diffDays)})</span>
           </div>
           <div className={`px-3 py-1.5 inline-flex items-center gap-1 font-bold ${style.text}`}>
             <i className={`fa-solid ${style.icon} text-[10px]`}></i>
@@ -66,7 +66,7 @@ export default function ItemCard({ item, onClick }: Props) {
 
         {/* Mobile: compact 3-part row below title */}
         <div className={`sm:hidden flex items-center gap-1 shrink-0 text-[10px]`}>
-          <span className={`font-semibold ${status.textExp}`}>{item.diffDays}d</span>
+          <span className={`font-semibold ${status.textExp}`}>{formatDiffDays(item.diffDays)}</span>
           <span className="text-slate-300">·</span>
           <span className={`inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 font-bold ${style.bg} ${style.text} ${style.border}`}>
             <i className={`fa-solid ${style.icon}`}></i>
